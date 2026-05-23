@@ -1,0 +1,10 @@
+<resources>
+    <!-- Card styling -->
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_elevation">6dp</dimen>
+    <dimen name="card_padding">12dp</dimen>
+    <dimen name="card_margin">8dp</dimen>
+
+    <!-- RecyclerView item spacing -->
+    <dimen name="job_item_spacing">12dp</dimen>
+</resources>

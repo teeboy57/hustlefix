@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HustleFix</string>
+    <string name="settings">Instellings</string>
+    <string name="profile">Profiel</string>
+    <string name="edit_profile">Wysig Profiel</string>
+    <string name="save_changes">Stoor Veranderinge</string>
+    <string name="change_password">Verander Wagwoord</string>
+    <string name="language">Taal</string>
+    <string name="help_support">Hulp &amp; Ondersteuning</string>
+    <string name="about">Oor</string>
+    <string name="privacy_policy">Privaatheidsbeleid</string>
+    <string name="logout">Teken uit</string>
+    <string name="notifications">Kennisgewings</string>
+    <string name="dark_mode">Donker Modus</string>
+    <string name="welcome">Welkom</string>
+    <string name="login">Teken aan</string>
+    <string name="register">Registreer</string>
+    <string name="dashboard">Paneelbord</string>
+    <string name="find_workers">Vind Werksoekers</string>
+    <string name="post_job">Plaas Werk</string>
+    <string name="quotes_offers">Kwotasies &amp; Aanbiedings</string>
+    <string name="chat">Gesels</string>
+    <string name="ratings">Graderings</string>
+    <string name="emergency">Noodgeval</string>
+    <string name="loading">Laai...</string>
+    <string name="cancel">Kanselleer</string>
+    <string name="ok">OK</string>
+    <string name="yes">Ja</string>
+    <string name="no">Nee</string>
+</resources>

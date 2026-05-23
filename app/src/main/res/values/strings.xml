@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HustleFix</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <!-- Other strings -->
+    <string name="settings">Settings</string>
+    <string name="profile">Profile</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="change_password">Change Password</string>
+    <string name="language">Language</string>
+    <string name="help_support">Help &amp; Support</string>
+    <string name="about">About</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="logout">Logout</string>
+    <string name="notifications">Notifications</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="welcome">Welcome</string>
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="find_workers">Find Workers</string>
+    <string name="post_job">Post a Job</string>
+    <string name="quotes_offers">Quotes &amp; Offers</string>
+    <string name="chat">Chat</string>
+    <string name="no_chats_yet">No conversations yet.\nStart a chat from Find Workers, Quotes, or a job.</string>
+    <string name="ratings">Ratings</string>
+    <string name="emergency">Emergency</string>
+    <string name="loading">Loading...</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <!-- Social auth: replace with your Firebase / Facebook Console values -->
+    <string name="default_web_client_id" translatable="false">YOUR_WEB_CLIENT_ID.apps.googleusercontent.com</string>
+    <string name="facebook_app_id" translatable="false">YOUR_FACEBOOK_APP_ID</string>
+    <string name="facebook_client_token" translatable="false">YOUR_FACEBOOK_CLIENT_TOKEN</string>
+    <string name="fb_login_protocol_scheme" translatable="false">fbYOUR_FACEBOOK_APP_ID</string>
+
+    <string name="auth_google_not_configured">Google Sign-In is not configured. In Firebase Console enable Google sign-in, download a new google-services.json, and sync the project.</string>
+    <string name="auth_facebook_not_configured">Facebook Sign-In is not configured. Add your Facebook App ID and Client Token in strings.xml and Firebase Authentication.</string>
+    <string name="auth_apple_hint">Apple Sign-In requires the Apple provider to be enabled in Firebase Authentication.</string>
+</resources>

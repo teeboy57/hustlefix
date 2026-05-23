@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="Home"
+            android:iconTint="@color/drawer_item_color" />
+
+        <item
+            android:id="@+id/nav_post_job"
+            android:icon="@drawable/ic_post_job"
+            android:title="Post a Job"
+            android:iconTint="@color/drawer_item_color" />
+
+        <item
+            android:id="@+id/nav_find_workers"
+            android:icon="@drawable/ic_find_workers"
+            android:title="Find Workers"
+            android:iconTint="@color/drawer_item_color" />
+
+        <item
+            android:id="@+id/nav_quotes"
+            android:icon="@drawable/ic_quotes"
+            android:title="Quotes &amp; Offers"
+            android:iconTint="@color/drawer_item_color" />
+
+        <item
+            android:id="@+id/nav_chat"
+            android:icon="@drawable/ic_chat"
+            android:title="Messages"
+            android:iconTint="@color/drawer_item_color" />
+
+        <item
+            android:id="@+id/nav_ratings"
+            android:icon="@drawable/ic_ratings"
+            android:title="Ratings &amp; Reviews"
+            android:iconTint="@color/drawer_item_color" />
+
+        <item
+            android:id="@+id/nav_emergency"
+            android:icon="@drawable/ic_emergency"
+            android:title="Emergency Request"
+            android:iconTint="@color/drawer_item_color" />
+
+    </group>
+
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="Settings"
+        android:iconTint="@color/drawer_item_color" />
+
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="Logout"
+        android:iconTint="@color/emergencyRed" />
+
+</menu>

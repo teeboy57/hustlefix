@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Core Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="darkGray">#616161</color>
+    <color name="mediumGray">#757575</color>
+    <color name="lightGray">#E0E0E0</color>
+    <color name="extraLightGray">#F5F5F5</color>
+
+    <!-- Brand Colors -->
+    <color name="primaryPurple">#667eea</color>
+    <color name="primaryDarkPurple">#5a67d8</color>
+    <color name="primaryLightPurple">#8B9DF5</color>
+    <color name="primaryColor">#667eea</color>
+    <color name="primaryDarkColor">#3700B3</color>
+    <color name="accentColor">#4ECDC4</color>
+
+    <!-- Teal Colors -->
+    <color name="accentTeal">#018786</color>
+    <color name="tealAccent">#4ECDC4</color>
+    <color name="teal_700">#00796B</color>
+    <color name="tealLight">#80DEEA</color>
+
+    <!-- Drawer Colors -->
+    <color name="drawer_item_color">#2C3E50</color>
+    <color name="drawer_item_selected">#667eea</color>
+
+    <!-- Text Colors -->
+    <color name="text_primary">#2C3E50</color>
+    <color name="text_secondary">#7F8C8D</color>
+    <color name="text_light">#95A5A6</color>
+    <color name="text_hint">#95A5A6</color>
+    <color name="text_white">#FFFFFF</color>
+    <color name="text_white_80">#CCFFFFFF</color>
+    <color name="text_white_60">#99FFFFFF</color>
+    <color name="text_white_40">#66FFFFFF</color>
+    <color name="text_white_20">#33FFFFFF</color>
+
+    <!-- Background Colors -->
+    <color name="bg_white">#FFFFFF</color>
+    <color name="bg_light">#F8F9FA</color>
+    <color name="bg_gray">#F0F2F5</color>
+    <color name="bg_dark">#1a1a2e</color>
+    <color name="bg_overlay">#20000000</color>
+    <color name="bg_transparent_white">#20FFFFFF</color>
+
+    <!-- Card Colors -->
+    <color name="card_white">#FFFFFF</color>
+    <color name="card_light">#FAFAFA</color>
+    <color name="card_dark">#2C3E50</color>
+
+    <!-- Button Colors -->
+    <color name="btn_primary">#667eea</color>
+    <color name="btn_primary_text">#FFFFFF</color>
+    <color name="btn_secondary">#4ECDC4</color>
+    <color name="btn_secondary_text">#FFFFFF</color>
+    <color name="btn_success">#2ECC71</color>
+    <color name="btn_success_text">#FFFFFF</color>
+    <color name="btn_danger">#FF4444</color>
+    <color name="btn_danger_text">#FFFFFF</color>
+    <color name="btn_warning">#F9B43A</color>
+    <color name="btn_warning_text">#2C3E50</color>
+    <color name="btn_disabled">#B0BEC5</color>
+
+    <!-- Status Colors -->
+    <color name="highlightOrange">#F9B43A</color>
+    <color name="orangeHighlight">#F9B43A</color>
+    <color name="successGreen">#2ECC71</color>
+    <color name="greenRating">#4CAF50</color>
+    <color name="emergencyRed">#FF4444</color>
+    <color name="errorRed">#FF3B30</color>
+    <color name="warningYellow">#FFC107</color>
+    <color name="infoBlue">#2196F3</color>
+    <color name="pending_orange">#F9B43A</color>
+    <color name="accepted_green">#2ECC71</color>
+    <color name="gray">#95A5A6</color>
+
+    <!-- Gradient Colors -->
+    <color name="gradient_start">#667eea</color>
+    <color name="gradient_end">#764ba2</color>
+    <color name="gradient_start_warm">#FF512F</color>
+    <color name="gradient_end_warm">#DD2476</color>
+    <color name="gradient_start_ocean">#00C9FF</color>
+    <color name="gradient_end_ocean">#92FE9D</color>
+
+    <!-- Divider Colors -->
+    <color name="divider_light">#E0E0E0</color>
+    <color name="divider_dark">#BDC3C7</color>
+
+    <!-- Rating Colors -->
+    <color name="rating_star">#F9B43A</color>
+    <color name="rating_star_gray">#E0E0E0</color>
+
+    <!-- Chat Colors -->
+    <color name="chat_background">#F5F5F5</color>
+    <color name="chat_sent_bubble">#667eea</color>
+    <color name="chat_received_bubble">#F0F0F0</color>
+    <color name="chat_sent_text">#FFFFFF</color>
+    <color name="chat_received_text">#2C3E50</color>
+    <color name="chat_timestamp_text">#95A5A6</color>
+    <color name="sent_message_bg">#667eea</color>
+    <color name="received_message_bg">#F0F0F0</color>
+
+    <!-- Status Badge Colors -->
+    <color name="badge_pending">#F9B43A</color>
+    <color name="badge_accepted">#2ECC71</color>
+    <color name="badge_declined">#FF4444</color>
+    <color name="badge_completed">#4ECDC4</color>
+    <color name="badge_in_progress">#667eea</color>
+    <color name="badge_text">#FFFFFF</color>
+
+    <!-- Status Indicators -->
+    <color name="online_green">#4CAF50</color>
+    <color name="offline_gray">#9E9E9E</color>
+</resources>

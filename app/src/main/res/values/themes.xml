@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.HustleFix" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryPurple</item>
+        <item name="colorPrimaryVariant">@color/primaryDarkPurple</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/tealAccent</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowBackground">@color/white</item>
+
+        <!-- Text colors for visibility -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+        <item name="android:editTextColor">@color/text_primary</item>
+        <item name="android:colorControlNormal">@color/primaryPurple</item>
+        <item name="android:colorControlActivated">@color/primaryPurple</item>
+    </style>
+
+    <style name="Theme.HustleFix.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryPurple</item>
+        <item name="colorPrimaryVariant">@color/primaryDarkPurple</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/tealAccent</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowBackground">@color/bg_dark</item>
+
+        <!-- Dark theme text colors -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/text_white_80</item>
+        <item name="android:textColorHint">@color/text_white_60</item>
+        <item name="android:editTextColor">@color/white</item>
+        <item name="android:colorControlNormal">@color/primaryLightPurple</item>
+        <item name="android:colorControlActivated">@color/primaryLightPurple</item>
+    </style>
+</resources>

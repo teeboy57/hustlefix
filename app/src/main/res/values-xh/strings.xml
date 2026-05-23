@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">HustleFix</string>
+    <string name="settings">Izicwangciso</string>
+    <string name="profile">Iprofayili</string>
+    <string name="edit_profile">Hlela Iprofayili</string>
+    <string name="save_changes">Gcina Utshintsho</string>
+    <string name="change_password">Tshintsha Igosi</string>
+    <string name="language">Ulwimi</string>
+    <string name="help_support">Uncedo &amp; Inkxaso</string>
+    <string name="about">Malunga</string>
+    <string name="privacy_policy">Umgaqo Wabucala</string>
+    <string name="logout">Phuma</string>
+    <string name="notifications">Izaziso</string>
+    <string name="dark_mode">Imowudi Emnyama</string>
+    <string name="welcome">Wamkelekile</string>
+    <string name="login">Ngena</string>
+    <string name="register">Bhalisa</string>
+    <string name="dashboard">Ideshibhodi</string>
+    <string name="find_workers">Fumana Abasebenzi</string>
+    <string name="post_job">Thumela Umsebenzi</string>
+    <string name="quotes_offers">Iikowuti &amp; Iziphakamiso</string>
+    <string name="chat">Incoko</string>
+    <string name="ratings">Imilinganiselo</string>
+    <string name="emergency">Imeko Engxamisekileyo</string>
+    <string name="loading">Iyalayisha...</string>
+    <string name="cancel">Rhoxisa</string>
+    <string name="ok">Kulungile</string>
+    <string name="yes">Ewe</string>
+    <string name="no">Hayi</string>
+</resources>
