@@ -60,4 +60,10 @@
     <color name="material_grey_700">#616161</color>
     <color name="material_grey_800">#424242</color>
     <color name="material_grey_900">#212121</color>
-</resources>
+    <color name="accentTeal">#03DAC5</color>
+    <color name="accentTealDark">#018786</color>
+    <color name="button_primary">#6200EE</color>
+    <color name="button_primary_dark">#3700B3</color>
+    <color name="error_red">#F44336</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="warning_yellow">#FFC107</color>
