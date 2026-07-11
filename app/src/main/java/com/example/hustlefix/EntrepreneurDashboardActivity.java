@@ -70,7 +70,7 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
         toolbar = findViewById(R.id.toolbar);
-        fabPostService = findViewById(R.id.fabPostJob);
+        fabPostService = findViewById(R.id.fabPostService);
 
         tvTotalServices = findViewById(R.id.tvTotalServices);
         tvTotalBookings = findViewById(R.id.tvTotalBookings);

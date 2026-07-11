@@ -151,7 +151,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="📋"
+                                android:text="ðŸ“‹"
                                 android:textSize="24sp" />
 
                             <TextView
@@ -197,7 +197,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="⚡"
+                                android:text="âš¡"
                                 android:textSize="24sp" />
 
                             <TextView
@@ -242,7 +242,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="✅"
+                                android:text="âœ…"
                                 android:textSize="24sp" />
 
                             <TextView
@@ -389,7 +389,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="➕"
+                                android:text="âž•"
                                 android:textSize="28sp" />
 
                             <TextView
@@ -438,7 +438,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🔍"
+                                android:text="ðŸ”"
                                 android:textSize="28sp" />
 
                             <TextView
@@ -486,7 +486,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="💰"
+                                android:text="ðŸ’°"
                                 android:textSize="28sp" />
 
                             <TextView
@@ -543,7 +543,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="💬"
+                                android:text="ðŸ’¬"
                                 android:textSize="28sp" />
 
                             <TextView
@@ -592,7 +592,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🚨"
+                                android:text="ðŸš¨"
                                 android:textSize="28sp" />
 
                             <TextView
@@ -640,7 +640,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="⭐"
+                                android:text="â­"
                                 android:textSize="28sp" />
 
                             <TextView
@@ -726,7 +726,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📭"
+                        android:text="ðŸ“­"
                         android:textSize="48sp"
                         android:alpha="0.7" />
 
@@ -784,4 +784,12 @@
         app:itemBackground="@android:color/transparent"
         app:itemIconPadding="12dp" />
 
-</androidx.drawerlayout.widget.DrawerLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabPostService"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_post_job"
+        app:backgroundTint="@color/purple_500"
+        app:tint="@android:color/white" />
