@@ -5,41 +5,35 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp"
-    android:background="@drawable/gradient_background">
+    android:background="@drawable/gradient_toolbar">
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        app:cardCornerRadius="35dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="#FFFFFF"
-        android:layout_marginBottom="12dp">
-
-        <ImageView
-            android:id="@+id/ivNavAvatar"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/ic_avatar_placeholder"
-            android:scaleType="centerCrop"
-            android:padding="16dp" />
-
-    </com.google.android.material.card.MaterialCardView>
+    <ImageView
+        android:id="@+id/ivNavAvatar"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/ic_avatar_entrepreneur"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp" />
 
     <TextView
         android:id="@+id/tvNavUserName"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="User Name"
-        android:textSize="16sp"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#FFFFFF" />
+        android:textColor="@android:color/white"
+        android:gravity="center"
+        android:layout_marginTop="8dp" />
 
     <TextView
         android:id="@+id/tvNavUserEmail"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="user@example.com"
-        android:textSize="12sp"
-        android:textColor="#CCFFFFFF" />
+        android:text="user@email.com"
+        android:textSize="14sp"
+        android:textColor="#E0E0E0"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
 
 </LinearLayout>

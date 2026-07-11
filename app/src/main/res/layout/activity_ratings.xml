@@ -4,487 +4,97 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/gradient_ratings_background">
+    android:background="#F5F7FA">
 
-    <!-- Header -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/gradient_toolbar"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:titleTextColor="@android:color/white"
+        app:title="Ratings and Reviews" />
+
+    <!-- Summary Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:background="#20FFFFFF">
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <ImageView
-                android:id="@+id/ivBack"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_back"
-                android:tint="#FFFFFF"
-                android:clickable="true"
-                android:focusable="true" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Ratings &amp; Reviews"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:textAlignment="center" />
-
-            <ImageView
-                android:id="@+id/ivHistory"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_history"
-                android:tint="#FFFFFF"
-                android:clickable="true"
-                android:focusable="true" />
-
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Rate workers you've hired"
-            android:textSize="13sp"
-            android:textColor="#CCFFFFFF"
-            android:layout_gravity="center" />
-
-    </LinearLayout>
-
-    <!-- My Average Rating Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="#20FFFFFF">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="16dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
             android:gravity="center">
 
-            <LinearLayout
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/tvAverageRating"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:text="0.0 Star"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#FFC107" />
 
-                <TextView
-                    android:id="@+id/tvAverageRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textSize="36sp"
-                    android:textStyle="bold"
-                    android:textColor="#F9B43A" />
-
-                <RatingBar
-                    android:id="@+id/rbAverageRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:numStars="5"
-                    android:stepSize="0.1"
-                    android:rating="0"
-                    android:isIndicator="true"
-                    android:progressTint="#F9B43A"
-                    android:progressBackgroundTint="#E0E0E0" />
-
-                <TextView
-                    android:id="@+id/tvTotalRatings"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 ratings"
-                    android:textSize="12sp"
-                    android:textColor="#CCFFFFFF" />
-
-            </LinearLayout>
-
-            <View
-                android:layout_width="1dp"
-                android:layout_height="50dp"
-                android:background="#80FFFFFF"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="5 ★"
-                        android:textSize="12sp"
-                        android:textColor="#FFFFFF" />
-
-                    <ProgressBar
-                        android:id="@+id/progress5"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="0dp"
-                        android:layout_weight="3"
-                        android:layout_height="6dp"
-                        android:progress="0"
-                        android:progressTint="#F9B43A"
-                        android:progressBackgroundTint="#E0E0E0" />
-
-                    <TextView
-                        android:id="@+id/tvCount5"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="11sp"
-                        android:textColor="#CCFFFFFF"
-                        android:layout_marginStart="8dp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="4 ★"
-                        android:textSize="12sp"
-                        android:textColor="#FFFFFF" />
-
-                    <ProgressBar
-                        android:id="@+id/progress4"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="0dp"
-                        android:layout_weight="3"
-                        android:layout_height="6dp"
-                        android:progress="0"
-                        android:progressTint="#F9B43A"
-                        android:progressBackgroundTint="#E0E0E0" />
-
-                    <TextView
-                        android:id="@+id/tvCount4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="11sp"
-                        android:textColor="#CCFFFFFF"
-                        android:layout_marginStart="8dp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="3 ★"
-                        android:textSize="12sp"
-                        android:textColor="#FFFFFF" />
-
-                    <ProgressBar
-                        android:id="@+id/progress3"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="0dp"
-                        android:layout_weight="3"
-                        android:layout_height="6dp"
-                        android:progress="0"
-                        android:progressTint="#F9B43A"
-                        android:progressBackgroundTint="#E0E0E0" />
-
-                    <TextView
-                        android:id="@+id/tvCount3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="11sp"
-                        android:textColor="#CCFFFFFF"
-                        android:layout_marginStart="8dp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="2 ★"
-                        android:textSize="12sp"
-                        android:textColor="#FFFFFF" />
-
-                    <ProgressBar
-                        android:id="@+id/progress2"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="0dp"
-                        android:layout_weight="3"
-                        android:layout_height="6dp"
-                        android:progress="0"
-                        android:progressTint="#F9B43A"
-                        android:progressBackgroundTint="#E0E0E0" />
-
-                    <TextView
-                        android:id="@+id/tvCount2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="11sp"
-                        android:textColor="#CCFFFFFF"
-                        android:layout_marginStart="8dp" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginTop="4dp">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="1 ★"
-                        android:textSize="12sp"
-                        android:textColor="#FFFFFF" />
-
-                    <ProgressBar
-                        android:id="@+id/progress1"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:layout_width="0dp"
-                        android:layout_weight="3"
-                        android:layout_height="6dp"
-                        android:progress="0"
-                        android:progressTint="#F9B43A"
-                        android:progressBackgroundTint="#E0E0E0" />
-
-                    <TextView
-                        android:id="@+id/tvCount1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0"
-                        android:textSize="11sp"
-                        android:textColor="#CCFFFFFF"
-                        android:layout_marginStart="8dp" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Rating Card -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="4dp"
-        app:cardBackgroundColor="#FFFFFF">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20dp">
-
-            <!-- Rate Your Experience -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Rate Your Experience"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#2C3E50"
-                android:layout_gravity="center"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Rating Bar -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:layout_marginBottom="16dp">
-
-                <RatingBar
-                    android:id="@+id/ratingBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:numStars="5"
-                    android:stepSize="1.0"
-                    android:rating="0"
-                    android:progressTint="#F9B43A"
-                    android:progressBackgroundTint="#E0E0E0" />
-
-                <TextView
-                    android:id="@+id/tvRatingLabel"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Tap to rate"
-                    android:textSize="12sp"
-                    android:textColor="#95A5A6"
-                    android:layout_marginTop="8dp" />
-
-            </LinearLayout>
-
-            <!-- Review Title -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Write a Review"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="#2C3E50"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Review Input -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:boxCornerRadiusTopStart="12dp"
-                app:boxCornerRadiusTopEnd="12dp"
-                app:boxCornerRadiusBottomStart="12dp"
-                app:boxCornerRadiusBottomEnd="12dp"
-                app:hintTextColor="#667eea"
-                app:boxStrokeColor="#667eea">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etReview"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Share your experience with this worker..."
-                    android:minLines="4"
-                    android:maxLines="6"
-                    android:gravity="top"
-                    android:inputType="textMultiLine"
-                    android:textColor="#2C3E50" />
-
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <!-- Anonymous Toggle -->
-            <com.google.android.material.checkbox.MaterialCheckBox
-                android:id="@+id/cbAnonymous"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Post anonymously"
-                android:textSize="13sp"
-                android:textColor="#7F8C8D"
-                android:layout_marginBottom="16dp" />
-
-            <!-- Submit Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSubmitRating"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="SUBMIT REVIEW"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:textAllCaps="false"
-                app:cornerRadius="26dp"
-                app:backgroundTint="#667eea"
-                android:elevation="2dp" />
-
-            <!-- Progress Bar -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone"
-                android:layout_marginTop="16dp" />
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
-
-    <!-- Recent Reviews Section -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Recent Reviews"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF" />
-
-            <TextView
-                android:id="@+id/tvViewAll"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="View All"
+                android:text="Average Rating"
                 android:textSize="12sp"
-                android:textColor="#CCFFFFFF" />
-
+                android:textColor="#757575" />
         </LinearLayout>
 
-        <!-- Reviews RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerReviews"
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:padding="4dp" />
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
 
+            <TextView
+                android:id="@+id/tvTotalReviews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0 reviews"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#6200EE" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Reviews"
+                android:textSize="12sp"
+                android:textColor="#757575" />
+        </LinearLayout>
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="No reviews yet"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textColor="#757575"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvReviews"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="8dp" />
 
 </LinearLayout>

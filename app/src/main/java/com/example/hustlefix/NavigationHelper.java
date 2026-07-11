@@ -19,11 +19,7 @@ import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-/**
- * Shared navigation drawer and menu handling for the app.
- */
 public final class NavigationHelper {
-
     private NavigationHelper() {}
 
     public static void setupDrawer(
@@ -31,7 +27,6 @@ public final class NavigationHelper {
             DrawerLayout drawerLayout,
             Toolbar toolbar,
             NavigationView navigationView) {
-
         if (drawerLayout == null || toolbar == null || navigationView == null) {
             return;
         }
@@ -58,6 +53,7 @@ public final class NavigationHelper {
         if (navigationView == null || navigationView.getHeaderView(0) == null) {
             return;
         }
+
         View header = navigationView.getHeaderView(0);
         TextView tvName = header.findViewById(R.id.tvNavUserName);
         TextView tvEmail = header.findViewById(R.id.tvNavUserEmail);
@@ -73,16 +69,20 @@ public final class NavigationHelper {
             if (tvName != null) tvName.setText(name);
             if (tvEmail != null) tvEmail.setText(user.getEmail());
         }
+
         if (ivAvatar != null) {
             ivAvatar.setImageResource(R.drawable.ic_avatar_placeholder);
         }
     }
 
     public static boolean handleNavigationItem(Activity activity, int itemId) {
+        // Home
         if (itemId == R.id.nav_home) {
             openHome(activity);
             return true;
         }
+
+        // Post Service
         if (itemId == R.id.nav_post_job) {
             activity.startActivity(new Intent(activity, PostServiceActivity.class));
             if (!(activity instanceof PostServiceActivity)) {
@@ -90,43 +90,37 @@ public final class NavigationHelper {
             }
             return true;
         }
-        if (itemId == R.id.nav_find_workers) {
-            activity.startActivity(new Intent(activity, FindWorkersActivity.class));
-            if (!(activity instanceof FindWorkersActivity)) {
-                activity.finish();
-            }
+
+        // My Services
+        if (itemId == R.id.nav_my_services) {
+            // Navigate to My Services
             return true;
         }
-        if (itemId == R.id.nav_quotes) {
-            activity.startActivity(new Intent(activity, QuotesActivity.class));
-            if (!(activity instanceof QuotesActivity)) {
-                activity.finish();
-            }
+
+        // My Bookings
+        if (itemId == R.id.nav_my_bookings) {
+            // Navigate to My Bookings
             return true;
         }
-        if (itemId == R.id.nav_chat) {
-            ChatLauncher.openChatList(activity);
+
+        // Analytics
+        if (itemId == R.id.nav_analytics) {
+            // Navigate to Analytics
             return true;
         }
-        if (itemId == R.id.nav_ratings) {
-            activity.startActivity(new Intent(activity, RatingsActivity.class));
-            if (!(activity instanceof RatingsActivity)) {
-                activity.finish();
-            }
-            return true;
-        }
-        if (itemId == R.id.nav_emergency) {
-            activity.startActivity(new Intent(activity, EmergencyRequestActivity.class));
-            return true;
-        }
+
+        // Settings
         if (itemId == R.id.nav_settings) {
             activity.startActivity(new Intent(activity, SettingsActivity.class));
             return true;
         }
+
+        // Logout
         if (itemId == R.id.nav_logout) {
             confirmLogout(activity);
             return true;
         }
+
         return false;
     }
 
@@ -145,22 +139,21 @@ public final class NavigationHelper {
 
     public static void confirmLogout(Activity activity) {
         new MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.logout)
+                .setTitle("Logout")
                 .setMessage("Are you sure you want to logout?")
-                .setPositiveButton(R.string.yes, (d, w) -> {
+                .setPositiveButton("Yes", (d, w) -> {
                     SessionHelper.logout(activity);
                     activity.finish();
                 })
-                .setNegativeButton(R.string.no, null)
+                .setNegativeButton("No", null)
                 .show();
     }
 
-    /** Toolbar menu (⋮) for screens without a drawer layout. */
     public static void showNavigationDialog(AppCompatActivity activity) {
         String role = SessionHelper.getRole(activity);
         String[] items = buildMenuLabels(role);
         new MaterialAlertDialogBuilder(activity)
-                .setTitle(R.string.dashboard)
+                .setTitle("Dashboard")
                 .setItems(items, (dialog, which) -> navigateByIndex(activity, which, role))
                 .show();
     }
@@ -168,13 +161,12 @@ public final class NavigationHelper {
     private static String[] buildMenuLabels(String role) {
         if ("ENTREPRENEUR".equals(role)) {
             return new String[]{
-                    "Home", "Post a Job", "Find Workers", "Quotes & Offers",
-                    "Messages", "Ratings", "Emergency", "Settings", "Logout"
+                    "Home", "Post a Service", "My Services", "My Bookings",
+                    "Analytics", "Settings", "Logout"
             };
         }
         return new String[]{
-                "Home", "Post a Job", "Find Workers", "Quotes & Offers",
-                "Messages", "Ratings", "Emergency", "Settings", "Logout"
+                "Home", "Find Services", "My Bookings", "Settings", "Logout"
         };
     }
 
@@ -187,24 +179,22 @@ public final class NavigationHelper {
                 activity.startActivity(new Intent(activity, PostServiceActivity.class));
                 break;
             case 2:
-                activity.startActivity(new Intent(activity, FindWorkersActivity.class));
+                // My Services or Find Services
                 break;
             case 3:
-                activity.startActivity(new Intent(activity, QuotesActivity.class));
+                // My Bookings
                 break;
             case 4:
-                ChatLauncher.openChatList(activity);
+                if ("ENTREPRENEUR".equals(role)) {
+                    // Analytics
+                } else {
+                    activity.startActivity(new Intent(activity, SettingsActivity.class));
+                }
                 break;
             case 5:
-                activity.startActivity(new Intent(activity, RatingsActivity.class));
-                break;
-            case 6:
-                activity.startActivity(new Intent(activity, EmergencyRequestActivity.class));
-                break;
-            case 7:
                 activity.startActivity(new Intent(activity, SettingsActivity.class));
                 break;
-            case 8:
+            case 6:
                 confirmLogout(activity);
                 break;
             default:

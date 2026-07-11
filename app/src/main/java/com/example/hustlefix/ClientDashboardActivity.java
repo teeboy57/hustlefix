@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -29,9 +28,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
-
 public class ClientDashboardActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
     // Views
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -45,7 +42,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
     private View emptyState;
     private MaterialButton btnEmptyPostJob;
     private TextView tvViewAll;
-
     // Firebase
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -53,21 +49,17 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
     private SharedPreferences sharedPreferences;
     private String userRole = "";
     private String currentUserId = "";
-
     // Data
     private List<Job> jobList;
     private JobAdapter jobAdapter;
     private ValueEventListener jobsListener;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_client_dashboard);
-
         sharedPreferences = SessionHelper.prefs(this);
         userRole = SessionHelper.getRole(this);
-
         initViews();
         setupToolbar();
         setupNavigationDrawer();
@@ -77,7 +69,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         loadJobs();
         updateNavHeader();
     }
-
     private void initViews() {
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
@@ -90,20 +81,16 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         tvActiveJobs = findViewById(R.id.tvActiveJobs);
         tvCompletedJobs = findViewById(R.id.tvCompletedJobs);
         tvViewAll = findViewById(R.id.tvViewAll);
-
         btnFindWorkers = findViewById(R.id.btnFindWorkers);
         btnQuotes = findViewById(R.id.btnQuotes);
         btnChat = findViewById(R.id.btnChat);
         btnRatings = findViewById(R.id.btnRatings);
         btnPostJob = findViewById(R.id.btnPostJob);
-
         recyclerJobs = findViewById(R.id.recyclerJobs);
         emptyState = findViewById(R.id.emptyState);
         btnEmptyPostJob = findViewById(R.id.btnEmptyPostJob);
-
         jobList = new ArrayList<>();
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -111,11 +98,9 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             getSupportActionBar().setTitle("Client Dashboard");
         }
     }
-
     private void setupNavigationDrawer() {
         NavigationHelper.setupDrawer(this, drawerLayout, toolbar, navigationView);
     }
-
     private void updateNavHeader() {
         if (navigationView != null && navigationView.getHeaderView(0) != null) {
             View headerView = navigationView.getHeaderView(0);
@@ -136,12 +121,10 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             }
         }
     }
-
     private void setupFirebase() {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference();
-
         if (currentUser != null) {
             currentUserId = currentUser.getUid();
         } else {
@@ -149,10 +132,8 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             finish();
         }
     }
-
     private void loadUserData() {
         if (currentUser == null) return;
-
         String userName = currentUser.getDisplayName();
         if (userName == null || userName.isEmpty()) {
             String email = currentUser.getEmail();
@@ -163,7 +144,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             }
         }
         tvUserName.setText(userName);
-
         java.util.Calendar calendar = java.util.Calendar.getInstance();
         int hour = calendar.get(java.util.Calendar.HOUR_OF_DAY);
         if (hour < 12) {
@@ -174,45 +154,36 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             tvGreeting.setText("Good Evening!");
         }
     }
-
     private void setupClickListeners() {
         btnFindWorkers.setOnClickListener(v -> {
             Intent intent = new Intent(ClientDashboardActivity.this, FindWorkersActivity.class);
             startActivity(intent);
         });
-
         btnQuotes.setOnClickListener(v -> {
             Intent intent = new Intent(ClientDashboardActivity.this, QuotesActivity.class);
             startActivity(intent);
         });
-
         btnChat.setOnClickListener(v -> ChatLauncher.openChatList(ClientDashboardActivity.this));
-
         btnRatings.setOnClickListener(v -> {
             Intent intent = new Intent(ClientDashboardActivity.this, RatingsActivity.class);
             startActivity(intent);
         });
-
         MaterialCardView btnEmergency = findViewById(R.id.btnEmergency);
         if (btnEmergency != null) {
             btnEmergency.setOnClickListener(v ->
                     startActivity(new Intent(ClientDashboardActivity.this, EmergencyRequestActivity.class)));
         }
-
         btnPostJob.setOnClickListener(v -> {
             Intent intent = new Intent(ClientDashboardActivity.this, PostServiceActivity.class);
             startActivity(intent);
         });
-
         btnEmptyPostJob.setOnClickListener(v -> {
             Intent intent = new Intent(ClientDashboardActivity.this, PostServiceActivity.class);
             startActivity(intent);
         });
-
         cardNotifications.setOnClickListener(v -> {
             Toast.makeText(this, "Notifications coming soon!", Toast.LENGTH_SHORT).show();
         });
-
         tvViewAll.setOnClickListener(v -> {
             if (jobList != null && !jobList.isEmpty()) {
                 showAllJobsDialog();
@@ -221,41 +192,33 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             }
         });
     }
-
     private void loadJobs() {
         if (currentUserId == null) return;
-
         recyclerJobs.setLayoutManager(new LinearLayoutManager(this));
         jobAdapter = new JobAdapter(jobList, currentUserId, userRole);
         recyclerJobs.setAdapter(jobAdapter);
-
         jobAdapter.setOnJobActionListener(new JobAdapter.OnJobActionListener() {
             @Override
             public void onViewDetails(Job job) {
                 showJobDetailsDialog(job);
             }
-
             @Override
             public void onApply(Job job) {
                 Toast.makeText(ClientDashboardActivity.this, "You posted this job", Toast.LENGTH_SHORT).show();
             }
-
             @Override
             public void onDelete(Job job) {
                 deleteJob(job);
             }
-
             @Override
             public void onChat(Job job) {
                 ChatLauncher.openChatForJob(ClientDashboardActivity.this, job);
             }
-
             @Override
             public void onViewApplications(Job job) {
                 ApplicationsHelper.showApplicationsForJob(ClientDashboardActivity.this, job);
             }
         });
-
         jobsListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -263,7 +226,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                 int totalJobs = 0;
                 int activeJobs = 0;
                 int completedJobs = 0;
-
                 for (DataSnapshot jobSnapshot : snapshot.getChildren()) {
                     try {
                         Job job = jobSnapshot.getValue(Job.class);
@@ -271,7 +233,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                             job.setJobId(jobSnapshot.getKey());
                             jobList.add(job);
                             totalJobs++;
-
                             if ("completed".equals(job.getStatus())) {
                                 completedJobs++;
                             } else if ("open".equals(job.getStatus()) || "in_progress".equals(job.getStatus())) {
@@ -282,15 +243,12 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                         e.printStackTrace();
                     }
                 }
-
                 tvJobsPosted.setText(String.valueOf(totalJobs));
                 tvActiveJobs.setText(String.valueOf(activeJobs));
                 tvCompletedJobs.setText(String.valueOf(completedJobs));
-
                 if (jobAdapter != null) {
                     jobAdapter.updateList(jobList);
                 }
-
                 if (jobList.isEmpty()) {
                     recyclerJobs.setVisibility(View.GONE);
                     emptyState.setVisibility(View.VISIBLE);
@@ -299,20 +257,17 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                     emptyState.setVisibility(View.GONE);
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(ClientDashboardActivity.this,
                         "Failed to load jobs: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         };
-
         databaseReference.child("jobs")
                 .orderByChild("postedBy")
                 .equalTo(currentUserId)
                 .addValueEventListener(jobsListener);
     }
-
     private void showJobDetailsDialog(Job job) {
         new MaterialAlertDialogBuilder(this)
                 .setTitle(job.getTitle())
@@ -327,7 +282,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                 .setNeutralButton("Applications", (dialog, which) -> ApplicationsHelper.showApplicationsForJob(ClientDashboardActivity.this, job))
                 .show();
     }
-
     private void showAllJobsDialog() {
         StringBuilder allJobs = new StringBuilder();
         for (int i = 0; i < Math.min(jobList.size(), 10); i++) {
@@ -336,7 +290,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                     .append(" - ").append(job.getFormattedBudget())
                     .append(" (").append(job.getStatus()).append(")\n");
         }
-
         new MaterialAlertDialogBuilder(this)
                 .setTitle("My Jobs (" + jobList.size() + ")")
                 .setMessage(allJobs.toString())
@@ -346,13 +299,11 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                 })
                 .show();
     }
-
     private void deleteJob(Job job) {
         if (!job.isOwner(currentUserId)) {
             Toast.makeText(this, "You can only delete your own jobs", Toast.LENGTH_SHORT).show();
             return;
         }
-
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Delete Job")
                 .setMessage("Delete " + job.getTitle() + "?")
@@ -366,11 +317,9 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
     private void startChatWithUser(String userId, String userName) {
         ChatLauncher.openChat(this, userId, userName);
     }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.nav_logout) {
@@ -379,7 +328,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         }
         return NavigationHelper.handleNavigationItem(this, item.getItemId());
     }
-
     private void logout() {
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Logout")
@@ -394,7 +342,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                 .setNegativeButton("No", null)
                 .show();
     }
-
     @Override
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -403,7 +350,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             super.onBackPressed();
         }
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -411,7 +357,6 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             databaseReference.child("jobs").removeEventListener(jobsListener);
         }
     }
-
     @Override
     protected void onResume() {
         super.onResume();

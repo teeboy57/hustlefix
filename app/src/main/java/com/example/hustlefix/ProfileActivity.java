@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -32,14 +31,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-
 import java.util.HashMap;
 import java.util.Map;
-
 public class ProfileActivity extends AppCompatActivity {
-
     private static final int PICK_IMAGE_REQUEST = 1;
-
     // Views
     private Toolbar toolbar;
     private ImageView ivProfileImage;
@@ -47,30 +42,25 @@ public class ProfileActivity extends AppCompatActivity {
     private TextInputEditText etDisplayName, etEmail, etPhone, etLocation;
     private MaterialButton btnSave, btnChangePassword;
     private ProgressBar progressBar;
-
     // Firebase
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private DatabaseReference databaseReference;
     private StorageReference storageReference;
-
     // Image URI
     private Uri imageUri;
     private String currentPhotoUrl;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
-
         initViews();
         setupToolbar();
         setupFirebase();
         loadUserData();
         setupClickListeners();
     }
-
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         ivProfileImage = findViewById(R.id.ivProfileImage);
@@ -83,7 +73,6 @@ public class ProfileActivity extends AppCompatActivity {
         btnChangePassword = findViewById(R.id.btnChangePassword);
         progressBar = findViewById(R.id.progressBar);
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -92,14 +81,12 @@ public class ProfileActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
     }
-
     private void setupFirebase() {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
         storageReference = FirebaseStorage.getInstance().getReference("profile_images");
     }
-
     private void loadUserData() {
         if (currentUser != null) {
             // Display Name
@@ -107,14 +94,12 @@ public class ProfileActivity extends AppCompatActivity {
             if (displayName != null && !displayName.isEmpty()) {
                 etDisplayName.setText(displayName);
             }
-
             // Email
             String email = currentUser.getEmail();
             if (email != null) {
                 etEmail.setText(email);
                 etEmail.setEnabled(false); // Email cannot be changed
             }
-
             // Load additional data from Realtime Database
             databaseReference.child(currentUser.getUid()).addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
                 @Override
@@ -122,7 +107,6 @@ public class ProfileActivity extends AppCompatActivity {
                     String phone = snapshot.child("phone").getValue(String.class);
                     String location = snapshot.child("location").getValue(String.class);
                     String photoUrl = snapshot.child("profileImage").getValue(String.class);
-
                     if (phone != null) etPhone.setText(phone);
                     if (location != null) etLocation.setText(location);
                     if (photoUrl != null && !photoUrl.isEmpty()) {
@@ -134,7 +118,6 @@ public class ProfileActivity extends AppCompatActivity {
                                 .into(ivProfileImage);
                     }
                 }
-
                 @Override
                 public void onCancelled(@NonNull com.google.firebase.database.DatabaseError error) {
                     Toast.makeText(ProfileActivity.this, "Failed to load profile data", Toast.LENGTH_SHORT).show();
@@ -142,15 +125,11 @@ public class ProfileActivity extends AppCompatActivity {
             });
         }
     }
-
     private void setupClickListeners() {
         tvChangePhoto.setOnClickListener(v -> showImagePickerDialog());
-
         btnSave.setOnClickListener(v -> saveProfile());
-
         btnChangePassword.setOnClickListener(v -> showChangePasswordDialog());
     }
-
     private void showImagePickerDialog() {
         String[] options = {"Take Photo", "Choose from Gallery", "Remove Photo"};
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -179,18 +158,15 @@ public class ProfileActivity extends AppCompatActivity {
                 })
                 .show();
     }
-
     private void removeProfilePhoto() {
         ivProfileImage.setImageResource(R.drawable.ic_profile_default);
         imageUri = null;
         currentPhotoUrl = null;
         Toast.makeText(this, "Photo removed", Toast.LENGTH_SHORT).show();
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             imageUri = data.getData();
             ivProfileImage.setImageURI(imageUri);
@@ -209,20 +185,16 @@ public class ProfileActivity extends AppCompatActivity {
             }
         }
     }
-
     private void saveProfile() {
         String displayName = etDisplayName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         String location = etLocation.getText().toString().trim();
-
         if (TextUtils.isEmpty(displayName)) {
             etDisplayName.setError("Name is required");
             etDisplayName.requestFocus();
             return;
         }
-
         setLoading(true);
-
         // Update Firebase Auth profile
         if (currentUser != null && !displayName.equals(currentUser.getDisplayName())) {
             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
@@ -230,7 +202,6 @@ public class ProfileActivity extends AppCompatActivity {
                     .build();
             currentUser.updateProfile(profileUpdates);
         }
-
         // Upload image if selected
         if (imageUri != null) {
             uploadImageAndSave(displayName, phone, location);
@@ -238,10 +209,8 @@ public class ProfileActivity extends AppCompatActivity {
             saveUserDataToDatabase(displayName, phone, location, currentPhotoUrl);
         }
     }
-
     private void uploadImageAndSave(String displayName, String phone, String location) {
         final StorageReference fileReference = storageReference.child(currentUser.getUid() + ".jpg");
-
         fileReference.putFile(imageUri)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
@@ -264,7 +233,6 @@ public class ProfileActivity extends AppCompatActivity {
                     }
                 });
     }
-
     private void saveUserDataToDatabase(String displayName, String phone, String location, String photoUrl) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", displayName);
@@ -273,7 +241,6 @@ public class ProfileActivity extends AppCompatActivity {
         if (photoUrl != null && !photoUrl.isEmpty()) {
             updates.put("profileImage", photoUrl);
         }
-
         databaseReference.child(currentUser.getUid()).updateChildren(updates)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -288,13 +255,11 @@ public class ProfileActivity extends AppCompatActivity {
                     }
                 });
     }
-
     private void showChangePasswordDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_change_password, null);
         EditText etCurrentPassword = dialogView.findViewById(R.id.etCurrentPassword);
         EditText etNewPassword = dialogView.findViewById(R.id.etNewPassword);
         EditText etConfirmPassword = dialogView.findViewById(R.id.etConfirmPassword);
-
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Change Password")
                 .setView(dialogView)
@@ -302,7 +267,6 @@ public class ProfileActivity extends AppCompatActivity {
                     String currentPwd = etCurrentPassword.getText().toString().trim();
                     String newPwd = etNewPassword.getText().toString().trim();
                     String confirmPwd = etConfirmPassword.getText().toString().trim();
-
                     if (TextUtils.isEmpty(currentPwd)) {
                         Toast.makeText(this, "Enter current password", Toast.LENGTH_SHORT).show();
                         return;
@@ -315,22 +279,18 @@ public class ProfileActivity extends AppCompatActivity {
                         Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     changePassword(currentPwd, newPwd);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
     private void changePassword(String currentPassword, String newPassword) {
         setLoading(true);
-
         // Re-authenticate user
         FirebaseUser user = mAuth.getCurrentUser();
         if (user != null && user.getEmail() != null) {
             com.google.firebase.auth.AuthCredential credential = com.google.firebase.auth.EmailAuthProvider
                     .getCredential(user.getEmail(), currentPassword);
-
             user.reauthenticate(credential)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -356,7 +316,6 @@ public class ProfileActivity extends AppCompatActivity {
                     });
         }
     }
-
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         btnSave.setEnabled(!isLoading);

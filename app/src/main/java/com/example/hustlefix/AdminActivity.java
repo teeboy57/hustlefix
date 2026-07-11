@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -14,34 +13,28 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 public class AdminActivity extends AppCompatActivity {
-
     private Button btnAddWorkers, btnClearWorkers;
     private ProgressBar progressBar;
     private DatabaseReference usersRef;
     private Toolbar toolbar;
     private int workersAdded = 0;
     private final int TOTAL_WORKERS = 8;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin);
-
         initViews();
         setupToolbar();
         setupFirebase();
         setupClickListeners();
     }
-
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         btnAddWorkers = findViewById(R.id.btnAddWorkers);
         btnClearWorkers = findViewById(R.id.btnClearWorkers);
         progressBar = findViewById(R.id.progressBar);
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -50,22 +43,18 @@ public class AdminActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
     }
-
     private void setupFirebase() {
         usersRef = FirebaseDatabase.getInstance().getReference("users");
     }
-
     private void setupClickListeners() {
         btnAddWorkers.setOnClickListener(v -> addSampleWorkers());
         btnClearWorkers.setOnClickListener(v -> confirmClearAllWorkers());
     }
-
     private void addSampleWorkers() {
         progressBar.setVisibility(View.VISIBLE);
         btnAddWorkers.setEnabled(false);
         btnClearWorkers.setEnabled(false);
         workersAdded = 0;
-
         // Worker 1: Plumber
         Worker worker1 = new Worker();
         worker1.setName("John Smith");
@@ -82,7 +71,6 @@ public class AdminActivity extends AppCompatActivity {
         worker1.setAbout("Expert plumber with 8 years experience. Specializing in residential and commercial plumbing.");
         worker1.setAvailable(true);
         worker1.setAvailability("Monday - Saturday, 8am - 6pm");
-
         // Worker 2: Electrician
         Worker worker2 = new Worker();
         worker2.setName("Sarah Johnson");
@@ -99,7 +87,6 @@ public class AdminActivity extends AppCompatActivity {
         worker2.setAbout("Certified electrician with 5 years experience. Specializes in home wiring and installations.");
         worker2.setAvailable(true);
         worker2.setAvailability("Monday - Friday, 9am - 5pm");
-
         // Worker 3: Carpenter
         Worker worker3 = new Worker();
         worker3.setName("Mike Peterson");
@@ -116,7 +103,6 @@ public class AdminActivity extends AppCompatActivity {
         worker3.setAbout("Master carpenter with 10 years experience. Custom furniture and renovations.");
         worker3.setAvailable(true);
         worker3.setAvailability("Monday - Friday, 7am - 7pm");
-
         // Worker 4: Painter
         Worker worker4 = new Worker();
         worker4.setName("Linda Ndlovu");
@@ -133,7 +119,6 @@ public class AdminActivity extends AppCompatActivity {
         worker4.setAbout("Professional painter, interior and exterior specialist.");
         worker4.setAvailable(true);
         worker4.setAvailability("Monday - Saturday, 8am - 5pm");
-
         // Worker 5: Cleaner
         Worker worker5 = new Worker();
         worker5.setName("Thabo Molefe");
@@ -150,7 +135,6 @@ public class AdminActivity extends AppCompatActivity {
         worker5.setAbout("Deep cleaning, office cleaning, and home cleaning services.");
         worker5.setAvailable(true);
         worker5.setAvailability("Monday - Sunday, 6am - 9pm");
-
         // Worker 6: Mechanic
         Worker worker6 = new Worker();
         worker6.setName("David Mbeki");
@@ -167,7 +151,6 @@ public class AdminActivity extends AppCompatActivity {
         worker6.setAbout("Certified mechanic. Car repairs, diagnostics, and maintenance.");
         worker6.setAvailable(true);
         worker6.setAvailability("Monday - Saturday, 8am - 6pm");
-
         // Worker 7: Gardener
         Worker worker7 = new Worker();
         worker7.setName("Grace Mkhize");
@@ -184,7 +167,6 @@ public class AdminActivity extends AppCompatActivity {
         worker7.setAbout("Professional gardener. Lawn mowing, tree trimming, garden design.");
         worker7.setAvailable(true);
         worker7.setAvailability("Wednesday - Sunday, 7am - 4pm");
-
         // Worker 8: IT Support
         Worker worker8 = new Worker();
         worker8.setName("Peter van der Merwe");
@@ -201,7 +183,6 @@ public class AdminActivity extends AppCompatActivity {
         worker8.setAbout("IT specialist. Computer repairs, networking, and software installation.");
         worker8.setAvailable(true);
         worker8.setAvailability("Monday - Friday, 9am - 6pm");
-
         saveWorkerToFirebase("worker_john", worker1);
         saveWorkerToFirebase("worker_sarah", worker2);
         saveWorkerToFirebase("worker_mike", worker3);
@@ -211,7 +192,6 @@ public class AdminActivity extends AppCompatActivity {
         saveWorkerToFirebase("worker_grace", worker7);
         saveWorkerToFirebase("worker_peter", worker8);
     }
-
     private void saveWorkerToFirebase(String key, Worker worker) {
         usersRef.child(key).setValue(worker)
                 .addOnSuccessListener(aVoid -> {
@@ -231,7 +211,6 @@ public class AdminActivity extends AppCompatActivity {
                     Toast.makeText(AdminActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-
     private void confirmClearAllWorkers() {
         new AlertDialog.Builder(this)
                 .setTitle("Clear All Workers")
@@ -240,12 +219,10 @@ public class AdminActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
     private void clearAllWorkers() {
         progressBar.setVisibility(View.VISIBLE);
         btnAddWorkers.setEnabled(false);
         btnClearWorkers.setEnabled(false);
-
         usersRef.orderByChild("role").equalTo("worker")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -261,7 +238,6 @@ public class AdminActivity extends AppCompatActivity {
                         Toast.makeText(AdminActivity.this,
                                 deletedCount + " workers deleted successfully", Toast.LENGTH_LONG).show();
                     }
-
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         progressBar.setVisibility(View.GONE);

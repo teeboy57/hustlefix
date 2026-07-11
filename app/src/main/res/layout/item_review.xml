@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
+    app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
     <LinearLayout
@@ -16,76 +16,54 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tvReviewerName"
+                android:id="@+id/tvClientName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="User Name"
-                android:textSize="14sp"
+                android:text="Client Name"
+                android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#2C3E50" />
+                android:textColor="#212121" />
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvRating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <RatingBar
-                    android:id="@+id/rbRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:numStars="5"
-                    android:stepSize="0.5"
-                    android:isIndicator="true"
-                    style="?android:attr/ratingBarStyleSmall" />
-
-                <TextView
-                    android:id="@+id/tvRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="4.5"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#F9B43A"
-                    android:layout_marginStart="4dp" />
-
-            </LinearLayout>
-
+                android:text="5.0 ★"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#FFC107" />
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tvJobTitle"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvServiceTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Job Title"
-            android:textSize="12sp"
-            android:textColor="#667eea"
+            android:text="Service: Title"
+            android:textSize="14sp"
+            android:textColor="#6200EE"
             android:layout_marginTop="4dp" />
 
         <TextView
-            android:id="@+id/tvReview"
+            android:id="@+id/tvComment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Review text goes here"
-            android:textSize="13sp"
-            android:textColor="#7F8C8D"
-            android:layout_marginTop="8dp"
-            android:lineSpacingExtra="4dp" />
+            android:text="Review comment goes here"
+            android:textSize="14sp"
+            android:textColor="#757575"
+            android:layout_marginTop="8dp" />
 
         <TextView
             android:id="@+id/tvDate"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="2 days ago"
-            android:textSize="11sp"
-            android:textColor="#95A5A6"
+            android:text="Date"
+            android:textSize="12sp"
+            android:textColor="#999999"
             android:layout_marginTop="8dp" />
 
     </LinearLayout>
-
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>

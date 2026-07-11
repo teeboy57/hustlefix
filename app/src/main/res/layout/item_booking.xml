@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,21 +13,30 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvBookingTitle"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Service Title"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvBookingBudget"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="$0"
-            android:textSize="16sp"
-            android:textColor="@android:color/holo_green_dark" />
+            <TextView
+                android:id="@+id/tvBookingTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Service Title"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#212121" />
+
+            <TextView
+                android:id="@+id/tvBookingStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pending"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:padding="4dp" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -36,25 +45,22 @@
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tvBookingStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="4dp"
-                android:text="Status"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <View
+                android:id="@+id/tvBookingBudget"
                 android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="$0.00"
+                android:textSize="14sp"
+                android:textColor="#6200EE"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvBookingDeadline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Date"
-                android:textSize="14sp" />
+                android:textSize="12sp"
+                android:textColor="#757575" />
         </LinearLayout>
 
         <TextView
@@ -64,7 +70,7 @@
             android:layout_marginTop="4dp"
             android:text="Client: Name"
             android:textSize="14sp"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="#757575" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

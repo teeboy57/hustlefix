@@ -12,11 +12,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.checkbox.MaterialCheckBox;
@@ -25,7 +20,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class LoginActivity extends AppCompatActivity {
-
     private static final String TAG = "LoginActivity";
     private FirebaseAuth mAuth;
     private TextInputEditText etEmail, etPassword;
@@ -36,7 +30,6 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private SharedPreferences sharedPreferences;
     private String userRole = "";
-    private CallbackManager facebookCallbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +38,6 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
-        facebookCallbackManager = CallbackManager.Factory.create();
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("ROLE")) {
@@ -57,35 +49,12 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         initViews();
-        setupFacebookCallback();
         loadSavedCredentials();
         setupClickListeners();
         checkAlreadyLoggedIn();
-    }
-
-    private void setupFacebookCallback() {
-        LoginManager.getInstance().registerCallback(facebookCallbackManager, new FacebookCallback<LoginResult>() {
-            @Override
-            public void onSuccess(LoginResult loginResult) {
-                AuthHelper.handleFacebookAccessToken(
-                        LoginActivity.this,
-                        loginResult.getAccessToken(),
-                        userRole,
-                        authCallback());
-            }
-
-            @Override
-            public void onCancel() {
-                setLoading(false);
-                Toast.makeText(LoginActivity.this, "Facebook sign-in cancelled", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onError(@NonNull FacebookException error) {
-                setLoading(false);
-                Toast.makeText(LoginActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        
+        // Hide Facebook login button
+        cardFacebookLogin.setVisibility(View.GONE);
     }
 
     private void initViews() {
@@ -133,52 +102,17 @@ public class LoginActivity extends AppCompatActivity {
 
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
 
-        cardGoogleLogin.setOnClickListener(v -> startGoogleSignIn());
-        cardFacebookLogin.setOnClickListener(v -> startFacebookSignIn());
-        cardAppleLogin.setOnClickListener(v -> startAppleSignIn());
-    }
+        cardGoogleLogin.setOnClickListener(v -> {
+            Toast.makeText(this, "Google Sign-In coming soon", Toast.LENGTH_SHORT).show();
+        });
 
-    private void startGoogleSignIn() {
-        setLoading(true);
-        AuthHelper.signInWithGoogle(this, userRole, authCallback());
-    }
+        cardFacebookLogin.setOnClickListener(v -> {
+            Toast.makeText(this, "Facebook Sign-In coming soon", Toast.LENGTH_SHORT).show();
+        });
 
-    private void startFacebookSignIn() {
-        if (!AuthHelper.isFacebookConfigured(this)) {
-            Toast.makeText(this, R.string.auth_facebook_not_configured, Toast.LENGTH_LONG).show();
-            return;
-        }
-        setLoading(true);
-        AuthHelper.signInWithFacebook(this, authCallback());
-    }
-
-    private void startAppleSignIn() {
-        setLoading(true);
-        AuthHelper.signInWithApple(this, userRole, authCallback());
-    }
-
-    private AuthHelper.AuthCallback authCallback() {
-        return new AuthHelper.AuthCallback() {
-            @Override
-            public void onSuccess() {
-                setLoading(false);
-                Toast.makeText(LoginActivity.this, "Signed in successfully", Toast.LENGTH_SHORT).show();
-                navigateToDashboard(userRole);
-            }
-
-            @Override
-            public void onError(String message) {
-                setLoading(false);
-                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
-            }
-        };
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        facebookCallbackManager.onActivityResult(requestCode, resultCode, data);
-        AuthHelper.handleGoogleSignInResult(this, requestCode, resultCode, data, userRole, authCallback());
-        super.onActivityResult(requestCode, resultCode, data);
+        cardAppleLogin.setOnClickListener(v -> {
+            Toast.makeText(this, "Apple Sign-In coming soon", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void loginUser() {
@@ -227,6 +161,7 @@ public class LoginActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         SessionHelper.setLoggedIn(LoginActivity.this, true);
                         SessionHelper.saveRole(LoginActivity.this, userRole);
+
                         editor.putBoolean("isLoggedIn", true);
                         editor.putString("userRole", userRole);
                         editor.putString("userEmail", email);
@@ -291,6 +226,7 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             }
         });
+
         builder.setNegativeButton("Cancel", null);
         builder.show();
     }

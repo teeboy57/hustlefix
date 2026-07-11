@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -17,17 +16,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import androidx.annotation.NonNull;
-
 public class SendQuoteActivity extends AppCompatActivity {
-
     private Toolbar toolbar;
     private TextView tvJobTitle, tvJobBudget, tvJobDescription;
     private EditText etQuoteAmount, etTimeline, etMessage;
     private Button btnSendQuote;
     private ProgressBar progressBar;
-
     private DatabaseReference quotesRef;
     private FirebaseUser currentUser;
     private String jobId;
@@ -37,13 +32,11 @@ public class SendQuoteActivity extends AppCompatActivity {
     private String clientId;
     private String clientName;
     private String workerDisplayName = "Worker";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_quote);
-
         jobId = getIntent().getStringExtra("job_id");
         if (jobId == null) {
             jobId = getIntent().getStringExtra("jobId");
@@ -53,20 +46,17 @@ public class SendQuoteActivity extends AppCompatActivity {
         jobBudget = getIntent().getDoubleExtra("job_budget", 0);
         clientId = getIntent().getStringExtra("client_id");
         clientName = getIntent().getStringExtra("client_name");
-
         if (jobId == null) {
             Toast.makeText(this, "Job not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-
         initViews();
         setupToolbar();
         setupFirebase();
         displayJobInfo();
         setupClickListeners();
     }
-
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         tvJobTitle = findViewById(R.id.tvJobTitle);
@@ -78,7 +68,6 @@ public class SendQuoteActivity extends AppCompatActivity {
         btnSendQuote = findViewById(R.id.btnSendQuote);
         progressBar = findViewById(R.id.progressBar);
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -87,21 +76,17 @@ public class SendQuoteActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
     }
-
     private void setupFirebase() {
         quotesRef = FirebaseDatabase.getInstance().getReference("quotes");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
         if (currentUser == null) {
             Toast.makeText(this, "Please login", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-
         if (currentUser.getDisplayName() != null && !currentUser.getDisplayName().isEmpty()) {
             workerDisplayName = currentUser.getDisplayName();
         }
-
         FirebaseDatabase.getInstance().getReference("users")
                 .child(currentUser.getUid())
                 .child("name")
@@ -113,35 +98,28 @@ public class SendQuoteActivity extends AppCompatActivity {
                             workerDisplayName = name;
                         }
                     }
-
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {}
                 });
     }
-
     private void displayJobInfo() {
         tvJobTitle.setText(jobTitle != null ? jobTitle : "Unknown Job");
         tvJobBudget.setText(String.format("Budget: R%.2f", jobBudget));
         tvJobDescription.setText(jobDescription != null ? jobDescription : "No description provided");
-
         // Suggest a quote amount
         etQuoteAmount.setText(String.valueOf(jobBudget * 0.9));
     }
-
     private void setupClickListeners() {
         btnSendQuote.setOnClickListener(v -> sendQuote());
     }
-
     private void sendQuote() {
         String amountStr = etQuoteAmount.getText().toString().trim();
         String timeline = etTimeline.getText().toString().trim();
         String message = etMessage.getText().toString().trim();
-
         if (TextUtils.isEmpty(amountStr)) {
             etQuoteAmount.setError("Amount is required");
             return;
         }
-
         double amount;
         try {
             amount = Double.parseDouble(amountStr);
@@ -153,21 +131,17 @@ public class SendQuoteActivity extends AppCompatActivity {
             etQuoteAmount.setError("Invalid amount");
             return;
         }
-
         if (TextUtils.isEmpty(timeline)) {
             etTimeline.setError("Timeline is required");
             return;
         }
-
         setLoading(true);
-
         String quoteId = quotesRef.push().getKey();
         if (quoteId == null) {
             setLoading(false);
             Toast.makeText(this, "Failed to create quote", Toast.LENGTH_SHORT).show();
             return;
         }
-
         Quote quote = new Quote(
                 jobId, jobTitle,
                 currentUser.getUid(), workerDisplayName,
@@ -175,7 +149,6 @@ public class SendQuoteActivity extends AppCompatActivity {
                 message, amount, timeline
         );
         quote.setId(quoteId);
-
         quotesRef.child(quoteId).setValue(quote)
                 .addOnSuccessListener(aVoid -> {
                     ApplicationsHelper.saveApplicationForQuote(quote);
@@ -190,7 +163,6 @@ public class SendQuoteActivity extends AppCompatActivity {
                             "Failed to send quote: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         btnSendQuote.setEnabled(!isLoading);

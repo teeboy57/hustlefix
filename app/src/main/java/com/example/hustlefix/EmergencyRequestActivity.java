@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -38,12 +37,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-
 public class EmergencyRequestActivity extends AppCompatActivity {
-
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private static final int CALL_PERMISSION_REQUEST_CODE = 1002;
-
     private Toolbar toolbar;
     private ChipGroup chipGroupEmergencyType;
     private EditText etDescription;
@@ -54,26 +50,21 @@ public class EmergencyRequestActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private View cardSuccess;
     private Button btnCallPolice, btnCallAmbulance, btnCallFire;
-
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
     private LocationRequest locationRequest;
-
     private DatabaseReference emergencyRef;
     private FirebaseUser currentUser;
-
     private String selectedEmergencyType = "";
     private double currentLatitude = 0;
     private double currentLongitude = 0;
     private String currentAddress = "";
     private boolean locationReceived = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_emergency_request);
-
         initViews();
         setupToolbar();
         setupFirebase();
@@ -81,10 +72,8 @@ public class EmergencyRequestActivity extends AppCompatActivity {
         setupEmergencyTypeSelection();
         setupEmergencyCalls();
         setupClickListeners();
-
         requestLocationPermissions();
     }
-
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         chipGroupEmergencyType = findViewById(R.id.chipGroupEmergencyType);
@@ -99,7 +88,6 @@ public class EmergencyRequestActivity extends AppCompatActivity {
         btnCallAmbulance = findViewById(R.id.btnCallAmbulance);
         btnCallFire = findViewById(R.id.btnCallFire);
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -108,13 +96,11 @@ public class EmergencyRequestActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_app_navigation, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (NavigationHelper.onOptionsItemSelected(this, item)) {
@@ -122,24 +108,19 @@ public class EmergencyRequestActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
     private void setupFirebase() {
         emergencyRef = FirebaseDatabase.getInstance().getReference("emergency_requests");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
-
         if (currentUser == null) {
             Toast.makeText(this, "Please login to send emergency requests", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
-
     private void setupLocationServices() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
         locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
                 .setMinUpdateIntervalMillis(2000)
                 .build();
-
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -151,14 +132,12 @@ public class EmergencyRequestActivity extends AppCompatActivity {
             }
         };
     }
-
     private void applyLocation(double latitude, double longitude) {
         currentLatitude = latitude;
         currentLongitude = longitude;
         locationReceived = true;
         getAddressFromLocation(latitude, longitude);
     }
-
     private void requestLocationPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -170,16 +149,13 @@ public class EmergencyRequestActivity extends AppCompatActivity {
             getCurrentLocation();
         }
     }
-
     private void getCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             return;
         }
-
         progressLocation.setVisibility(View.VISIBLE);
         tvLocation.setText(R.string.loading);
-
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(location -> {
                     if (location != null) {
@@ -194,7 +170,6 @@ public class EmergencyRequestActivity extends AppCompatActivity {
                     tvLocation.setText("Tap refresh in settings or try again outdoors");
                 });
     }
-
     private void getAddressFromLocation(double latitude, double longitude) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         try {
@@ -210,7 +185,6 @@ public class EmergencyRequestActivity extends AppCompatActivity {
         }
         progressLocation.setVisibility(View.GONE);
     }
-
     private void setupEmergencyTypeSelection() {
         chipGroupEmergencyType.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds != null && !checkedIds.isEmpty()) {
@@ -234,13 +208,11 @@ public class EmergencyRequestActivity extends AppCompatActivity {
             }
         });
     }
-
     private void setupEmergencyCalls() {
         btnCallPolice.setOnClickListener(v -> makePhoneCall("10111"));
         btnCallAmbulance.setOnClickListener(v -> makePhoneCall("10177"));
         btnCallFire.setOnClickListener(v -> makePhoneCall("10177"));
     }
-
     private void makePhoneCall(String phoneNumber) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -251,37 +223,30 @@ public class EmergencyRequestActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phoneNumber));
         startActivity(intent);
     }
-
     private void setupClickListeners() {
         btnSendEmergency.setOnClickListener(v -> sendEmergencyRequest());
     }
-
     private void sendEmergencyRequest() {
         if (selectedEmergencyType.isEmpty()) {
             Toast.makeText(this, "Please select an emergency type", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (!locationReceived) {
             Toast.makeText(this, "Waiting for location. Please enable GPS and try again.", Toast.LENGTH_LONG).show();
             getCurrentLocation();
             return;
         }
-
         if (!cbConfirm.isChecked()) {
             Toast.makeText(this, "Please confirm this is a genuine emergency", Toast.LENGTH_SHORT).show();
             return;
         }
-
         setLoading(true);
-
         String description = etDescription.getText().toString().trim();
         String userName = currentUser.getDisplayName();
         if (userName == null || userName.isEmpty()) {
             String email = currentUser.getEmail();
             userName = email != null && email.contains("@") ? email.split("@")[0] : "User";
         }
-
         String emergencyId = emergencyRef.push().getKey();
         EmergencyRequest request = new EmergencyRequest(
                 currentUser.getUid(), userName,
@@ -289,7 +254,6 @@ public class EmergencyRequestActivity extends AppCompatActivity {
                 selectedEmergencyType, description, currentLatitude, currentLongitude, currentAddress
         );
         request.setId(emergencyId);
-
         emergencyRef.child(emergencyId).setValue(request)
                 .addOnSuccessListener(aVoid -> {
                     setLoading(false);
@@ -301,18 +265,15 @@ public class EmergencyRequestActivity extends AppCompatActivity {
                             "Failed to send: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-
     private void showSuccess() {
         cardSuccess.setVisibility(View.VISIBLE);
         btnSendEmergency.setEnabled(false);
     }
-
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
         btnSendEmergency.setEnabled(!isLoading);
         btnSendEmergency.setText(isLoading ? "SENDING..." : "SEND EMERGENCY REQUEST");
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -323,12 +284,11 @@ public class EmergencyRequestActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Location permission is required for emergency requests",
                         Toast.LENGTH_LONG).show();
-                tvLocation.setText("Location permission denied — enter area in description");
+                tvLocation.setText("Location permission denied â€” enter area in description");
                 progressLocation.setVisibility(View.GONE);
             }
         }
     }
-
     @Override
     protected void onPause() {
         super.onPause();

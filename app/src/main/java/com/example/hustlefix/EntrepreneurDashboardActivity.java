@@ -2,6 +2,7 @@ package com.example.hustlefix;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
@@ -17,7 +19,6 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -27,22 +28,38 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class EntrepreneurDashboardActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
+    private static final String TAG = "EntrepDash";
+    
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Toolbar toolbar;
-    private FloatingActionButton fabPostService;
 
-    private TextView tvTotalServices, tvTotalBookings, tvTotalRevenue, tvRating;
+    private TextView tvTotalServices;
+    private TextView tvTotalBookings;
+    private TextView tvTotalRevenue;
+    private TextView tvRating;
+    private TextView tvBusinessName;
+    private TextView tvDate;
     private RecyclerView rvRecentBookings;
-    private CardView cardServices, cardBookings, cardRevenue, cardAnalytics;
+    
+    private CardView cardServices;
+    private CardView cardBookings;
+    private CardView cardRevenue;
+    private CardView cardAnalytics;
+    private CardView cardPostService;
+    private CardView cardMyServices;
+    private CardView cardMyBookings;
+    private CardView cardAnalyticsQuick;
 
     private FirebaseAuth mAuth;
-    private DatabaseReference databaseReference;
     private String currentUserId;
 
     private List<Booking> recentBookings;
@@ -50,12 +67,14 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entrepreneur_dashboard);
 
         mAuth = FirebaseAuth.getInstance();
-        currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : null;
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            currentUserId = currentUser.getUid();
+        }
 
         initViews();
         setupToolbar();
@@ -64,18 +83,21 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
         loadDashboardData();
         loadRecentBookings();
         updateNavHeader();
+        setCurrentDate();
+        setBusinessName();
     }
 
     private void initViews() {
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
         toolbar = findViewById(R.id.toolbar);
-        fabPostService = findViewById(R.id.fabPostService);
 
         tvTotalServices = findViewById(R.id.tvTotalServices);
         tvTotalBookings = findViewById(R.id.tvTotalBookings);
         tvTotalRevenue = findViewById(R.id.tvTotalRevenue);
         tvRating = findViewById(R.id.tvRating);
+        tvBusinessName = findViewById(R.id.tvBusinessName);
+        tvDate = findViewById(R.id.tvDate);
 
         rvRecentBookings = findViewById(R.id.rvRecentBookings);
         rvRecentBookings.setLayoutManager(new LinearLayoutManager(this));
@@ -84,19 +106,31 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
         cardBookings = findViewById(R.id.cardBookings);
         cardRevenue = findViewById(R.id.cardRevenue);
         cardAnalytics = findViewById(R.id.cardAnalytics);
-
-        fabPostService.setImageResource(R.drawable.ic_post_job);
+        cardPostService = findViewById(R.id.cardPostService);
+        cardMyServices = findViewById(R.id.cardMyServices);
+        cardMyBookings = findViewById(R.id.cardMyBookings);
+        cardAnalyticsQuick = findViewById(R.id.cardAnalyticsQuick);
     }
 
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("My Business");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
     }
 
     private void setupNavigationDrawer() {
-        NavigationHelper.setupDrawer(this, drawerLayout, toolbar, navigationView);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     private void updateNavHeader() {
@@ -117,8 +151,8 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
                         name = "User";
                     }
                 }
-                tvNavUserName.setText(name);
-                tvNavUserEmail.setText(currentUser.getEmail());
+                if (tvNavUserName != null) tvNavUserName.setText(name);
+                if (tvNavUserEmail != null) tvNavUserEmail.setText(currentUser.getEmail());
 
                 if (ivNavAvatar != null) {
                     ivNavAvatar.setImageResource(R.drawable.ic_avatar_entrepreneur);
@@ -127,26 +161,94 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
         }
     }
 
+    private void setCurrentDate() {
+        if (tvDate != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMM d, yyyy", Locale.getDefault());
+            tvDate.setText(sdf.format(new Date()));
+        }
+    }
+
+    private void setBusinessName() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null && tvBusinessName != null) {
+            String name = user.getDisplayName();
+            if (name == null || name.isEmpty()) {
+                String email = user.getEmail();
+                if (email != null && email.contains("@")) {
+                    name = email.split("@")[0];
+                } else {
+                    name = "Your Business";
+                }
+            }
+            tvBusinessName.setText(name + "'s Business");
+        }
+    }
+
     private void setupClickListeners() {
-        fabPostService.setOnClickListener(v -> {
-            Intent intent = new Intent(EntrepreneurDashboardActivity.this, PostServiceActivity.class);
-            startActivity(intent);
+        cardServices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Services clicked");
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyServicesActivity.class));
+            }
         });
 
-        cardServices.setOnClickListener(v -> {
-            Toast.makeText(this, "My Services", Toast.LENGTH_SHORT).show();
+        cardBookings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Bookings clicked");
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyBookingsActivity.class));
+            }
         });
 
-        cardBookings.setOnClickListener(v -> {
-            Toast.makeText(this, "My Bookings", Toast.LENGTH_SHORT).show();
+        cardRevenue.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Revenue clicked");
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, RevenueActivity.class));
+            }
         });
 
-        cardRevenue.setOnClickListener(v -> {
-            Toast.makeText(this, "Revenue Dashboard", Toast.LENGTH_SHORT).show();
+        cardAnalytics.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Analytics clicked");
+                Toast.makeText(EntrepreneurDashboardActivity.this, "Opening Analytics...", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, AnalyticsActivity.class));
+            }
         });
 
-        cardAnalytics.setOnClickListener(v -> {
-            Toast.makeText(this, "Analytics", Toast.LENGTH_SHORT).show();
+        cardPostService.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Post Service quick action");
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, PostServiceActivity.class));
+            }
+        });
+
+        cardMyServices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "My Services quick action");
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyServicesActivity.class));
+            }
+        });
+
+        cardMyBookings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "My Bookings quick action");
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyBookingsActivity.class));
+            }
+        });
+
+        cardAnalyticsQuick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "Analytics quick action clicked!");
+                Toast.makeText(EntrepreneurDashboardActivity.this, "Opening Analytics...", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(EntrepreneurDashboardActivity.this, AnalyticsActivity.class));
+            }
         });
     }
 
@@ -158,13 +260,17 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        long serviceCount = snapshot.getChildrenCount();
-                        tvTotalServices.setText(String.valueOf(serviceCount));
+                        long count = snapshot.getChildrenCount();
+                        if (tvTotalServices != null) {
+                            tvTotalServices.setText(String.valueOf(count));
+                        }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        tvTotalServices.setText("0");
+                        if (tvTotalServices != null) {
+                            tvTotalServices.setText("0");
+                        }
                     }
                 });
 
@@ -173,23 +279,45 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        long bookingCount = snapshot.getChildrenCount();
-                        tvTotalBookings.setText(String.valueOf(bookingCount));
+                        long count = snapshot.getChildrenCount();
+                        if (tvTotalBookings != null) {
+                            tvTotalBookings.setText(String.valueOf(count));
+                        }
 
                         double revenue = 0;
+                        double totalRating = 0;
+                        int ratingCount = 0;
+                        
                         for (DataSnapshot bookingSnapshot : snapshot.getChildren()) {
                             Booking booking = bookingSnapshot.getValue(Booking.class);
-                            if (booking != null && "completed".equals(booking.getStatus())) {
-                                revenue += booking.getPrice();
+                            if (booking != null) {
+                                if ("completed".equals(booking.getStatus())) {
+                                    revenue += booking.getPrice();
+                                }
+                                if (booking.getRating() > 0) {
+                                    totalRating += booking.getRating();
+                                    ratingCount++;
+                                }
                             }
                         }
-                        tvTotalRevenue.setText("$" + String.format("%.2f", revenue));
+                        
+                        if (tvTotalRevenue != null) {
+                            tvTotalRevenue.setText("$" + String.format("%.2f", revenue));
+                        }
+                        if (tvRating != null) {
+                            if (ratingCount > 0) {
+                                tvRating.setText(String.format("%.1f ★", totalRating / ratingCount));
+                            } else {
+                                tvRating.setText("0.0 ★");
+                            }
+                        }
                     }
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        tvTotalBookings.setText("0");
-                        tvTotalRevenue.setText("$0");
+                        if (tvTotalBookings != null) tvTotalBookings.setText("0");
+                        if (tvTotalRevenue != null) tvTotalRevenue.setText("$0");
+                        if (tvRating != null) tvRating.setText("0.0 ★");
                     }
                 });
     }
@@ -211,15 +339,35 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
                                 recentBookings.add(booking);
                             }
                         }
+
+                        TextView tvEmpty = findViewById(R.id.tvEmptyBookings);
+                        if (recentBookings.isEmpty()) {
+                            if (tvEmpty != null) {
+                                tvEmpty.setVisibility(View.VISIBLE);
+                                rvRecentBookings.setVisibility(View.GONE);
+                            }
+                            return;
+                        }
+
                         List<Booking> reversed = new ArrayList<>();
                         for (int i = recentBookings.size() - 1; i >= 0; i--) {
                             reversed.add(recentBookings.get(i));
                         }
-                        bookingAdapter = new BookingAdapter(reversed, booking -> {
-                            Toast.makeText(EntrepreneurDashboardActivity.this,
-                                    "Booking: " + booking.getJobTitle(), Toast.LENGTH_SHORT).show();
+
+                        bookingAdapter = new BookingAdapter(reversed, new BookingAdapter.OnBookingClickListener() {
+                            @Override
+                            public void onBookingClick(Booking booking) {
+                                Intent intent = new Intent(EntrepreneurDashboardActivity.this, BookingDetailActivity.class);
+                                intent.putExtra("bookingId", booking.getBookingId());
+                                startActivity(intent);
+                            }
                         });
                         rvRecentBookings.setAdapter(bookingAdapter);
+                        
+                        if (tvEmpty != null) {
+                            tvEmpty.setVisibility(View.GONE);
+                            rvRecentBookings.setVisibility(View.VISIBLE);
+                        }
                     }
 
                     @Override
@@ -237,25 +385,62 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         } else if (id == R.id.nav_post_job) {
-            Intent intent = new Intent(this, PostServiceActivity.class);
-            startActivity(intent);
+            drawerLayout.closeDrawer(GravityCompat.START);
+            startActivity(new Intent(this, PostServiceActivity.class));
             return true;
-        }  else if (id == R.id.nav_logout) {
+        } else if (id == R.id.nav_my_services) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            startActivity(new Intent(this, MyServicesActivity.class));
+            return true;
+        } else if (id == R.id.nav_my_bookings) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            startActivity(new Intent(this, MyBookingsActivity.class));
+            return true;
+        } else if (id == R.id.nav_analytics) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            Toast.makeText(this, "Opening Analytics...", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, AnalyticsActivity.class));
+            return true;
+        } else if (id == R.id.nav_settings) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+            startActivity(new Intent(this, SettingsActivity.class));
+            return true;
+        } else if (id == R.id.nav_logout) {
+            drawerLayout.closeDrawer(GravityCompat.START);
             logout();
             return true;
-        } else {
-            return NavigationHelper.handleNavigationItem(this, id);
         }
+        return false;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void logout() {
-        SessionHelper.logout(this);
-        finish();
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    SessionHelper.logout(this);
+                    finish();
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 
     @Override
     public void onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();

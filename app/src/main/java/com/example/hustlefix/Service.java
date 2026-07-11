@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 public class Service {
     private String serviceId;
     private String title;
@@ -15,9 +14,7 @@ public class Service {
     private long createdAt;
     private int bookingsCount;
     private double averageRating;
-
     public Service() {}
-
     public Service(String serviceId, String title, String description, double price, 
                    String category, String deliveryTime, String location, 
                    String entrepreneurId, String entrepreneurName, String entrepreneurEmail) {
@@ -36,7 +33,6 @@ public class Service {
         this.bookingsCount = 0;
         this.averageRating = 0;
     }
-
     public String getServiceId() { return serviceId; }
     public void setServiceId(String serviceId) { this.serviceId = serviceId; }
     public String getTitle() { return title; }

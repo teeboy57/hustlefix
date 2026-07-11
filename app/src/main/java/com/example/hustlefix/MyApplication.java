@@ -5,9 +5,6 @@ import android.content.Context;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
-import com.facebook.FacebookSdk;
-import com.facebook.appevents.AppEventsLogger;
-
 public class MyApplication extends Application {
 
     @Override
@@ -20,10 +17,6 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-
-        if (AuthHelper.isFacebookConfigured(this)) {
-            FacebookSdk.sdkInitialize(getApplicationContext());
-            AppEventsLogger.activateApp(this);
-        }
+        // Facebook SDK removed - will be added later if needed
     }
 }

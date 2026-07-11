@@ -1,38 +1,29 @@
 package com.example.hustlefix;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.List;
-
 public class QuoteAdapter extends RecyclerView.Adapter<QuoteAdapter.QuoteViewHolder> {
-
     private List<Quote> quoteList;
     private String userRole;
     private OnItemClickListener listener;
-
     public interface OnItemClickListener {
         void onAcceptClick(int position);
         void onDeclineClick(int position);
         void onChatClick(int position);
     }
-
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
-
     public QuoteAdapter(List<Quote> quoteList, String userRole) {
         this.quoteList = quoteList;
         this.userRole = userRole;
     }
-
     @NonNull
     @Override
     public QuoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -40,28 +31,23 @@ public class QuoteAdapter extends RecyclerView.Adapter<QuoteAdapter.QuoteViewHol
                 .inflate(R.layout.item_quote, parent, false);
         return new QuoteViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(@NonNull QuoteViewHolder holder, int position) {
         Quote quote = quoteList.get(position);
         holder.bind(quote, userRole, listener, position);
     }
-
     @Override
     public int getItemCount() {
         return quoteList.size();
     }
-
     public void updateList(List<Quote> newList) {
         this.quoteList = newList;
         notifyDataSetChanged();
     }
-
     static class QuoteViewHolder extends RecyclerView.ViewHolder {
         TextView tvWorkerName, tvJobTitle, tvAmount, tvMessage, tvTimeline, tvStatus, tvReceivedDate;
         Button btnAccept, btnDecline, btnChat;
         LinearLayout actionButtons, acceptedMessage;
-
         public QuoteViewHolder(@NonNull View itemView) {
             super(itemView);
             tvWorkerName = itemView.findViewById(R.id.tvWorkerName);
@@ -77,7 +63,6 @@ public class QuoteAdapter extends RecyclerView.Adapter<QuoteAdapter.QuoteViewHol
             actionButtons = itemView.findViewById(R.id.actionButtons);
             acceptedMessage = itemView.findViewById(R.id.acceptedMessage);
         }
-
         void bind(Quote quote, String userRole, OnItemClickListener listener, int position) {
             tvWorkerName.setText(quote.getWorkerName());
             tvJobTitle.setText(quote.getJobTitle());
@@ -85,13 +70,11 @@ public class QuoteAdapter extends RecyclerView.Adapter<QuoteAdapter.QuoteViewHol
             tvMessage.setText(quote.getMessage());
             tvTimeline.setText("Timeline: " + quote.getTimeline());
             tvReceivedDate.setText("Received: " + quote.getTimeAgo());
-
             if ("pending".equals(quote.getStatus())) {
                 tvStatus.setText("PENDING");
                 tvStatus.setTextColor(0xFFF9B43A);
                 actionButtons.setVisibility(View.VISIBLE);
                 acceptedMessage.setVisibility(View.GONE);
-
                 btnAccept.setOnClickListener(v -> {
                     if (listener != null) listener.onAcceptClick(position);
                 });

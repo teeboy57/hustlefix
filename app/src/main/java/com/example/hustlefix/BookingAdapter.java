@@ -43,55 +43,71 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
 
     @Override
     public int getItemCount() {
-        return bookings.size();
+        return bookings != null ? bookings.size() : 0;
     }
 
     static class BookingViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvBudget, tvStatus, tvDeadline, tvClientName;
+        TextView tvTitle, tvBudget, tvStatus, tvDate, tvClientName;
 
         public BookingViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvBookingTitle);
             tvBudget = itemView.findViewById(R.id.tvBookingBudget);
             tvStatus = itemView.findViewById(R.id.tvBookingStatus);
-            tvDeadline = itemView.findViewById(R.id.tvBookingDeadline);
+            tvDate = itemView.findViewById(R.id.tvBookingDeadline);
             tvClientName = itemView.findViewById(R.id.tvClientName);
         }
 
         void bind(Booking booking, OnBookingClickListener listener) {
-            tvTitle.setText(booking.getServiceTitle());
-            tvBudget.setText("$" + booking.getPrice());
-            tvStatus.setText(booking.getStatus());
+            if (tvTitle != null) {
+                tvTitle.setText(booking.getServiceTitle() != null ? booking.getServiceTitle() : "No Title");
+            }
             
-            // Format date
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-            String date = sdf.format(new Date(booking.getBookingDate()));
-            tvDeadline.setText("Booked: " + date);
-            tvClientName.setText("Client: " + booking.getClientName());
-
-            // Set status color
-            switch (booking.getStatus()) {
-                case "pending":
-                    tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.holo_orange_dark));
-                    break;
-                case "confirmed":
-                    tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.holo_blue_dark));
-                    break;
-                case "in_progress":
-                    tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.holo_purple));
-                    break;
-                case "completed":
-                    tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.holo_green_dark));
-                    break;
-                case "cancelled":
-                    tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.holo_red_dark));
-                    break;
-                default:
-                    tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.black));
-                    break;
+            if (tvBudget != null) {
+                tvBudget.setText("$" + String.format("%.2f", booking.getPrice()));
+            }
+            
+            if (tvStatus != null) {
+                String status = booking.getStatus() != null ? booking.getStatus() : "pending";
+                tvStatus.setText(status.toUpperCase());
+                // Set status color
+                switch (status.toLowerCase()) {
+                    case "pending":
+                        tvStatus.setTextColor(0xFFFF9800);
+                        break;
+                    case "confirmed":
+                        tvStatus.setTextColor(0xFF2196F3);
+                        break;
+                    case "in_progress":
+                        tvStatus.setTextColor(0xFF9C27B0);
+                        break;
+                    case "completed":
+                        tvStatus.setTextColor(0xFF4CAF50);
+                        break;
+                    case "cancelled":
+                        tvStatus.setTextColor(0xFFF44336);
+                        break;
+                    default:
+                        tvStatus.setTextColor(0xFF757575);
+                        break;
+                }
+            }
+            
+            if (tvDate != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+                String date = sdf.format(new Date(booking.getBookingDate()));
+                tvDate.setText(date);
+            }
+            
+            if (tvClientName != null) {
+                tvClientName.setText("Client: " + (booking.getClientName() != null ? booking.getClientName() : "Unknown"));
             }
 
-            itemView.setOnClickListener(v -> listener.onBookingClick(booking));
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onBookingClick(booking);
+                }
+            });
         }
     }
 }

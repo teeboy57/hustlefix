@@ -1,12 +1,10 @@
 // Rating.java - Complete implementation
 package com.example.hustlefix;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
 public class Rating {
     private String id;
     private String jobId;
@@ -20,9 +18,7 @@ public class Rating {
     private long timestamp;
     private boolean isAnonymous;
     private String status;
-
     public Rating() {}
-
     public Rating(String jobId, String jobTitle, String raterId, String raterName,
                   String ratedId, String ratedName, float rating, String review, boolean isAnonymous) {
         this.jobId = jobId;
@@ -37,7 +33,6 @@ public class Rating {
         this.timestamp = System.currentTimeMillis();
         this.status = "completed";
     }
-
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }

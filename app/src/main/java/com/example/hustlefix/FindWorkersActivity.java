@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
@@ -36,9 +35,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
-
 public class FindWorkersActivity extends AppCompatActivity {
-
     private Toolbar toolbar;
     private RecyclerView recyclerWorkers;
     private EditText etSearch;
@@ -48,7 +45,6 @@ public class FindWorkersActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private View emptyState;
     private Button btnClearFilters;
-
     private DatabaseReference databaseReference;
     private List<Worker> workerList;
     private WorkerAdapter adapter;
@@ -56,24 +52,20 @@ public class FindWorkersActivity extends AppCompatActivity {
     private String searchQuery = "";
     private FirebaseUser currentUser;
     private ValueEventListener workersListener;
-
     // Job details for sending quotes
     private DatabaseReference jobsRef;
     private List<Job> jobList;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_find_workers);
-
         initViews();
         setupToolbar();
         setupFirebase();
         setupSearch();
         setupCategoryFilters();
         loadWorkers();
-
         btnClearFilters.setOnClickListener(v -> {
             currentFilter = "All";
             searchQuery = "";
@@ -83,7 +75,6 @@ public class FindWorkersActivity extends AppCompatActivity {
             filterWorkers();
         });
     }
-
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         recyclerWorkers = findViewById(R.id.recyclerWorkers);
@@ -94,16 +85,13 @@ public class FindWorkersActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         emptyState = findViewById(R.id.emptyState);
         btnClearFilters = findViewById(R.id.btnClearFilters);
-
         recyclerWorkers.setLayoutManager(new LinearLayoutManager(this));
         workerList = new ArrayList<>();
         adapter = new WorkerAdapter(workerList, this);
         recyclerWorkers.setAdapter(adapter);
-
         jobList = new ArrayList<>();
         jobsRef = FirebaseDatabase.getInstance().getReference("jobs");
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -113,23 +101,19 @@ public class FindWorkersActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
     }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_app_navigation, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         return NavigationHelper.onOptionsItemSelected(this, item) || super.onOptionsItemSelected(item);
     }
-
     private void setupFirebase() {
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
     }
-
     private void setupSearch() {
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -143,7 +127,6 @@ public class FindWorkersActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {}
         });
-
         ivClearSearch.setOnClickListener(v -> {
             etSearch.setText("");
             searchQuery = "";
@@ -151,7 +134,6 @@ public class FindWorkersActivity extends AppCompatActivity {
             filterWorkers();
         });
     }
-
     private void setupCategoryFilters() {
         chipGroupCategories.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds != null && !checkedIds.isEmpty()) {
@@ -167,10 +149,8 @@ public class FindWorkersActivity extends AppCompatActivity {
             filterWorkers();
         });
     }
-
     private void loadWorkers() {
         progressBar.setVisibility(View.VISIBLE);
-
         workersListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -187,17 +167,14 @@ public class FindWorkersActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
                 filterWorkers();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 progressBar.setVisibility(View.GONE);
                 Toast.makeText(FindWorkersActivity.this, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         };
-
         databaseReference.orderByChild("role").equalTo("worker").addValueEventListener(workersListener);
     }
-
     private void filterWorkers() {
         List<Worker> filtered = new ArrayList<>();
         for (Worker worker : workerList) {
@@ -207,15 +184,12 @@ public class FindWorkersActivity extends AppCompatActivity {
                     (worker.getName() != null && worker.getName().toLowerCase().contains(searchQuery)) ||
                     (worker.getSkill() != null && worker.getSkill().toLowerCase().contains(searchQuery)) ||
                     (worker.getLocation() != null && worker.getLocation().toLowerCase().contains(searchQuery));
-
             if (categoryMatch && searchMatch) {
                 filtered.add(worker);
             }
         }
-
         adapter.updateList(filtered);
         tvResultsCount.setText(filtered.size() + " workers found");
-
         if (filtered.isEmpty()) {
             recyclerWorkers.setVisibility(View.GONE);
             emptyState.setVisibility(View.VISIBLE);
@@ -224,14 +198,12 @@ public class FindWorkersActivity extends AppCompatActivity {
             emptyState.setVisibility(View.GONE);
         }
     }
-
     // Method to show job details and send quote
     public void showJobDetailsDialog(Job job) {
         if (job == null) {
             Toast.makeText(this, "Job not found", Toast.LENGTH_SHORT).show();
             return;
         }
-
         new MaterialAlertDialogBuilder(this)
                 .setTitle(job.getTitle())
                 .setMessage("Budget: " + job.getFormattedBudget() + "\n" +
@@ -246,7 +218,6 @@ public class FindWorkersActivity extends AppCompatActivity {
                                 "Please login to send a quote", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     // Open SendQuoteActivity
                     Intent intent = new Intent(FindWorkersActivity.this, SendQuoteActivity.class);
                     intent.putExtra("job_id", job.getJobId());
@@ -262,11 +233,9 @@ public class FindWorkersActivity extends AppCompatActivity {
                         ChatLauncher.openChat(FindWorkersActivity.this, job.getPostedBy(), job.getPostedByName()))
                 .show();
     }
-
     // Method to show available jobs for quoting
     public void showAvailableJobsDialog() {
         progressBar.setVisibility(View.VISIBLE);
-
         jobsRef.orderByChild("status").equalTo("open").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -282,16 +251,13 @@ public class FindWorkersActivity extends AppCompatActivity {
                     }
                 }
                 progressBar.setVisibility(View.GONE);
-
                 if (jobList.isEmpty()) {
                     Toast.makeText(FindWorkersActivity.this,
                             "No available jobs at the moment", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 showJobSelectionDialog();
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 progressBar.setVisibility(View.GONE);
@@ -300,13 +266,11 @@ public class FindWorkersActivity extends AppCompatActivity {
             }
         });
     }
-
     private void showJobSelectionDialog() {
         String[] jobTitles = new String[jobList.size()];
         for (int i = 0; i < jobList.size(); i++) {
             jobTitles[i] = jobList.get(i).getTitle() + " - " + jobList.get(i).getFormattedBudget();
         }
-
         new AlertDialog.Builder(this)
                 .setTitle("Select Job to Quote")
                 .setItems(jobTitles, (dialog, which) -> {
@@ -316,13 +280,11 @@ public class FindWorkersActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
     public void hireWorker(Worker worker) {
         if (currentUser == null) {
             Toast.makeText(this, "Please login to hire workers", Toast.LENGTH_SHORT).show();
             return;
         }
-
         // Show hiring dialog
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_hire_worker, null);
         TextView tvWorkerName = dialogView.findViewById(R.id.tvWorkerName);
@@ -331,9 +293,7 @@ public class FindWorkersActivity extends AppCompatActivity {
         EditText etBudget = dialogView.findViewById(R.id.etBudget);
         EditText etDeadline = dialogView.findViewById(R.id.etDeadline);
         RatingBar rbProposedRating = dialogView.findViewById(R.id.rbProposedRating);
-
         tvWorkerName.setText(worker.getName());
-
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Hire " + worker.getName())
                 .setView(dialogView)
@@ -343,28 +303,22 @@ public class FindWorkersActivity extends AppCompatActivity {
                     String budgetStr = etBudget.getText().toString().trim();
                     String deadline = etDeadline.getText().toString().trim();
                     float proposedRating = rbProposedRating.getRating();
-
                     if (jobTitle.isEmpty()) {
                         Toast.makeText(this, "Please enter a job title", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     if (jobDescription.isEmpty()) {
                         Toast.makeText(this, "Please enter job description", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     if (budgetStr.isEmpty()) {
                         Toast.makeText(this, "Please enter budget", Toast.LENGTH_SHORT).show();
                         return;
                     }
-
                     double budget = Double.parseDouble(budgetStr);
-
                     // Create hire request in Firebase
                     DatabaseReference hireRef = FirebaseDatabase.getInstance().getReference("hire_requests");
                     String requestId = hireRef.push().getKey();
-
                     if (requestId != null) {
                         FindWorkersActivity.HireRequest hireRequest = new FindWorkersActivity.HireRequest(
                                 requestId,
@@ -380,7 +334,6 @@ public class FindWorkersActivity extends AppCompatActivity {
                                 System.currentTimeMillis(),
                                 "pending"
                         );
-
                         hireRef.child(requestId).setValue(hireRequest)
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(FindWorkersActivity.this,
@@ -395,18 +348,15 @@ public class FindWorkersActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
     public void viewWorkerProfile(Worker worker) {
         Intent intent = new Intent(FindWorkersActivity.this, WorkerProfileActivity.class);
         intent.putExtra("worker_id", worker.getId());
         intent.putExtra("worker_name", worker.getName());
         startActivity(intent);
     }
-
     public void chatWithWorker(Worker worker) {
         ChatLauncher.openChat(this, worker.getId(), worker.getName());
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -414,7 +364,6 @@ public class FindWorkersActivity extends AppCompatActivity {
             databaseReference.removeEventListener(workersListener);
         }
     }
-
     // HireRequest Model Class
     public static class HireRequest {
         private String id;
@@ -429,9 +378,7 @@ public class FindWorkersActivity extends AppCompatActivity {
         private float proposedRating;
         private long timestamp;
         private String status;
-
         public HireRequest() {}
-
         public HireRequest(String id, String clientId, String clientName, String workerId,
                            String workerName, String jobTitle, String jobDescription,
                            double budget, String deadline, float proposedRating,
@@ -449,7 +396,6 @@ public class FindWorkersActivity extends AppCompatActivity {
             this.timestamp = timestamp;
             this.status = status;
         }
-
         // Getters and Setters
         public String getId() { return id; }
         public void setId(String id) { this.id = id; }

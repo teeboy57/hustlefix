@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -20,9 +19,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import de.hdodenhof.circleimageview.CircleImageView;
-
 public class WorkerProfileActivity extends AppCompatActivity {
-
     private Toolbar toolbar;
     private CircleImageView ivProfileImage;
     private TextView tvInitials;
@@ -32,17 +29,14 @@ public class WorkerProfileActivity extends AppCompatActivity {
     private RatingBar rbRating;
     private Button btnHire, btnChat;
     private LinearLayout btnCall, btnMessage;
-
     private DatabaseReference workerRef;
     private String workerId;
     private Worker worker;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_worker_profile);
-
         workerId = getIntent().getStringExtra("worker_id");
         if (workerId == null) {
             workerId = ChatLauncher.resolveOtherUserId(getIntent());
@@ -52,13 +46,11 @@ public class WorkerProfileActivity extends AppCompatActivity {
             finish();
             return;
         }
-
         initViews();
         setupToolbar();
         loadWorkerData();
         setupClickListeners();
     }
-
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         ivProfileImage = findViewById(R.id.ivProfileImage);
@@ -78,7 +70,6 @@ public class WorkerProfileActivity extends AppCompatActivity {
         btnCall = findViewById(R.id.btnCall);
         btnMessage = findViewById(R.id.btnMessage);
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -87,10 +78,8 @@ public class WorkerProfileActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
     }
-
     private void loadWorkerData() {
         workerRef = FirebaseDatabase.getInstance().getReference("users").child(workerId);
-
         workerRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -102,7 +91,6 @@ public class WorkerProfileActivity extends AppCompatActivity {
                     finish();
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(WorkerProfileActivity.this, "Error loading profile", Toast.LENGTH_SHORT).show();
@@ -110,40 +98,34 @@ public class WorkerProfileActivity extends AppCompatActivity {
             }
         });
     }
-
     private void displayWorkerData() {
         // Name and basic info
         tvWorkerName.setText(worker.getName() != null ? worker.getName() : "Unknown");
         tvWorkerSkill.setText(worker.getSkill() != null ? worker.getSkill() : "No skill specified");
         tvWorkerLocation.setText(worker.getLocation() != null ? worker.getLocation() : "Location not specified");
-
         // Stats
         tvRating.setText(worker.getFormattedRating());
         tvExperience.setText(worker.getExperience() + " years");
         tvCompletedJobs.setText(worker.getCompletedJobs() + " jobs completed");
         tvHourlyRate.setText(worker.getFormattedHourlyRate() + " / hour");
         rbRating.setRating((float) worker.getRating());
-
         // About
         if (worker.getAbout() != null && !worker.getAbout().isEmpty()) {
             tvAbout.setText(worker.getAbout());
         } else {
             tvAbout.setText("No description provided.");
         }
-
         // Availability
         if (worker.isAvailable()) {
-            tvAvailability.setText("● Available for work");
+            tvAvailability.setText("â— Available for work");
             tvAvailability.setTextColor(0xFF4CAF50);
         } else {
-            tvAvailability.setText("● Currently unavailable");
+            tvAvailability.setText("â— Currently unavailable");
             tvAvailability.setTextColor(0xFFFF4444);
         }
-
         if (worker.getAvailability() != null && !worker.getAvailability().isEmpty()) {
             tvAvailability.append("\n" + worker.getAvailability());
         }
-
         // Profile image or initials
         if (worker.getProfileImage() != null && !worker.getProfileImage().isEmpty()) {
             Glide.with(this)
@@ -160,7 +142,6 @@ public class WorkerProfileActivity extends AppCompatActivity {
             tvInitials.setText(worker.getInitials());
         }
     }
-
     private void setupClickListeners() {
         // Hire button - opens FindWorkersActivity or Chat
         btnHire.setOnClickListener(v -> {
@@ -181,12 +162,10 @@ public class WorkerProfileActivity extends AppCompatActivity {
                     .setNeutralButton("Cancel", null)
                     .show();
         });
-
         // Chat button - opens direct chat
         btnChat.setOnClickListener(v -> {
             ChatLauncher.openChat(this, workerId, worker.getName());
         });
-
         // Call button
         btnCall.setOnClickListener(v -> {
             if (worker.getPhone() != null && !worker.getPhone().isEmpty()) {
@@ -197,7 +176,6 @@ public class WorkerProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "Phone number not available", Toast.LENGTH_SHORT).show();
             }
         });
-
         // SMS button
         btnMessage.setOnClickListener(v -> {
             if (worker.getPhone() != null && !worker.getPhone().isEmpty()) {

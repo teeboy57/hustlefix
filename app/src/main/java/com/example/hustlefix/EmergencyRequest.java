@@ -1,8 +1,6 @@
 package com.example.hustlefix;
-
 import java.util.HashMap;
 import java.util.Map;
-
 public class EmergencyRequest {
     private String id;
     private String userId;
@@ -17,9 +15,7 @@ public class EmergencyRequest {
     private String status; // pending, responded, resolved
     private String responderId;
     private String responderName;
-
     public EmergencyRequest() {}
-
     public EmergencyRequest(String userId, String userName, String userPhone,
                             String emergencyType, String description,
                             double latitude, double longitude, String address) {
@@ -34,7 +30,6 @@ public class EmergencyRequest {
         this.timestamp = System.currentTimeMillis();
         this.status = "pending";
     }
-
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -62,7 +57,6 @@ public class EmergencyRequest {
     public void setResponderId(String responderId) { this.responderId = responderId; }
     public String getResponderName() { return responderName; }
     public void setResponderName(String responderName) { this.responderName = responderName; }
-
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("id", id);

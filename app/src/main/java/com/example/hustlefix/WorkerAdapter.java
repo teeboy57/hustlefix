@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,29 +15,23 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import de.hdodenhof.circleimageview.CircleImageView;
 import java.util.List;
-
 public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerViewHolder> {
-
     private List<Worker> workerList;
     private FindWorkersActivity activity;
     private OnWorkerActionListener listener;
-
     public interface OnWorkerActionListener {
         void onHireClick(Worker worker);
         void onViewProfileClick(Worker worker);
         void onChatClick(Worker worker);
         void onQuoteForJob(Worker worker);
     }
-
     public void setOnWorkerActionListener(OnWorkerActionListener listener) {
         this.listener = listener;
     }
-
     public WorkerAdapter(List<Worker> workerList, FindWorkersActivity activity) {
         this.workerList = workerList;
         this.activity = activity;
     }
-
     @NonNull
     @Override
     public WorkerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -46,11 +39,9 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
                 .inflate(R.layout.item_worker, parent, false);
         return new WorkerViewHolder(view);
     }
-
     @Override
     public void onBindViewHolder(@NonNull WorkerViewHolder holder, int position) {
         Worker worker = workerList.get(position);
-
         holder.tvWorkerName.setText(worker.getName() != null ? worker.getName() : "Unknown");
         holder.tvSkill.setText(worker.getSkill() != null ? worker.getSkill() : "No skill specified");
         holder.tvLocation.setText(worker.getLocation() != null ? worker.getLocation() : "Location not specified");
@@ -58,21 +49,18 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         holder.tvExperience.setText(worker.getExperience() + " yrs");
         holder.tvCompletedJobs.setText(worker.getCompletedJobs() + " jobs");
         holder.tvHourlyRate.setText(worker.getFormattedHourlyRate());
-
         // Set availability indicator
         if (worker.isAvailable()) {
             holder.tvAvailable.setVisibility(View.VISIBLE);
-            holder.tvAvailable.setText("● Available");
+            holder.tvAvailable.setText("â— Available");
             holder.tvAvailable.setTextColor(0xFF4CAF50);
         } else {
             holder.tvAvailable.setVisibility(View.VISIBLE);
-            holder.tvAvailable.setText("● Busy");
+            holder.tvAvailable.setText("â— Busy");
             holder.tvAvailable.setTextColor(0xFFFF4444);
         }
-
         // Set rating bar
         holder.rbRating.setRating((float) worker.getRating());
-
         // Load profile image if available
         if (worker.getProfileImage() != null && !worker.getProfileImage().isEmpty()) {
             Glide.with(activity)
@@ -88,7 +76,6 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
             holder.tvInitials.setVisibility(View.VISIBLE);
             holder.tvInitials.setText(worker.getInitials());
         }
-
         // Set click listeners
         holder.btnHire.setOnClickListener(v -> {
             if (listener != null) {
@@ -97,7 +84,6 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
                 activity.hireWorker(worker);
             }
         });
-
         holder.btnViewProfile.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onViewProfileClick(worker);
@@ -105,7 +91,6 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
                 activity.viewWorkerProfile(worker);
             }
         });
-
         holder.btnChat.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onChatClick(worker);
@@ -113,7 +98,6 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
                 activity.chatWithWorker(worker);
             }
         });
-
         // Quote button - show available jobs for this worker to quote on
         holder.btnQuote.setOnClickListener(v -> {
             if (listener != null) {
@@ -122,12 +106,10 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
                 showAvailableJobsForWorker(worker);
             }
         });
-
         holder.itemView.setOnClickListener(v -> {
             activity.viewWorkerProfile(worker);
         });
     }
-
     private void showAvailableJobsForWorker(Worker worker) {
         // Get available jobs from Firebase
         DatabaseReference jobsRef = FirebaseDatabase.getInstance().getReference("jobs");
@@ -145,16 +127,13 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
                         }
                     }
                 }
-
                 if (jobList.isEmpty()) {
                     android.widget.Toast.makeText(activity,
                             "No available jobs at the moment", android.widget.Toast.LENGTH_SHORT).show();
                     return;
                 }
-
                 showJobSelectionDialog(jobList, worker);
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 android.widget.Toast.makeText(activity,
@@ -162,13 +141,11 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
             }
         });
     }
-
     private void showJobSelectionDialog(java.util.List<Job> jobList, Worker worker) {
         String[] jobTitles = new String[jobList.size()];
         for (int i = 0; i < jobList.size(); i++) {
             jobTitles[i] = jobList.get(i).getTitle() + " - " + jobList.get(i).getFormattedBudget();
         }
-
         new androidx.appcompat.app.AlertDialog.Builder(activity)
                 .setTitle("Select Job to Quote")
                 .setItems(jobTitles, (dialog, which) -> {
@@ -179,24 +156,20 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
                 .setNegativeButton("Cancel", null)
                 .show();
     }
-
     @Override
     public int getItemCount() {
         return workerList != null ? workerList.size() : 0;
     }
-
     public void updateList(List<Worker> newList) {
         this.workerList = newList;
         notifyDataSetChanged();
     }
-
     static class WorkerViewHolder extends RecyclerView.ViewHolder {
         TextView tvWorkerName, tvSkill, tvLocation, tvRating, tvExperience, tvCompletedJobs;
         TextView tvHourlyRate, tvAvailable, tvInitials;
         RatingBar rbRating;
         Button btnHire, btnViewProfile, btnChat, btnQuote;
         CircleImageView ivProfileImage;
-
         WorkerViewHolder(@NonNull View itemView) {
             super(itemView);
             tvWorkerName = itemView.findViewById(R.id.tvWorkerName);

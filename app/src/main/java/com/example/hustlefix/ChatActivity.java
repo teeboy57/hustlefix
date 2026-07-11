@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -31,41 +30,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
 public class ChatActivity extends AppCompatActivity {
-
     private RecyclerView recyclerView;
     private EditText messageInput;
     private ImageButton sendButton, emojiButton;
     private List<ChatMessage> messageList;
     private MessageAdapter adapter;
     private Toolbar toolbar;
-
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private DatabaseReference chatRef;
     private DatabaseReference messagesRef;
     private ValueEventListener messagesListener;
-
     private String chatRoomId;
     private String otherUserId;
     private String otherUserName;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
         otherUserId = ChatLauncher.resolveOtherUserId(getIntent());
         otherUserName = ChatLauncher.resolveOtherUserName(getIntent());
-
         if (otherUserId == null) {
             ChatLauncher.openChatList(this);
             finish();
             return;
         }
-
         initViews();
         setupToolbar();
         setupFirebase();
@@ -75,7 +66,6 @@ public class ChatActivity extends AppCompatActivity {
         loadMessages();
         markMessagesAsRead();
     }
-
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         recyclerView = findViewById(R.id.recyclerView);
@@ -84,7 +74,6 @@ public class ChatActivity extends AppCompatActivity {
         emojiButton = findViewById(R.id.emojiButton);
         messageList = new ArrayList<>();
     }
-
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -93,23 +82,19 @@ public class ChatActivity extends AppCompatActivity {
         }
         toolbar.setNavigationOnClickListener(v -> finish());
     }
-
     private void setupFirebase() {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
-
         if (currentUser == null) {
             Toast.makeText(this, "Please login", Toast.LENGTH_SHORT).show();
             finish();
         }
     }
-
     private void createChatRoom() {
         if (currentUser != null && otherUserId != null) {
             chatRoomId = ChatLauncher.buildChatRoomId(currentUser.getUid(), otherUserId);
             chatRef = FirebaseDatabase.getInstance().getReference("chats").child(chatRoomId);
             messagesRef = chatRef.child("messages");
-
             String myName = currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "User";
             ChatLauncher.ensureChatRoomIndexed(
                     chatRoomId,
@@ -120,23 +105,19 @@ public class ChatActivity extends AppCompatActivity {
             );
         }
     }
-
     private void setupRecyclerView() {
         adapter = new MessageAdapter(messageList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }
-
     private void setupClickListeners() {
         emojiButton.setOnClickListener(v -> showEmojiPicker());
-
         sendButton.setOnClickListener(v -> {
             String message = messageInput.getText().toString().trim();
             if (!message.isEmpty()) {
                 sendMessage(message);
             }
         });
-
         messageInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -149,15 +130,13 @@ public class ChatActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
     }
-
     private void updateTypingStatus(boolean isTyping) {
         if (chatRef != null && currentUser != null) {
             chatRef.child("typing").child(currentUser.getUid()).setValue(isTyping);
         }
     }
-
     private void showEmojiPicker() {
-        String[] emojis = {"😊", "😂", "❤️", "👍", "🎉", "🔥", "✨", "💪", "👋", "🙏"};
+        String[] emojis = {"ðŸ˜Š", "ðŸ˜‚", "â¤ï¸", "ðŸ‘", "ðŸŽ‰", "ðŸ”¥", "âœ¨", "ðŸ’ª", "ðŸ‘‹", "ðŸ™"};
         new AlertDialog.Builder(this)
                 .setTitle("Select Emoji")
                 .setItems(emojis, (dialog, which) -> {
@@ -169,13 +148,10 @@ public class ChatActivity extends AppCompatActivity {
                 })
                 .show();
     }
-
     private void sendMessage(String message) {
         if (currentUser == null) return;
-
         String messageId = messagesRef.push().getKey();
         if (messageId == null) return;
-
         ChatMessage msg = new ChatMessage(
                 messageId,
                 message,
@@ -184,11 +160,9 @@ public class ChatActivity extends AppCompatActivity {
                 System.currentTimeMillis(),
                 false
         );
-
         messagesRef.child(messageId).setValue(msg)
                 .addOnSuccessListener(aVoid -> {
                     messageInput.setText("");
-
                     // Update last message in chat info
                     Map<String, Object> updates = new HashMap<>();
                     updates.put("lastMessage", message);
@@ -200,10 +174,8 @@ public class ChatActivity extends AppCompatActivity {
                     Toast.makeText(this, "Failed to send: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-
     private void loadMessages() {
         if (messagesRef == null) return;
-
         messagesListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -219,19 +191,15 @@ public class ChatActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
                 recyclerView.scrollToPosition(messageList.size() - 1);
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(ChatActivity.this, "Failed to load messages", Toast.LENGTH_SHORT).show();
             }
         };
-
         messagesRef.addValueEventListener(messagesListener);
     }
-
     private void markMessagesAsRead() {
         if (messagesRef == null || currentUser == null) return;
-
         messagesRef.orderByChild("senderId").equalTo(otherUserId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -244,7 +212,6 @@ public class ChatActivity extends AppCompatActivity {
                     public void onCancelled(@NonNull DatabaseError error) {}
                 });
     }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -252,7 +219,6 @@ public class ChatActivity extends AppCompatActivity {
             messagesRef.removeEventListener(messagesListener);
         }
     }
-
     // ChatMessage Model Class
     public static class ChatMessage {
         private String messageId;
@@ -262,9 +228,7 @@ public class ChatActivity extends AppCompatActivity {
         private long timestamp;
         private boolean isRead;
         private boolean isSent;
-
         public ChatMessage() {}
-
         public ChatMessage(String messageId, String text, String senderId, String senderName, long timestamp, boolean isRead) {
             this.messageId = messageId;
             this.text = text;
@@ -273,7 +237,6 @@ public class ChatActivity extends AppCompatActivity {
             this.timestamp = timestamp;
             this.isRead = isRead;
         }
-
         public String getMessageId() { return messageId; }
         public void setMessageId(String messageId) { this.messageId = messageId; }
         public String getText() { return text; }
@@ -288,41 +251,33 @@ public class ChatActivity extends AppCompatActivity {
         public void setRead(boolean read) { isRead = read; }
         public boolean isSent() { return isSent; }
         public void setSent(boolean sent) { isSent = sent; }
-
         public String getFormattedTime() {
             SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
             return sdf.format(new Date(timestamp));
         }
     }
-
     // MessageAdapter
     private class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
         private List<ChatMessage> messages;
-
         MessageAdapter(List<ChatMessage> messages) { this.messages = messages; }
-
         @Override
         public int getItemViewType(int position) {
             return messages.get(position).isSent() ? 1 : 0;
         }
-
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             int layout = viewType == 1 ? R.layout.item_message_sent : R.layout.item_message_received;
             return new ViewHolder(getLayoutInflater().inflate(layout, parent, false));
         }
-
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             ChatMessage message = messages.get(position);
             holder.messageText.setText(message.getText());
             holder.timeText.setText(message.getFormattedTime());
         }
-
         @Override
         public int getItemCount() { return messages.size(); }
-
         class ViewHolder extends RecyclerView.ViewHolder {
             TextView messageText, timeText;
             ViewHolder(View itemView) {

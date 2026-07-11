@@ -3,17 +3,10 @@ package com.example.hustlefix;
 import android.app.Activity;
 import android.content.Context;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.facebook.AccessToken;
-import com.facebook.CallbackManager;
-import com.facebook.FacebookCallback;
-import com.facebook.FacebookException;
-import com.facebook.login.LoginManager;
-import com.facebook.login.LoginResult;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -21,7 +14,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
@@ -34,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class AuthHelper {
-
     public static final int RC_GOOGLE_SIGN_IN = 9001;
 
     private AuthHelper() {}
@@ -49,13 +40,6 @@ public final class AuthHelper {
         return !TextUtils.isEmpty(clientId)
                 && !clientId.startsWith("YOUR_")
                 && !clientId.contains("placeholder");
-    }
-
-    public static boolean isFacebookConfigured(Context context) {
-        String appId = context.getString(R.string.facebook_app_id);
-        return !TextUtils.isEmpty(appId)
-                && !appId.startsWith("placeholder")
-                && !appId.equals("YOUR_FACEBOOK_APP_ID");
     }
 
     public static void signInWithGoogle(AppCompatActivity activity, String userRole, AuthCallback callback) {
@@ -93,28 +77,12 @@ public final class AuthHelper {
                 callback.onError("Google sign-in failed");
                 return;
             }
+
             AuthCredential credential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
             signInWithCredential(activity, credential, userRole, account.getDisplayName(), account.getEmail(), callback);
         } catch (ApiException e) {
             callback.onError("Google sign-in failed: " + e.getMessage());
         }
-    }
-
-    public static void signInWithFacebook(AppCompatActivity activity, AuthCallback callback) {
-        if (!isFacebookConfigured(activity)) {
-            callback.onError(activity.getString(R.string.auth_facebook_not_configured));
-            return;
-        }
-        LoginManager.getInstance().logInWithReadPermissions(activity, Arrays.asList("email", "public_profile"));
-    }
-
-    public static void handleFacebookAccessToken(
-            Activity activity,
-            AccessToken token,
-            String userRole,
-            AuthCallback callback) {
-        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
-        signInWithCredential(activity, credential, userRole, null, null, callback);
     }
 
     public static void signInWithApple(AppCompatActivity activity, String userRole, AuthCallback callback) {
@@ -163,6 +131,7 @@ public final class AuthHelper {
             callback.onError("Sign-in failed");
             return;
         }
+
         SessionHelper.setLoggedIn(activity, true);
         SessionHelper.saveRole(activity, userRole);
         SessionHelper.prefs(activity).edit()
@@ -170,12 +139,14 @@ public final class AuthHelper {
                 .putString("userRole", userRole)
                 .putString("userEmail", user.getEmail() != null ? user.getEmail() : "")
                 .apply();
+
         callback.onSuccess();
     }
 
     private static void ensureUserProfile(FirebaseUser user, String userRole, String name, String email) {
         String uid = user.getUid();
         String firebaseRole = SessionHelper.firebaseRoleForAppRole(userRole);
+
         String displayName = name;
         if (displayName == null || displayName.isEmpty()) {
             displayName = user.getDisplayName();

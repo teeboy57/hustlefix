@@ -1,5 +1,4 @@
 package com.example.hustlefix;
-
 public class Message {
     private String id;
     private String senderId;
@@ -10,11 +9,9 @@ public class Message {
     private boolean isRead;
     private long readAt;
     private String type;
-
     public Message() {
         // Empty constructor for Firebase
     }
-
     public Message(String id, String senderId, String senderName, String text,
                    long timestamp, String status, boolean isRead) {
         this.id = id;
@@ -26,7 +23,6 @@ public class Message {
         this.isRead = isRead;
         this.type = "text";
     }
-
     // Getters
     public String getId() { return id; }
     public String getSenderId() { return senderId; }
@@ -37,7 +33,6 @@ public class Message {
     public boolean isRead() { return isRead; }
     public long getReadAt() { return readAt; }
     public String getType() { return type; }
-
     // Setters
     public void setId(String id) { this.id = id; }
     public void setSenderId(String senderId) { this.senderId = senderId; }
