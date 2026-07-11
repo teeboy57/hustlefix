@@ -4,6 +4,8 @@
     <color name="primaryDarkPurple">#3700B3</color>
     <color name="primaryLightPurple">#6200EE</color>
     <color name="tealAccent">#03DAC5</color>
+    <color name="accentTeal">#03DAC5</color>
+    <color name="accentTealDark">#018786</color>
     <color name="purple_200">#BB86FC</color>
     <color name="purple_500">#BB86FC</color>
     <color name="purple_700">#3700B3</color>
@@ -35,6 +37,11 @@
     <color name="colorPrimary">#BB86FC</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
+    <color name="button_primary">#BB86FC</color>
+    <color name="button_primary_dark">#3700B3</color>
+    <color name="error_red">#F44336</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="warning_yellow">#FFC107</color>
     <color name="material_grey_50">#FAFAFA</color>
     <color name="material_grey_100">#F5F5F5</color>
     <color name="material_grey_200">#EEEEEE</color>
@@ -45,10 +52,4 @@
     <color name="material_grey_700">#616161</color>
     <color name="material_grey_800">#424242</color>
     <color name="material_grey_900">#212121</color>
-    <color name="accentTeal">#03DAC5</color>
-    <color name="accentTealDark">#018786</color>
-    <color name="button_primary">#BB86FC</color>
-    <color name="button_primary_dark">#3700B3</color>
-    <color name="error_red">#F44336</color>
-    <color name="success_green">#4CAF50</color>
-    <color name="warning_yellow">#FFC107</color>
+</resources>

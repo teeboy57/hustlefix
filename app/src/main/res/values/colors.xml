@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary colors -->
     <color name="primaryPurple">#6200EE</color>
     <color name="primaryDarkPurple">#3700B3</color>
     <color name="primaryLightPurple">#BB86FC</color>
     <color name="tealAccent">#03DAC5</color>
-    
-    <!-- Standard colors -->
+    <color name="accentTeal">#03DAC5</color>
+    <color name="accentTealDark">#018786</color>
     <color name="purple_200">#BB86FC</color>
     <color name="purple_500">#6200EE</color>
     <color name="purple_700">#3700B3</color>
@@ -14,42 +13,35 @@
     <color name="teal_700">#018786</color>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    
-    <!-- Background colors -->
     <color name="bg_dark">#121212</color>
     <color name="bg_light">#FFFFFF</color>
     <color name="bg_card">#1E1E1E</color>
     <color name="background">#F5F5F5</color>
     <color name="card_background">#FFFFFF</color>
-    
-    <!-- Text colors -->
     <color name="text_primary">#DE000000</color>
     <color name="text_secondary">#99000000</color>
     <color name="text_hint">#42000000</color>
     <color name="text_primary_inverse">#DEFFFFFF</color>
     <color name="text_secondary_inverse">#99FFFFFF</color>
     <color name="text_hint_inverse">#42FFFFFF</color>
-    
-    <!-- White text variants -->
     <color name="text_white">#FFFFFFFF</color>
     <color name="text_white_80">#CCFFFFFF</color>
     <color name="text_white_60">#99FFFFFF</color>
     <color name="text_white_40">#66FFFFFF</color>
     <color name="text_white_20">#33FFFFFF</color>
-    
-    <!-- Status colors -->
     <color name="orange">#FF9800</color>
     <color name="green">#4CAF50</color>
     <color name="blue">#2196F3</color>
     <color name="red">#F44336</color>
     <color name="yellow">#FFC107</color>
-    
-    <!-- Theme colors -->
     <color name="colorPrimary">#6200EE</color>
     <color name="colorPrimaryDark">#3700B3</color>
     <color name="colorAccent">#03DAC5</color>
-    
-    <!-- Additional Material colors -->
+    <color name="button_primary">#6200EE</color>
+    <color name="button_primary_dark">#3700B3</color>
+    <color name="error_red">#F44336</color>
+    <color name="success_green">#4CAF50</color>
+    <color name="warning_yellow">#FFC107</color>
     <color name="material_grey_50">#FAFAFA</color>
     <color name="material_grey_100">#F5F5F5</color>
     <color name="material_grey_200">#EEEEEE</color>
@@ -60,10 +52,4 @@
     <color name="material_grey_700">#616161</color>
     <color name="material_grey_800">#424242</color>
     <color name="material_grey_900">#212121</color>
-    <color name="accentTeal">#03DAC5</color>
-    <color name="accentTealDark">#018786</color>
-    <color name="button_primary">#6200EE</color>
-    <color name="button_primary_dark">#3700B3</color>
-    <color name="error_red">#F44336</color>
-    <color name="success_green">#4CAF50</color>
-    <color name="warning_yellow">#FFC107</color>
+</resources>
