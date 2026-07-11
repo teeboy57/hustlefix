@@ -141,7 +141,7 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".PostJobActivity"
+            android:name=".PostServiceActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait" />

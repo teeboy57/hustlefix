@@ -200,12 +200,12 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         }
 
         btnPostJob.setOnClickListener(v -> {
-            Intent intent = new Intent(ClientDashboardActivity.this, PostJobActivity.class);
+            Intent intent = new Intent(ClientDashboardActivity.this, PostServiceActivity.class);
             startActivity(intent);
         });
 
         btnEmptyPostJob.setOnClickListener(v -> {
-            Intent intent = new Intent(ClientDashboardActivity.this, PostJobActivity.class);
+            Intent intent = new Intent(ClientDashboardActivity.this, PostServiceActivity.class);
             startActivity(intent);
         });
 

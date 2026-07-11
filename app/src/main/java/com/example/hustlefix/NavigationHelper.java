@@ -84,8 +84,8 @@ public final class NavigationHelper {
             return true;
         }
         if (itemId == R.id.nav_post_job) {
-            activity.startActivity(new Intent(activity, PostJobActivity.class));
-            if (!(activity instanceof PostJobActivity)) {
+            activity.startActivity(new Intent(activity, PostServiceActivity.class));
+            if (!(activity instanceof PostServiceActivity)) {
                 activity.finish();
             }
             return true;
@@ -184,7 +184,7 @@ public final class NavigationHelper {
                 openHome(activity);
                 break;
             case 1:
-                activity.startActivity(new Intent(activity, PostJobActivity.class));
+                activity.startActivity(new Intent(activity, PostServiceActivity.class));
                 break;
             case 2:
                 activity.startActivity(new Intent(activity, FindWorkersActivity.class));

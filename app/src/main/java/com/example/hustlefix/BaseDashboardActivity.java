@@ -93,7 +93,7 @@ public abstract class BaseDashboardActivity extends AppCompatActivity implements
             }
             return true;
         } else if (id == R.id.nav_post_job) {
-            startActivity(new Intent(this, PostJobActivity.class));
+            startActivity(new Intent(this, PostServiceActivity.class));
         } else if (id == R.id.nav_find_workers) {
             startActivity(new Intent(this, FindWorkersActivity.class));
         } else if (id == R.id.nav_quotes) {

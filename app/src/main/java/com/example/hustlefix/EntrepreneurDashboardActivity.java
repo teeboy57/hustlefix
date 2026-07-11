@@ -188,7 +188,7 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
 
     private void setupClickListeners() {
         btnPostJob.setOnClickListener(v -> {
-            Intent intent = new Intent(EntrepreneurDashboardActivity.this, PostJobActivity.class);
+            Intent intent = new Intent(EntrepreneurDashboardActivity.this, PostServiceActivity.class);
             startActivity(intent);
         });
 
@@ -215,7 +215,7 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
         });
 
         btnEmptyPostJob.setOnClickListener(v -> {
-            Intent intent = new Intent(EntrepreneurDashboardActivity.this, PostJobActivity.class);
+            Intent intent = new Intent(EntrepreneurDashboardActivity.this, PostServiceActivity.class);
             startActivity(intent);
         });
 
