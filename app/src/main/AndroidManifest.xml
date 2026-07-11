@@ -60,6 +60,9 @@
         <activity android:name=".AnalyticsActivity" android:exported="false" />
         <activity android:name=".ImageViewerActivity" android:exported="false" />
         <activity android:name=".EditServiceActivity" android:exported="false" />
+        <activity android:name=".FindServicesActivity" android:exported="false" />
+        <activity android:name=".ServiceDetailActivity" android:exported="false" />
+        <activity android:name=".SavedServicesActivity" android:exported="false" />
 
     </application>
 

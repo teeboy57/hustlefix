@@ -10,42 +10,147 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@drawable/gradient_toolbar"
+        android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:titleTextColor="@android:color/white"
+        app:titleTextColor="@color/white"
         app:title="Booking Details" />
 
-    <LinearLayout
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone" />
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="32dp">
+        android:fillViewport="true">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📋"
-            android:textSize="64sp" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvBookingId"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Booking Details"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#212121"
-            android:layout_marginTop="16dp" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="This feature is coming soon!"
-            android:textSize="16sp"
-            android:textColor="#757575"
-            android:layout_marginTop="8dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
 
-    </LinearLayout>
+                    <TextView
+                        android:id="@+id/tvServiceTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Service: Title"
+                        android:textSize="16sp"
+                        android:textColor="#212121"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvClientName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Client: Name"
+                        android:textSize="14sp"
+                        android:textColor="#757575"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvPrice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Price: $0.00"
+                        android:textSize="14sp"
+                        android:textColor="#6200EE"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Status: Pending"
+                        android:textSize="14sp"
+                        android:textColor="#FF9800"
+                        android:layout_marginBottom="4dp" />
+
+                    <TextView
+                        android:id="@+id/tvDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Date: Today"
+                        android:textSize="14sp"
+                        android:textColor="#757575" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Entrepreneur Actions -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="16dp">
+
+                <Button
+                    android:id="@+id/btnAccept"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="ACCEPT BOOKING"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:backgroundTint="#4CAF50"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btnReject"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:text="REJECT BOOKING"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:backgroundTint="#F44336"
+                    android:visibility="gone" />
+
+                <Button
+                    android:id="@+id/btnComplete"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:text="MARK COMPLETED"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:backgroundTint="#2196F3"
+                    android:visibility="gone" />
+
+                <!-- Chat Button - Appears after booking is confirmed -->
+                <Button
+                    android:id="@+id/btnChat"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:text="💬 CHAT WITH PROVIDER"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:backgroundTint="#6200EE"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

@@ -185,70 +185,44 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
     }
 
     private void setupClickListeners() {
-        cardServices.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Services clicked");
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyServicesActivity.class));
-            }
+        cardServices.setOnClickListener(v -> {
+            Log.d(TAG, "Services clicked");
+            startActivity(new Intent(this, MyServicesActivity.class));
         });
 
-        cardBookings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Bookings clicked");
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyBookingsActivity.class));
-            }
+        cardBookings.setOnClickListener(v -> {
+            Log.d(TAG, "Bookings clicked");
+            startActivity(new Intent(this, MyBookingsActivity.class));
         });
 
-        cardRevenue.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Revenue clicked");
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, RevenueActivity.class));
-            }
+        cardRevenue.setOnClickListener(v -> {
+            Log.d(TAG, "Revenue clicked");
+            startActivity(new Intent(this, RevenueActivity.class));
         });
 
-        cardAnalytics.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Analytics clicked");
-                Toast.makeText(EntrepreneurDashboardActivity.this, "Opening Analytics...", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, AnalyticsActivity.class));
-            }
+        cardAnalytics.setOnClickListener(v -> {
+            Log.d(TAG, "Analytics clicked");
+            startActivity(new Intent(this, AnalyticsActivity.class));
         });
 
-        cardPostService.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Post Service quick action");
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, PostServiceActivity.class));
-            }
+        cardPostService.setOnClickListener(v -> {
+            Log.d(TAG, "Post Service quick action");
+            startActivity(new Intent(this, PostServiceActivity.class));
         });
 
-        cardMyServices.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "My Services quick action");
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyServicesActivity.class));
-            }
+        cardMyServices.setOnClickListener(v -> {
+            Log.d(TAG, "My Services quick action");
+            startActivity(new Intent(this, MyServicesActivity.class));
         });
 
-        cardMyBookings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "My Bookings quick action");
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, MyBookingsActivity.class));
-            }
+        cardMyBookings.setOnClickListener(v -> {
+            Log.d(TAG, "My Bookings quick action");
+            startActivity(new Intent(this, MyBookingsActivity.class));
         });
 
-        cardAnalyticsQuick.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, "Analytics quick action clicked!");
-                Toast.makeText(EntrepreneurDashboardActivity.this, "Opening Analytics...", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(EntrepreneurDashboardActivity.this, AnalyticsActivity.class));
-            }
+        cardAnalyticsQuick.setOnClickListener(v -> {
+            Log.d(TAG, "Analytics quick action clicked!");
+            startActivity(new Intent(this, AnalyticsActivity.class));
         });
     }
 
@@ -357,8 +331,10 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
                         bookingAdapter = new BookingAdapter(reversed, new BookingAdapter.OnBookingClickListener() {
                             @Override
                             public void onBookingClick(Booking booking) {
+                                // Open booking detail with accept/reject options
                                 Intent intent = new Intent(EntrepreneurDashboardActivity.this, BookingDetailActivity.class);
                                 intent.putExtra("bookingId", booking.getBookingId());
+                                intent.putExtra("isEntrepreneur", true);
                                 startActivity(intent);
                             }
                         });
@@ -385,45 +361,25 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         } else if (id == R.id.nav_post_job) {
-            drawerLayout.closeDrawer(GravityCompat.START);
             startActivity(new Intent(this, PostServiceActivity.class));
             return true;
         } else if (id == R.id.nav_my_services) {
-            drawerLayout.closeDrawer(GravityCompat.START);
             startActivity(new Intent(this, MyServicesActivity.class));
             return true;
         } else if (id == R.id.nav_my_bookings) {
-            drawerLayout.closeDrawer(GravityCompat.START);
             startActivity(new Intent(this, MyBookingsActivity.class));
             return true;
         } else if (id == R.id.nav_analytics) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            Toast.makeText(this, "Opening Analytics...", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, AnalyticsActivity.class));
             return true;
         } else if (id == R.id.nav_settings) {
-            drawerLayout.closeDrawer(GravityCompat.START);
             startActivity(new Intent(this, SettingsActivity.class));
             return true;
         } else if (id == R.id.nav_logout) {
-            drawerLayout.closeDrawer(GravityCompat.START);
             logout();
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                drawerLayout.closeDrawer(GravityCompat.START);
-            } else {
-                drawerLayout.openDrawer(GravityCompat.START);
-            }
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void logout() {

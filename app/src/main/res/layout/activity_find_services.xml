@@ -13,7 +13,7 @@
         android:background="@color/colorPrimary"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:titleTextColor="@color/white"
-        app:title="Messages" />
+        app:title="Find Services" />
 
     <ProgressBar
         android:id="@+id/progressBar"
@@ -27,17 +27,16 @@
         android:id="@+id/tvEmpty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="No conversations yet"
+        android:text="No services available"
         android:gravity="center"
         android:textSize="16sp"
         android:textColor="#757575"
-        android:visibility="visible" />
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvChats"
+        android:id="@+id/rvServices"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
-        android:visibility="gone" />
+        android:padding="8dp" />
 
 </LinearLayout>

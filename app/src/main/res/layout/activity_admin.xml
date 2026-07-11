@@ -10,7 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primaryPurple"
+        android:background="@color/colorPrimary"
         app:title="Admin Panel"
         app:titleTextColor="@android:color/white"
         app:navigationIcon="@drawable/ic_back"
@@ -129,7 +129,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🔧 John Smith (Plumber)"
+                            android:text="ðŸ”§ John Smith (Plumber)"
                             android:textSize="13sp"
                             android:textColor="#667eea" />
 
@@ -137,7 +137,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="⚡ Sarah Johnson (Electrician)"
+                            android:text="âš¡ Sarah Johnson (Electrician)"
                             android:textSize="13sp"
                             android:textColor="#4ECDC4" />
 
@@ -153,7 +153,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🪚 Mike Peterson (Carpenter)"
+                            android:text="ðŸªš Mike Peterson (Carpenter)"
                             android:textSize="13sp"
                             android:textColor="#F9B43A" />
 
@@ -161,7 +161,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🎨 Linda Ndlovu (Painter)"
+                            android:text="ðŸŽ¨ Linda Ndlovu (Painter)"
                             android:textSize="13sp"
                             android:textColor="#764ba2" />
 
@@ -177,7 +177,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🧹 Thabo Molefe (Cleaner)"
+                            android:text="ðŸ§¹ Thabo Molefe (Cleaner)"
                             android:textSize="13sp"
                             android:textColor="#2ECC71" />
 
@@ -185,7 +185,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🔧 David Mbeki (Mechanic)"
+                            android:text="ðŸ”§ David Mbeki (Mechanic)"
                             android:textSize="13sp"
                             android:textColor="#FF9800" />
 
@@ -200,7 +200,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="🌿 Grace Mkhize (Gardener)"
+                            android:text="ðŸŒ¿ Grace Mkhize (Gardener)"
                             android:textSize="13sp"
                             android:textColor="#8BC34A" />
 
@@ -208,7 +208,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="💻 Peter van der Merwe (IT)"
+                            android:text="ðŸ’» Peter van der Merwe (IT)"
                             android:textSize="13sp"
                             android:textColor="#2196F3" />
 

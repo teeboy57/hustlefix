@@ -11,7 +11,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primaryPurple"
+        android:background="@color/colorPrimary"
         app:title="Find Workers"
         app:titleTextColor="@android:color/white"
         app:navigationIcon="@drawable/ic_back"
@@ -168,7 +168,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="👷"
+            android:text="ðŸ‘·"
             android:textSize="48sp" />
 
         <TextView

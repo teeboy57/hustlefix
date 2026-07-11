@@ -1,290 +1,209 @@
 package com.example.hustlefix;
+
 import android.os.Bundle;
-import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
-import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+
 public class ChatActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
-    private EditText messageInput;
-    private ImageButton sendButton, emojiButton;
-    private List<ChatMessage> messageList;
-    private MessageAdapter adapter;
+
     private Toolbar toolbar;
-    private FirebaseAuth mAuth;
-    private FirebaseUser currentUser;
-    private DatabaseReference chatRef;
+    private TextView tvChatPartner;
+    private RecyclerView rvMessages;
+    private EditText etMessage;
+    private ImageView btnSend;
+    private ProgressBar progressBar;
+
     private DatabaseReference messagesRef;
-    private ValueEventListener messagesListener;
-    private String chatRoomId;
-    private String otherUserId;
-    private String otherUserName;
+    private FirebaseAuth mAuth;
+    private String currentUserId;
+    private String chatId;
+    private String partnerId;
+    private String partnerName;
+
+    private List<Message> messageList;
+    private MessageAdapter messageAdapter;
+    private ValueEventListener messageListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        otherUserId = ChatLauncher.resolveOtherUserId(getIntent());
-        otherUserName = ChatLauncher.resolveOtherUserName(getIntent());
-        if (otherUserId == null) {
-            ChatLauncher.openChatList(this);
+
+        // Get partner info from intent
+        partnerId = getIntent().getStringExtra("partnerId");
+        partnerName = getIntent().getStringExtra("partnerName");
+
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            currentUserId = currentUser.getUid();
+        }
+
+        if (currentUserId == null || partnerId == null) {
+            Toast.makeText(this, "Error: Missing user info", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
+
+        // Generate chat ID
+        chatId = generateChatId(currentUserId, partnerId);
+
         initViews();
         setupToolbar();
-        setupFirebase();
-        createChatRoom();
-        setupRecyclerView();
-        setupClickListeners();
         loadMessages();
-        markMessagesAsRead();
+        setupClickListeners();
     }
+
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
-        recyclerView = findViewById(R.id.recyclerView);
-        messageInput = findViewById(R.id.messageInput);
-        sendButton = findViewById(R.id.sendButton);
-        emojiButton = findViewById(R.id.emojiButton);
+        tvChatPartner = findViewById(R.id.tvChatPartner);
+        rvMessages = findViewById(R.id.rvMessages);
+        etMessage = findViewById(R.id.etMessage);
+        btnSend = findViewById(R.id.btnSend);
+        progressBar = findViewById(R.id.progressBar);
+
+        rvMessages.setLayoutManager(new LinearLayoutManager(this));
         messageList = new ArrayList<>();
+        messageAdapter = new MessageAdapter(messageList, currentUserId);
+        rvMessages.setAdapter(messageAdapter);
     }
+
     private void setupToolbar() {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle(otherUserName != null ? otherUserName : "Chat");
+            getSupportActionBar().setTitle("Chat");
         }
-        toolbar.setNavigationOnClickListener(v -> finish());
+        String displayName = partnerName != null ? partnerName : "User";
+        tvChatPartner.setText(displayName);
     }
-    private void setupFirebase() {
-        mAuth = FirebaseAuth.getInstance();
-        currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(this, "Please login", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-    }
-    private void createChatRoom() {
-        if (currentUser != null && otherUserId != null) {
-            chatRoomId = ChatLauncher.buildChatRoomId(currentUser.getUid(), otherUserId);
-            chatRef = FirebaseDatabase.getInstance().getReference("chats").child(chatRoomId);
-            messagesRef = chatRef.child("messages");
-            String myName = currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "User";
-            ChatLauncher.ensureChatRoomIndexed(
-                    chatRoomId,
-                    currentUser.getUid(),
-                    myName,
-                    otherUserId,
-                    otherUserName != null ? otherUserName : "User"
-            );
+
+    private String generateChatId(String id1, String id2) {
+        if (id1.compareTo(id2) < 0) {
+            return id1 + "_" + id2;
+        } else {
+            return id2 + "_" + id1;
         }
     }
-    private void setupRecyclerView() {
-        adapter = new MessageAdapter(messageList);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(adapter);
+
+    private void loadMessages() {
+        setLoading(true);
+        messagesRef = FirebaseDatabase.getInstance().getReference("messages").child(chatId);
+        
+        // Remove any existing listener
+        if (messageListener != null) {
+            messagesRef.removeEventListener(messageListener);
+        }
+        
+        messageListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                setLoading(false);
+                messageList.clear();
+
+                if (snapshot.exists()) {
+                    for (DataSnapshot messageSnapshot : snapshot.getChildren()) {
+                        Message message = messageSnapshot.getValue(Message.class);
+                        if (message != null) {
+                            messageList.add(message);
+                        }
+                    }
+                    messageAdapter.notifyDataSetChanged();
+                    rvMessages.scrollToPosition(messageList.size() - 1);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                setLoading(false);
+                Toast.makeText(ChatActivity.this, "Error loading messages", Toast.LENGTH_SHORT).show();
+            }
+        };
+        
+        messagesRef.orderByChild("timestamp").addValueEventListener(messageListener);
     }
+
     private void setupClickListeners() {
-        emojiButton.setOnClickListener(v -> showEmojiPicker());
-        sendButton.setOnClickListener(v -> {
-            String message = messageInput.getText().toString().trim();
-            if (!message.isEmpty()) {
-                sendMessage(message);
-            }
-        });
-        messageInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                updateTypingStatus(true);
-                new Handler().postDelayed(() -> updateTypingStatus(false), 1500);
-            }
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        btnSend.setOnClickListener(v -> sendMessage());
     }
-    private void updateTypingStatus(boolean isTyping) {
-        if (chatRef != null && currentUser != null) {
-            chatRef.child("typing").child(currentUser.getUid()).setValue(isTyping);
+
+    private void sendMessage() {
+        String messageText = etMessage.getText().toString().trim();
+        if (messageText.isEmpty()) {
+            Toast.makeText(this, "Please enter a message", Toast.LENGTH_SHORT).show();
+            return;
         }
-    }
-    private void showEmojiPicker() {
-        String[] emojis = {"ðŸ˜Š", "ðŸ˜‚", "â¤ï¸", "ðŸ‘", "ðŸŽ‰", "ðŸ”¥", "âœ¨", "ðŸ’ª", "ðŸ‘‹", "ðŸ™"};
-        new AlertDialog.Builder(this)
-                .setTitle("Select Emoji")
-                .setItems(emojis, (dialog, which) -> {
-                    int cursorPos = messageInput.getSelectionStart();
-                    String currentText = messageInput.getText().toString();
-                    String newText = currentText.substring(0, cursorPos) + emojis[which] + currentText.substring(cursorPos);
-                    messageInput.setText(newText);
-                    messageInput.setSelection(cursorPos + emojis[which].length());
-                })
-                .show();
-    }
-    private void sendMessage(String message) {
-        if (currentUser == null) return;
+
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Toast.makeText(this, "Please login", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String senderName = user.getDisplayName() != null ? user.getDisplayName() : "User";
+
         String messageId = messagesRef.push().getKey();
-        if (messageId == null) return;
-        ChatMessage msg = new ChatMessage(
+        if (messageId == null) {
+            Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Message message = new Message(
                 messageId,
-                message,
-                currentUser.getUid(),
-                currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "User",
-                System.currentTimeMillis(),
-                false
+                currentUserId,
+                senderName,
+                partnerId,
+                partnerName != null ? partnerName : "Partner",
+                messageText
         );
-        messagesRef.child(messageId).setValue(msg)
+
+        messagesRef.child(messageId).setValue(message)
                 .addOnSuccessListener(aVoid -> {
-                    messageInput.setText("");
-                    // Update last message in chat info
-                    Map<String, Object> updates = new HashMap<>();
-                    updates.put("lastMessage", message);
-                    updates.put("lastMessageTime", System.currentTimeMillis());
-                    updates.put("lastMessageSender", currentUser.getUid());
-                    chatRef.child("info").updateChildren(updates);
+                    etMessage.setText("");
+                    rvMessages.scrollToPosition(messageList.size() - 1);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Failed to send: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
-    private void loadMessages() {
-        if (messagesRef == null) return;
-        messagesListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                messageList.clear();
-                for (DataSnapshot data : snapshot.getChildren()) {
-                    ChatMessage message = data.getValue(ChatMessage.class);
-                    if (message != null) {
-                        message.setMessageId(data.getKey());
-                        message.setSent(message.getSenderId().equals(currentUser.getUid()));
-                        messageList.add(message);
-                    }
-                }
-                adapter.notifyDataSetChanged();
-                recyclerView.scrollToPosition(messageList.size() - 1);
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ChatActivity.this, "Failed to load messages", Toast.LENGTH_SHORT).show();
-            }
-        };
-        messagesRef.addValueEventListener(messagesListener);
+
+    private void setLoading(boolean isLoading) {
+        progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
     }
-    private void markMessagesAsRead() {
-        if (messagesRef == null || currentUser == null) return;
-        messagesRef.orderByChild("senderId").equalTo(otherUserId)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot data : snapshot.getChildren()) {
-                            data.getRef().child("isRead").setValue(true);
-                        }
-                    }
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {}
-                });
-    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (messagesRef != null && messagesListener != null) {
-            messagesRef.removeEventListener(messagesListener);
+        // Remove listener to prevent memory leaks
+        if (messageListener != null && messagesRef != null) {
+            messagesRef.removeEventListener(messageListener);
         }
     }
-    // ChatMessage Model Class
-    public static class ChatMessage {
-        private String messageId;
-        private String text;
-        private String senderId;
-        private String senderName;
-        private long timestamp;
-        private boolean isRead;
-        private boolean isSent;
-        public ChatMessage() {}
-        public ChatMessage(String messageId, String text, String senderId, String senderName, long timestamp, boolean isRead) {
-            this.messageId = messageId;
-            this.text = text;
-            this.senderId = senderId;
-            this.senderName = senderName;
-            this.timestamp = timestamp;
-            this.isRead = isRead;
-        }
-        public String getMessageId() { return messageId; }
-        public void setMessageId(String messageId) { this.messageId = messageId; }
-        public String getText() { return text; }
-        public void setText(String text) { this.text = text; }
-        public String getSenderId() { return senderId; }
-        public void setSenderId(String senderId) { this.senderId = senderId; }
-        public String getSenderName() { return senderName; }
-        public void setSenderName(String senderName) { this.senderName = senderName; }
-        public long getTimestamp() { return timestamp; }
-        public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-        public boolean isRead() { return isRead; }
-        public void setRead(boolean read) { isRead = read; }
-        public boolean isSent() { return isSent; }
-        public void setSent(boolean sent) { isSent = sent; }
-        public String getFormattedTime() {
-            SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
-            return sdf.format(new Date(timestamp));
-        }
-    }
-    // MessageAdapter
-    private class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
-        private List<ChatMessage> messages;
-        MessageAdapter(List<ChatMessage> messages) { this.messages = messages; }
-        @Override
-        public int getItemViewType(int position) {
-            return messages.get(position).isSent() ? 1 : 0;
-        }
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            int layout = viewType == 1 ? R.layout.item_message_sent : R.layout.item_message_received;
-            return new ViewHolder(getLayoutInflater().inflate(layout, parent, false));
-        }
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            ChatMessage message = messages.get(position);
-            holder.messageText.setText(message.getText());
-            holder.timeText.setText(message.getFormattedTime());
-        }
-        @Override
-        public int getItemCount() { return messages.size(); }
-        class ViewHolder extends RecyclerView.ViewHolder {
-            TextView messageText, timeText;
-            ViewHolder(View itemView) {
-                super(itemView);
-                messageText = itemView.findViewById(R.id.messageText);
-                timeText = itemView.findViewById(R.id.timeText);
-            }
-        }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
     }
 }

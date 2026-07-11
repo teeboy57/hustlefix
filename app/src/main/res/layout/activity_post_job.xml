@@ -18,7 +18,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/primaryPurple"
+            android:background="@color/colorPrimary"
             app:title="Post a Job"
             app:titleTextColor="@android:color/white"
             app:navigationIcon="@drawable/ic_menu"
@@ -143,7 +143,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🔧 Plumber"
+                                android:text="ðŸ”§ Plumber"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -153,7 +153,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="⚡ Electrician"
+                                android:text="âš¡ Electrician"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -163,7 +163,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🪚 Carpenter"
+                                android:text="ðŸªš Carpenter"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -173,7 +173,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🎨 Painter"
+                                android:text="ðŸŽ¨ Painter"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -183,7 +183,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🧹 Cleaner"
+                                android:text="ðŸ§¹ Cleaner"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -193,7 +193,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🔧 Mechanic"
+                                android:text="ðŸ”§ Mechanic"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -203,7 +203,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="🌿 Gardener"
+                                android:text="ðŸŒ¿ Gardener"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -213,7 +213,7 @@
                                 style="@style/Widget.MaterialComponents.Chip.Choice"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="📌 Other"
+                                android:text="ðŸ“Œ Other"
                                 app:chipBackgroundColor="#F0F0F0"
                                 android:textColor="#2C3E50"
                                 android:checkable="true" />
@@ -445,7 +445,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="36dp"
                                 android:layout_weight="1"
-                                android:text="🚨 Emergency"
+                                android:text="ðŸš¨ Emergency"
                                 android:textSize="12sp" />
 
                         </com.google.android.material.button.MaterialButtonToggleGroup>

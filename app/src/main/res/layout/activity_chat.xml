@@ -4,65 +4,71 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:background="#F5F7FA">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primaryPurple"
-        app:title="Chat"
-        app:titleTextColor="@android:color/white"
-        app:navigationIcon="@drawable/ic_back"
-        app:navigationIconTint="@android:color/white" />
+        android:background="@color/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:titleTextColor="@color/white">
+
+        <TextView
+            android:id="@+id/tvChatPartner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Partner"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:layout_gravity="center"
+            android:layout_marginStart="56dp" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="32dp"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
+        android:id="@+id/rvMessages"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="12dp"
-        android:clipToPadding="false" />
+        android:padding="8dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="8dp"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:elevation="4dp">
 
-        <ImageButton
-            android:id="@+id/emojiButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/ic_emoji"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="#667eea"
-            android:contentDescription="Emoji" />
-
         <EditText
-            android:id="@+id/messageInput"
+            android:id="@+id/etMessage"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Type a message..."
             android:padding="12dp"
-            android:background="@android:drawable/editbox_background"
-            android:maxLines="4"
-            android:inputType="textMultiLine"
-            android:textColor="#2C3E50"
-            android:textColorHint="#95A5A6"
-            android:textSize="14sp" />
+            android:background="@drawable/chat_input_background"
+            android:maxLines="3" />
 
-        <ImageButton
-            android:id="@+id/sendButton"
+        <ImageView
+            android:id="@+id/btnSend"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_send"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="#667eea"
-            android:contentDescription="Send" />
+            android:tint="@color/colorPrimary"
+            android:layout_gravity="center"
+            android:padding="12dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless" />
 
     </LinearLayout>
 

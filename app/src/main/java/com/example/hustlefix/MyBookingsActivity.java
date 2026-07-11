@@ -1,6 +1,9 @@
 package com.example.hustlefix;
 
+import android.util.Log;
+
 import android.os.Bundle;
+import android.content.Intent;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -46,6 +49,10 @@ public class MyBookingsActivity extends AppCompatActivity {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             currentUserId = currentUser.getUid();
+            Log.d("MyBookings", "User ID: " + currentUserId);
+        } else {
+            Toast.makeText(this, "Please login", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         initViews();
@@ -65,7 +72,9 @@ public class MyBookingsActivity extends AppCompatActivity {
             @Override
             public void onBookingClick(Booking booking) {
                 // Navigate to booking detail
-                Toast.makeText(MyBookingsActivity.this, "Booking: " + booking.getServiceTitle(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MyBookingsActivity.this, BookingDetailActivity.class);
+                intent.putExtra("bookingId", booking.getBookingId());
+                startActivity(intent);
             }
         });
         rvBookings.setAdapter(bookingAdapter);
@@ -80,17 +89,18 @@ public class MyBookingsActivity extends AppCompatActivity {
     }
 
     private void loadBookings() {
-        if (currentUserId == null) {
-            Toast.makeText(this, "Please login to view your bookings", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        if (currentUserId == null) return;
 
         setLoading(true);
         bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
-        bookingsRef.orderByChild("entrepreneurId").equalTo(currentUserId)
+        
+        // Query bookings where clientId matches current user
+        bookingsRef.orderByChild("clientId").equalTo(currentUserId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        Log.d("MyBookings", "Snapshot exists: " + snapshot.exists());
+                        Log.d("MyBookings", "Children count: " + snapshot.getChildrenCount());
                         setLoading(false);
                         bookingList.clear();
 
@@ -101,11 +111,12 @@ public class MyBookingsActivity extends AppCompatActivity {
                                     bookingList.add(booking);
                                 }
                             }
+                            // Reverse to show newest first
+                            java.util.Collections.reverse(bookingList);
                             bookingAdapter.notifyDataSetChanged();
                             tvEmpty.setVisibility(View.GONE);
                             rvBookings.setVisibility(View.VISIBLE);
                         } else {
-                            // No bookings found
                             tvEmpty.setVisibility(View.VISIBLE);
                             rvBookings.setVisibility(View.GONE);
                         }

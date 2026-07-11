@@ -1,46 +1,59 @@
 package com.example.hustlefix;
+
 public class Message {
-    private String id;
+    private String messageId;
     private String senderId;
     private String senderName;
-    private String text;
+    private String receiverId;
+    private String receiverName;
+    private String messageText;
     private long timestamp;
-    private String status;
     private boolean isRead;
-    private long readAt;
-    private String type;
+    private String chatId;
+
     public Message() {
-        // Empty constructor for Firebase
+        // Default constructor required for Firebase
     }
-    public Message(String id, String senderId, String senderName, String text,
-                   long timestamp, String status, boolean isRead) {
-        this.id = id;
+
+    public Message(String messageId, String senderId, String senderName, 
+                   String receiverId, String receiverName, String messageText) {
+        this.messageId = messageId;
         this.senderId = senderId;
         this.senderName = senderName;
-        this.text = text;
-        this.timestamp = timestamp;
-        this.status = status;
-        this.isRead = isRead;
-        this.type = "text";
+        this.receiverId = receiverId;
+        this.receiverName = receiverName;
+        this.messageText = messageText;
+        this.timestamp = System.currentTimeMillis();
+        this.isRead = false;
+        this.chatId = generateChatId(senderId, receiverId);
     }
-    // Getters
-    public String getId() { return id; }
+
+    private String generateChatId(String id1, String id2) {
+        if (id1 == null || id2 == null) return "";
+        if (id1.compareTo(id2) < 0) {
+            return id1 + "_" + id2;
+        } else {
+            return id2 + "_" + id1;
+        }
+    }
+
+    // Getters and Setters
+    public String getMessageId() { return messageId; }
+    public void setMessageId(String messageId) { this.messageId = messageId; }
     public String getSenderId() { return senderId; }
-    public String getSenderName() { return senderName; }
-    public String getText() { return text; }
-    public long getTimestamp() { return timestamp; }
-    public String getStatus() { return status; }
-    public boolean isRead() { return isRead; }
-    public long getReadAt() { return readAt; }
-    public String getType() { return type; }
-    // Setters
-    public void setId(String id) { this.id = id; }
     public void setSenderId(String senderId) { this.senderId = senderId; }
+    public String getSenderName() { return senderName; }
     public void setSenderName(String senderName) { this.senderName = senderName; }
-    public void setText(String text) { this.text = text; }
+    public String getReceiverId() { return receiverId; }
+    public void setReceiverId(String receiverId) { this.receiverId = receiverId; }
+    public String getReceiverName() { return receiverName; }
+    public void setReceiverName(String receiverName) { this.receiverName = receiverName; }
+    public String getMessageText() { return messageText; }
+    public void setMessageText(String messageText) { this.messageText = messageText; }
+    public long getTimestamp() { return timestamp; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-    public void setStatus(String status) { this.status = status; }
+    public boolean isRead() { return isRead; }
     public void setRead(boolean read) { isRead = read; }
-    public void setReadAt(long readAt) { this.readAt = readAt; }
-    public void setType(String type) { this.type = type; }
+    public String getChatId() { return chatId; }
+    public void setChatId(String chatId) { this.chatId = chatId; }
 }
