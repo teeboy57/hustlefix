@@ -52,4 +52,8 @@
     <color name="material_grey_700">#616161</color>
     <color name="material_grey_800">#424242</color>
     <color name="material_grey_900">#212121</color>
-</resources>
+    <color name="extraLightGray">#F0F0F0</color>
+    <color name="lightGray">#D3D3D3</color>
+    <color name="mediumGray">#A9A9A9</color>
+    <color name="darkGray">#808080</color>
+    <color name="transparent">#00000000</color>
