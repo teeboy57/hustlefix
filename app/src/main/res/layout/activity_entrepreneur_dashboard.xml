@@ -18,7 +18,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/purple_500"
+            android:background="#6200EE"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:titleTextColor="@android:color/white" />
 
@@ -62,7 +62,7 @@
                                 android:text="0"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/purple_500" />
+                                android:textColor="#6200EE" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -96,7 +96,7 @@
                                 android:text="0"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/purple_500" />
+                                android:textColor="#6200EE" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -130,7 +130,7 @@
                                 android:text="$0"
                                 android:textSize="24sp"
                                 android:textStyle="bold"
-                                android:textColor="@color/purple_500" />
+                                android:textColor="#6200EE" />
 
                             <TextView
                                 android:layout_width="wrap_content"
@@ -163,13 +163,13 @@
                             android:text="Analytics"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/purple_500" />
+                            android:textColor="#6200EE" />
 
                         <TextView
                             android:id="@+id/tvRating"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Rating: 0.0 ★"
+                            android:text="Rating: 0.0 â˜…"
                             android:textSize="14sp"
                             android:layout_marginTop="4dp" />
                     </LinearLayout>
@@ -200,7 +200,7 @@
             android:layout_gravity="bottom|end"
             android:layout_margin="16dp"
             android:src="@drawable/ic_post_job"
-            app:backgroundTint="@color/purple_500"
+            app:backgroundTint="#6200EE"
             app:tint="@android:color/white" />
 
     </LinearLayout>
