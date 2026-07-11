@@ -240,11 +240,7 @@ public class EntrepreneurDashboardActivity extends AppCompatActivity implements 
             Intent intent = new Intent(this, PostServiceActivity.class);
             startActivity(intent);
             return true;
-        } else if (id == R.id.nav_find_workers) {
-            Toast.makeText(this, "Feature not available for entrepreneurs", Toast.LENGTH_SHORT).show();
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        } else if (id == R.id.nav_logout) {
+        }  else if (id == R.id.nav_logout) {
             logout();
             return true;
         } else {
