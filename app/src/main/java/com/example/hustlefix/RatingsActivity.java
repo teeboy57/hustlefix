@@ -89,7 +89,7 @@ public class RatingsActivity extends AppCompatActivity {
         setLoading(true);
 
         bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
-        bookingsRef.orderByChild("entrepreneurId").equalTo(currentUserId)
+        bookingsRef.orderByChild("serviceProviderId").equalTo(currentUserId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -99,7 +99,7 @@ public class RatingsActivity extends AppCompatActivity {
                         if (!snapshot.exists()) {
                             tvEmpty.setVisibility(View.VISIBLE);
                             rvReviews.setVisibility(View.GONE);
-                            tvAverageRating.setText("0.0 ★");
+                            tvAverageRating.setText("0.0 Star");
                             tvTotalReviews.setText("0 reviews");
                             return;
                         }
@@ -114,7 +114,7 @@ public class RatingsActivity extends AppCompatActivity {
                                 review.setRating(booking.getRating());
                                 review.setClientName(booking.getClientName() != null ? booking.getClientName() : "Anonymous");
                                 review.setServiceTitle(booking.getServiceTitle() != null ? booking.getServiceTitle() : "Service");
-                                review.setReviewDate(booking.getBookingDate());
+                                // reviewDate will be set later
                                 review.setComment(booking.getNotes() != null ? booking.getNotes() : "No comment provided");
                                 
                                 reviewList.add(review);
@@ -126,14 +126,14 @@ public class RatingsActivity extends AppCompatActivity {
                         if (reviewList.isEmpty()) {
                             tvEmpty.setVisibility(View.VISIBLE);
                             rvReviews.setVisibility(View.GONE);
-                            tvAverageRating.setText("0.0 ★");
+                            tvAverageRating.setText("0.0 Star");
                             tvTotalReviews.setText("0 reviews");
                             return;
                         }
 
                         // Calculate average
                         double avgRating = totalRating / reviewCount;
-                        tvAverageRating.setText(String.format("%.1f ★", avgRating));
+                        tvAverageRating.setText(String.format("%.1f Star", avgRating));
                         tvTotalReviews.setText(reviewCount + " reviews");
 
                         // Sort by date (newest first)
@@ -225,7 +225,7 @@ public class RatingsActivity extends AppCompatActivity {
             void bind(Review review) {
                 tvClientName.setText(review.getClientName());
                 tvServiceTitle.setText(review.getServiceTitle());
-                tvRating.setText(String.format("%.1f ★", review.getRating()));
+                tvRating.setText(String.format("%.1f Star", review.getRating()));
                 tvComment.setText(review.getComment());
                 
                 SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());

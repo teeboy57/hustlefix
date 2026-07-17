@@ -52,11 +52,11 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         // Set availability indicator
         if (worker.isAvailable()) {
             holder.tvAvailable.setVisibility(View.VISIBLE);
-            holder.tvAvailable.setText("â— Available");
+            holder.tvAvailable.setText("● Available");
             holder.tvAvailable.setTextColor(0xFF4CAF50);
         } else {
             holder.tvAvailable.setVisibility(View.VISIBLE);
-            holder.tvAvailable.setText("â— Busy");
+            holder.tvAvailable.setText("● Busy");
             holder.tvAvailable.setTextColor(0xFFFF4444);
         }
         // Set rating bar

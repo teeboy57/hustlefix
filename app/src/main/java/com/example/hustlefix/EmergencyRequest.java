@@ -16,9 +16,7 @@ public class EmergencyRequest {
     private String responderId;
     private String responderName;
     public EmergencyRequest() {}
-    public EmergencyRequest(String userId, String userName, String userPhone,
-                            String emergencyType, String description,
-                            double latitude, double longitude, String address) {
+    public EmergencyRequest(String userId, String userName, String userPhone, String emergencyType, String description, double latitude, double longitude, String address) {
         this.userId = userId;
         this.userName = userName;
         this.userPhone = userPhone;

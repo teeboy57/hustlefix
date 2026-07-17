@@ -69,9 +69,9 @@ public final class ApplicationsHelper {
                             Quote quote = child.getValue(Quote.class);
                             if (quote != null) {
                                 count++;
-                                message.append("â€¢ ")
+                                message.append("Ã¢â‚¬Â¢ ")
                                         .append(quote.getWorkerName() != null ? quote.getWorkerName() : "Worker")
-                                        .append(" â€” R")
+                                        .append(" Ã¢â‚¬â€ R")
                                         .append(String.format("%.2f", quote.getAmount()))
                                         .append(" (")
                                         .append(quote.getStatus() != null ? quote.getStatus() : "pending")
@@ -103,9 +103,9 @@ public final class ApplicationsHelper {
                             Double amount = child.child("amount").getValue(Double.class);
                             if (workerName != null) {
                                 count++;
-                                message.append("â€¢ ").append(workerName);
+                                message.append("Ã¢â‚¬Â¢ ").append(workerName);
                                 if (amount != null) {
-                                    message.append(" â€” R").append(String.format("%.2f", amount));
+                                    message.append(" Ã¢â‚¬â€ R").append(String.format("%.2f", amount));
                                 }
                                 message.append(" (").append(status != null ? status : "pending").append(")\n");
                             }
@@ -123,7 +123,7 @@ public final class ApplicationsHelper {
     }
     private static void showDialog(Context context, String jobTitle, String body, int count) {
         new MaterialAlertDialogBuilder(context)
-                .setTitle("Applications â€” " + jobTitle + " (" + count + ")")
+                .setTitle("Applications Ã¢â‚¬â€ " + jobTitle + " (" + count + ")")
                 .setMessage(body.trim())
                 .setPositiveButton(R.string.ok, null)
                 .setNeutralButton("Quotes", (d, w) -> {

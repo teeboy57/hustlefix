@@ -117,10 +117,10 @@ public class WorkerProfileActivity extends AppCompatActivity {
         }
         // Availability
         if (worker.isAvailable()) {
-            tvAvailability.setText("â— Available for work");
+            tvAvailability.setText("● Available for work");
             tvAvailability.setTextColor(0xFF4CAF50);
         } else {
-            tvAvailability.setText("â— Currently unavailable");
+            tvAvailability.setText("● Currently unavailable");
             tvAvailability.setTextColor(0xFFFF4444);
         }
         if (worker.getAvailability() != null && !worker.getAvailability().isEmpty()) {

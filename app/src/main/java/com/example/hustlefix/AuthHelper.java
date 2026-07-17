@@ -59,11 +59,9 @@ public final class AuthHelper {
     }
 
     public static void handleGoogleSignInResult(
-            AppCompatActivity activity,
-            int requestCode,
+            AppCompatActivity activity, int requestCode,
             int resultCode,
-            android.content.Intent data,
-            String userRole,
+            android.content.Intent data, String userRole,
             AuthCallback callback) {
 
         if (requestCode != RC_GOOGLE_SIGN_IN) {
@@ -100,10 +98,8 @@ public final class AuthHelper {
     }
 
     private static void signInWithCredential(
-            Activity activity,
-            AuthCredential credential,
-            String userRole,
-            String displayName,
+            Activity activity, AuthCredential credential,
+            String userRole, String displayName,
             String email,
             AuthCallback callback) {
 

@@ -1,534 +1,188 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@drawable/gradient_emergency"
-    android:fitsSystemWindows="true">
+    android:background="@drawable/gradient_emergency">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:background="#CC000000"
-        app:title="@string/emergency"
-        app:titleTextColor="@android:color/white"
-        app:navigationIcon="@drawable/ic_back"
-        app:navigationIconTint="@android:color/white" />
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        app:title="Emergency Assistance"
+        app:titleTextColor="@color/white"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/llEmergencyHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="32dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
-        <!-- Emergency Header -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="32dp">
-
-            <!-- Animated Emergency Icon -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                app:cardCornerRadius="50dp"
-                app:cardElevation="8dp"
-                app:cardBackgroundColor="#FFFFFF"
-                android:layout_marginBottom="16dp">
-
-                <ImageView
-                    android:id="@+id/ivEmergencyIcon"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ic_emergency"
-                    android:contentDescription="Emergency" />
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🚨 EMERGENCY REQUEST"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:textAlignment="center"
-                android:letterSpacing="0.05" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Immediate assistance required"
-                android:textSize="14sp"
-                android:textColor="#CCFFFFFF"
-                android:layout_marginTop="8dp" />
-
-        </LinearLayout>
-
-        <!-- Emergency Info Card -->
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="6dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:strokeColor="#FF4444"
-            app:strokeWidth="2dp">
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            app:cardCornerRadius="50dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@color/white">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <!-- Warning Message -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="⚠️"
-                        android:textSize="24sp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="12dp"
-                        android:text="This will notify all nearby workers about your emergency request. Please use this only for genuine emergencies."
-                        android:textSize="14sp"
-                        android:textColor="#FF4444" />
-
-                </LinearLayout>
-
-                <!-- Emergency Type Selection -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Emergency Type"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#2C3E50"
-                    android:layout_marginBottom="12dp" />
-
-                <com.google.android.material.chip.ChipGroup
-                    android:id="@+id/chipGroupEmergencyType"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
-                    app:singleSelection="true"
-                    app:chipSpacing="8dp">
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipMedical"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🏥 Medical"
-                        app:chipBackgroundColor="#FFEBEE"
-                        app:chipStrokeColor="#FF4444"
-                        app:chipStrokeWidth="1dp"
-                        android:textColor="#FF4444" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipFire"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🔥 Fire"
-                        app:chipBackgroundColor="#FFF3E0"
-                        app:chipStrokeColor="#FF9800"
-                        app:chipStrokeWidth="1dp"
-                        android:textColor="#FF9800" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipSecurity"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="👮 Security"
-                        app:chipBackgroundColor="#E3F2FD"
-                        app:chipStrokeColor="#2196F3"
-                        app:chipStrokeWidth="1dp"
-                        android:textColor="#2196F3" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipAccident"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🚗 Accident"
-                        app:chipBackgroundColor="#F3E5F5"
-                        app:chipStrokeColor="#9C27B0"
-                        app:chipStrokeWidth="1dp"
-                        android:textColor="#9C27B0" />
-
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipOther"
-                        style="@style/Widget.MaterialComponents.Chip.Choice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="📌 Other"
-                        app:chipBackgroundColor="#ECEFF1"
-                        app:chipStrokeColor="#607D8B"
-                        app:chipStrokeWidth="1dp"
-                        android:textColor="#607D8B" />
-
-                </com.google.android.material.chip.ChipGroup>
-
-                <!-- Description Field -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Description (Optional)"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#2C3E50"
-                    android:layout_marginBottom="8dp" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:hintTextColor="#FF4444"
-                    app:boxStrokeColor="#FF4444"
-                    android:layout_marginBottom="16dp">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etDescription"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Describe the emergency situation..."
-                        android:inputType="textMultiLine"
-                        android:maxLines="4"
-                        android:textColor="#2C3E50" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Location Info -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="📍 Your Location"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="#2C3E50"
-                    android:layout_marginBottom="8dp" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F8F9FA"
-                    android:layout_marginBottom="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="12dp"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_location"
-                            android:tint="#FF4444" />
-
-                        <TextView
-                            android:id="@+id/tvLocation"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Fetching location..."
-                            android:textSize="14sp"
-                            android:textColor="#2C3E50" />
-
-                        <ProgressBar
-                            android:id="@+id/progressLocation"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:visibility="gone" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Confirmation Checkbox -->
-                <com.google.android.material.checkbox.MaterialCheckBox
-                    android:id="@+id/cbConfirm"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="I confirm this is a genuine emergency request"
-                    android:textSize="12sp"
-                    android:textColor="#2C3E50"
-                    android:layout_marginBottom="24dp" />
-
-                <!-- Send Emergency Button -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSendEmergency"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="🚨 SEND EMERGENCY REQUEST"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textAllCaps="false"
-                    app:cornerRadius="28dp"
-                    app:backgroundTint="#FF4444"
-                    android:elevation="4dp" />
-
-                <!-- Progress Bar -->
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="16dp"
-                    android:visibility="gone" />
-
-            </LinearLayout>
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_emergency" />
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Emergency Contacts Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Emergency Contacts"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="12dp" />
-
-        <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="#20FFFFFF">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <!-- Police -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="👮"
-                        android:textSize="24sp" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="12dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Police"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#FFFFFF" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="10111"
-                            android:textSize="12sp"
-                            android:textColor="#CCFFFFFF" />
-
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btnCallPolice"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="Call"
-                        android:textSize="12sp"
-                        android:backgroundTint="#4ECDC4" />
-
-                </LinearLayout>
-
-                <!-- Ambulance -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🚑"
-                        android:textSize="24sp" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="12dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Ambulance"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#FFFFFF" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="10177"
-                            android:textSize="12sp"
-                            android:textColor="#CCFFFFFF" />
-
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btnCallAmbulance"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="Call"
-                        android:textSize="12sp"
-                        android:backgroundTint="#2ECC71" />
-
-                </LinearLayout>
-
-                <!-- Fire Department -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="🔥"
-                        android:textSize="24sp" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="12dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Fire Department"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="#FFFFFF" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="10177"
-                            android:textSize="12sp"
-                            android:textColor="#CCFFFFFF" />
-
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btnCallFire"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:text="Call"
-                        android:textSize="12sp"
-                        android:backgroundTint="#F9B43A" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Success Message (Shown after sending) -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardSuccess"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="#4CAF50">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="✅"
-                    android:textSize="32sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Emergency Request Sent!"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:layout_marginTop="8dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nearby workers have been notified"
-                    android:textSize="12sp"
-                    android:textColor="#CCFFFFFF"
-                    android:layout_marginTop="4dp" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
+            android:layout_marginTop="24dp"
+            android:fontFamily="sans-serif-black"
+            android:text="SOS"
+            android:textColor="@color/white"
+            android:textSize="40sp" />
 
     </LinearLayout>
 
-    </ScrollView>
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="24dp"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/llEmergencyHeader">
 
-</LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Immediate Help Needed?"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-bold"
+                android:textColor="#2C3E50" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupEmergencyType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:singleSelection="true">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipMedical"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Medical" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipSecurity"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Security" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipFire"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fire" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAccident"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Accident" />
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipOther"
+                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Other" />
+
+            </com.google.android.material.chip.ChipGroup>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="24dp">
+
+                <TextView
+                    android:id="@+id/tvLocation"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Finding your location..."
+                    android:textColor="@color/brand_primary"
+                    android:fontFamily="sans-serif-medium" />
+
+                <ProgressBar
+                    android:id="@+id/progressLocation"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cbConfirm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Confirm genuine emergency"
+                android:textSize="12sp"
+                android:layout_marginTop="16dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+                <Button android:id="@+id/btnCallPolice" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Police" android:textSize="10sp" android:layout_marginEnd="4dp" />
+                <Button android:id="@+id/btnCallAmbulance" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Ambulance" android:textSize="10sp" android:layout_marginHorizontal="2dp" />
+                <Button android:id="@+id/btnCallFire" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Fire" android:textSize="10sp" android:layout_marginStart="4dp" />
+            </LinearLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSendEmergency"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:text="ACTIVATE EMERGENCY"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="24dp"
+                app:backgroundTint="#FF5252" />
+
+            <!-- cardSuccess placeholder for functionality -->
+            <View android:id="@+id/cardSuccess" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

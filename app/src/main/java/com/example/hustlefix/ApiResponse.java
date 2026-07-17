@@ -1,38 +1,41 @@
 package com.example.hustlefix;
+
 public class ApiResponse {
     private String status;
     private String message;
-    private String token;
-    // Default constructor (required for Gson)
-    public ApiResponse() {}
-    // Full constructor
-    public ApiResponse(String status, String message, String token) {
+    private Object data;
+    private int code;
+
+    public ApiResponse() {
+        // Default constructor
+    }
+
+    public ApiResponse(String status, String message, Object data, int code) {
         this.status = status;
         this.message = message;
-        this.token = token;
+        this.data = data;
+        this.code = code;
     }
-    // Getters
-    public String getStatus() {
-        return status;
-    }
-    public String getMessage() {
-        return message;
-    }
-    public String getToken() {
-        return token;
-    }
-    // Setters
-    public void setStatus(String status) {
-        this.status = status;
-    }
-    public void setMessage(String message) {
-        this.message = message;
-    }
-    public void setToken(String token) {
-        this.token = token;
-    }
-    // Helper method to check success quickly
+
+    // Getters and Setters
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public String getMessage() { return message; }
+    public void setMessage(String message) { this.message = message; }
+
+    public Object getData() { return data; }
+    public void setData(Object data) { this.data = data; }
+
+    public int getCode() { return code; }
+    public void setCode(int code) { this.code = code; }
+
+    // Helper methods
     public boolean isSuccess() {
-        return status != null && status.equalsIgnoreCase("success");
+        return "success".equals(status) || code == 200;
+    }
+
+    public boolean isError() {
+        return "error".equals(status) || code >= 400;
     }
 }

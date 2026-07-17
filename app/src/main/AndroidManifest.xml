@@ -35,34 +35,117 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".WelcomeActivity" android:exported="false" />
-        <activity android:name=".LoginActivity" android:exported="false" />
-        <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".ClientDashboardActivity" android:exported="false" />
-        <activity android:name=".EntrepreneurDashboardActivity" android:exported="false" />
-        <activity android:name=".PostServiceActivity" android:exported="false" />
-        <activity android:name=".MyServicesActivity" android:exported="false" />
-        <activity android:name=".MyBookingsActivity" android:exported="false" />
-        <activity android:name=".BookingDetailActivity" android:exported="false" />
-        <activity android:name=".HireWorkerActivity" android:exported="false" />
-        <activity android:name=".FindWorkersActivity" android:exported="false" />
-        <activity android:name=".ProfileActivity" android:exported="false" />
-        <activity android:name=".SettingsActivity" android:exported="false" />
-        <activity android:name=".QuotesActivity" android:exported="false" />
-        <activity android:name=".SendQuoteActivity" android:exported="false" />
-        <activity android:name=".RatingsActivity" android:exported="false" />
-        <activity android:name=".ChatActivity" android:exported="false" />
-        <activity android:name=".ChatListActivity" android:exported="false" />
-        <activity android:name=".EmergencyRequestActivity" android:exported="false" />
-        <activity android:name=".AdminActivity" android:exported="false" />
-        <activity android:name=".RevenueActivity" android:exported="false" />
-        <activity android:name=".AnalyticsActivity" android:exported="false" />
-        <activity android:name=".ImageViewerActivity" android:exported="false" />
-        <activity android:name=".EditServiceActivity" android:exported="false" />
-        <activity android:name=".FindServicesActivity" android:exported="false" />
-        <activity android:name=".ServiceDetailActivity" android:exported="false" />
-        <activity android:name=".SavedServicesActivity" android:exported="false" />
+        <activity
+            android:name=".ClientDashboardActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ServiceProviderDashboardActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".WelcomeActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".PostServiceActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MyServicesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MyBookingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BookingDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".HireWorkerActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".FindWorkersActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".QuotesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SendQuoteActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RatingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ChatActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ChatListActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EmergencyRequestActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AdminActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".RevenueActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AnalyticsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ImageViewerActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EditServiceActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".FindServicesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ServiceDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SavedServicesActivity"
+            android:exported="false" />
 
     </application>
 

@@ -5,6 +5,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class ServiceDetailActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
-    private TextView tvTitle, tvDescription, tvPrice, tvLocation, tvDeliveryTime, tvEntrepreneur;
+    private TextView tvTitle, tvDescription, tvPrice, tvLocation, tvDeliveryTime, tvServiceProvider;
     private Button btnBookNow;
     private Button btnSave;
     private ProgressBar progressBar;
@@ -63,8 +64,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
             tvPrice = findViewById(R.id.tvServicePrice);
             tvLocation = findViewById(R.id.tvServiceLocation);
             tvDeliveryTime = findViewById(R.id.tvServiceDeliveryTime);
-            tvEntrepreneur = findViewById(R.id.tvEntrepreneurName);
-            
+            tvServiceProvider = findViewById(R.id.tvServiceProviderName);
             btnBookNow = findViewById(R.id.btnBookNow);
             btnSave = findViewById(R.id.btnSave);
             progressBar = findViewById(R.id.progressBar);
@@ -124,7 +124,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
             tvPrice.setText("$" + String.format("%.2f", service.getPrice()));
             tvLocation.setText(service.getLocation() != null ? service.getLocation() : "Not specified");
             tvDeliveryTime.setText(service.getDeliveryTime() != null ? service.getDeliveryTime() : "Not specified");
-            tvEntrepreneur.setText(service.getEntrepreneurName() != null ? service.getEntrepreneurName() : "Unknown");
+            tvServiceProvider.setText(service.getserviceProviderName() != null ? service.getserviceProviderName() : "Unknown");
         } catch (Exception e) {
             ErrorUtils.showError(this, e);
         }
@@ -177,7 +177,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
                 return;
             }
 
-            if (service.getServiceId() == null || service.getEntrepreneurId() == null) {
+            if (service.getServiceId() == null || service.getserviceProviderId() == null) {
                 ErrorUtils.showError(this, "Service data is incomplete. Please try again.");
                 return;
             }
@@ -199,8 +199,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
             booking.put("price", service.getPrice());
             booking.put("clientId", user.getUid());
             booking.put("clientName", user.getDisplayName() != null ? user.getDisplayName() : "Client");
-            booking.put("entrepreneurId", service.getEntrepreneurId());
-            booking.put("entrepreneurName", service.getEntrepreneurName() != null ? service.getEntrepreneurName() : "Entrepreneur");
+            booking.put("serviceProviderId", service.getserviceProviderId());
+            booking.put("serviceProviderName", service.getserviceProviderName() != null ? service.getserviceProviderName() : "ServiceProvider");
             booking.put("status", "pending");
             booking.put("bookingDate", System.currentTimeMillis());
             booking.put("notes", "");
@@ -227,7 +227,9 @@ public class ServiceDetailActivity extends AppCompatActivity {
             progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
             btnBookNow.setEnabled(!isLoading);
             btnBookNow.setText(isLoading ? "BOOKING..." : "BOOK NOW");
-            btnSave.setEnabled(!isLoading);
+            if (btnSave != null) {
+                btnSave.setEnabled(!isLoading);
+            }
         } catch (Exception e) {
             // Ignore
         }

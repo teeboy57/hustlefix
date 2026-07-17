@@ -1,67 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary colors -->
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <!-- Brand Primary Colors -->
+    <color name="brand_primary">#6A1B9A</color> <!-- Deep Purple -->
+    <color name="brand_primary_dark">#4A148C</color>
+    <color name="brand_primary_light">#9C4DCC</color>
     
-    <!-- Purple variants (for admin and other layouts) -->
-    <color name="primaryPurple">#6200EE</color>
-    <color name="primaryDarkPurple">#3700B3</color>
-    <color name="primaryLightPurple">#BB86FC</color>
+    <!-- Brand Accent Colors -->
+    <color name="brand_secondary">#00BFA5</color> <!-- Bright Teal -->
+    <color name="brand_accent">#FFAB40</color> <!-- Vivid Orange -->
+    
+    <!-- UI Colors -->
+    <color name="ui_background">#F8F9FE</color>
+    <color name="ui_surface">#FFFFFF</color>
+    <color name="ui_error">#FF5252</color>
+    <color name="ui_success">#00C853</color>
+    
+    <!-- Text Colors -->
+    <color name="text_high_emphasis">#1A1C1E</color>
+    <color name="text_medium_emphasis">#44474E</color>
+    <color name="text_low_emphasis">#74777F</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    <!-- Legacy support & Compatibility -->
+    <color name="colorPrimary">#6A1B9A</color>
+    <color name="colorPrimaryDark">#4A148C</color>
+    <color name="colorAccent">#00BFA5</color>
     <color name="purple_200">#BB86FC</color>
     <color name="purple_500">#6200EE</color>
     <color name="purple_700">#3700B3</color>
-    
-    <!-- Teal variants -->
-    <color name="tealAccent">#03DAC5</color>
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
-    
-    <!-- Basic colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="transparent">#00000000</color>
-    
-    <!-- Status colors -->
-    <color name="red">#F44336</color>
-    <color name="green">#4CAF50</color>
-    <color name="blue">#2196F3</color>
-    <color name="orange">#FF9800</color>
-    <color name="yellow">#FFC107</color>
-    
-    <!-- Text colors -->
-    <color name="text_primary">#212121</color>
-    <color name="text_secondary">#757575</color>
-    <color name="text_hint">#999999</color>
-    <color name="text_white">#FFFFFF</color>
-    <color name="text_white_80">#CCFFFFFF</color>
-    <color name="text_white_60">#99FFFFFF</color>
-    
-    <!-- Background colors -->
-    <color name="background">#F5F7FA</color>
-    <color name="card_background">#FFFFFF</color>
-    <color name="bg_dark">#121212</color>
-    <color name="bg_light">#FFFFFF</color>
-    
-    <!-- Drawer colors -->
-    <color name="drawer_item_color">#6200EE</color>
-    <color name="drawer_item_selected_color">#3700B3</color>
-    <color name="drawer_background">#FFFFFF</color>
-    <color name="status_bar_color">#3700B3</color>
-    <color name="toolbar_color">#6200EE</color>
-    
-    <!-- Extra colors -->
-    <color name="extraLightGray">#F0F0F0</color>
-    <color name="lightGray">#D3D3D3</color>
-    <color name="mediumGray">#A9A9A9</color>
-    <color name="darkGray">#808080</color>
-    
-    <!-- Material Grey -->
-    <color name="material_grey_100">#F5F5F5</color>
-    <color name="material_grey_300">#E0E0E0</color>
-    <color name="material_grey_500">#9E9E9E</color>
-    <color name="material_grey_700">#616161</color>
-    <color name="material_grey_800">#424242</color>
-    <color name="material_grey_900">#212121</color>
 </resources>

@@ -15,8 +15,7 @@ public class Message {
         // Default constructor required for Firebase
     }
 
-    public Message(String messageId, String senderId, String senderName, 
-                   String receiverId, String receiverName, String messageText) {
+    public Message(String messageId, String senderId, String senderName, String receiverId, String receiverName, String messageText) {
         this.messageId = messageId;
         this.senderId = senderId;
         this.senderName = senderName;

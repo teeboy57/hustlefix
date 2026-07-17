@@ -1,152 +1,98 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">HustleFix</string>
-
-    <!-- Navigation Drawer -->
+    
+    <!-- Navigation -->
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="navigation_drawer_title">Navigation</string>
-
-    <!-- Auth Strings -->
+    
+    <!-- Roles -->
+    <string name="role_service_provider">Service Provider</string>
+    <string name="role_client">Client</string>
+    
+    <!-- Welcome Screen -->
+    <string name="welcome_banner">HustleFix</string>
+    <string name="welcome_hustle">Welcome to HustleFix</string>
+    <string name="select_role">Choose Your Role</string>
+    <string name="provider_role">I am a Service Provider</string>
+    <string name="client_role">I am a Client</string>
+    <string name="design_champions">Empowering Service Professionals</string>
+    
+    <!-- Dashboard -->
+    <string name="welcome_back">Welcome Back</string>
+    <string name="service_provider_dashboard">Service Provider Dashboard</string>
+    <string name="my_services">My Services</string>
+    <string name="my_business">My Business</string>
+    <string name="business_manager">Business Manager</string>
+    <string name="pro_business">Pro Business</string>
+    <string name="active_today">Active Today</string>
+    <string name="overview">Overview</string>
+    <string name="skills">Skills</string>
+    <string name="pay">Pay</string>
+    <string name="trust_rating">Trust Rating</string>
+    <string name="reports">Reports</string>
+    <string name="quick_actions">Quick Actions</string>
+    <string name="new_skill">New Skill</string>
+    <string name="my_work">My Work</string>
+    <string name="jobs">Jobs</string>
+    <string name="inbox">Inbox</string>
+    <string name="inbox_highlights">Recent Messages</string>
+    <string name="recent_activity">Recent Activity</string>
+    <string name="no_orders">No orders yet</string>
+    <string name="no_activity">No recent activity</string>
+    <string name="find_work">Find Work</string>
+    <string name="bookings_action">My Bookings</string>
+    
+    <!-- Auth -->
     <string name="auth_google_not_configured">Google Sign-In is not configured.</string>
-    <string name="auth_facebook_not_configured">Facebook Sign-In is not configured.</string>
-    <string name="auth_phone_not_configured">Phone authentication is not configured.</string>
     <string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>
-
-    <!-- Common Buttons -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="forgot_password">Forgot Password?</string>
+    
+    <!-- Common -->
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="submit">Submit</string>
-    <string name="confirm">Confirm</string>
     <string name="save">Save</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
     <string name="back">Back</string>
-    <string name="next">Next</string>
-    <string name="skip">Skip</string>
-    <string name="retry">Retry</string>
-    <string name="done">Done</string>
-    <string name="close">Close</string>
-
-    <!-- Chat -->
-    <string name="chat">Chat</string>
-    <string name="no_chats_yet">No chats yet</string>
-    <string name="type_message">Type a message...</string>
-    <string name="send">Send</string>
-
-    <!-- Emergency -->
-    <string name="emergency">Emergency</string>
-    <string name="emergency_request">Emergency Request</string>
-    <string name="emergency_description">Describe your emergency</string>
-    <string name="send_emergency">Send Emergency</string>
-
-    <!-- Dashboard -->
-    <string name="dashboard">Dashboard</string>
-    <string name="welcome">Welcome</string>
-    <string name="welcome_back">Welcome back</string>
-    <string name="welcome_message">Welcome to HustleFix</string>
-
-    <!-- Services -->
-    <string name="services">Services</string>
-    <string name="post_service">Post a Service</string>
-    <string name="my_services">My Services</string>
-    <string name="my_bookings">My Bookings</string>
-    <string name="service_title">Service Title</string>
-    <string name="service_description">Description</string>
-    <string name="service_price">Price</string>
-    <string name="service_category">Category</string>
-    <string name="service_location">Location</string>
-    <string name="service_delivery_time">Delivery Time</string>
-
-    <!-- Analytics -->
-    <string name="analytics">Analytics</string>
-    <string name="revenue">Revenue</string>
-    <string name="bookings">Bookings</string>
-    <string name="ratings">Ratings</string>
-    <string name="total_services">Total Services</string>
-    <string name="total_bookings">Total Bookings</string>
-    <string name="total_revenue">Total Revenue</string>
-
-    <!-- Navigation -->
-    <string name="nav_dashboard">Dashboard</string>
-    <string name="nav_post_service">Post a Service</string>
-    <string name="nav_my_services">My Services</string>
-    <string name="nav_my_bookings">My Bookings</string>
-    <string name="nav_analytics">Analytics</string>
-    <string name="nav_settings">Settings</string>
-    <string name="nav_logout">Logout</string>
-
-    <!-- Messages -->
     <string name="loading">Loading...</string>
     <string name="error">Error</string>
     <string name="success">Success</string>
-    <string name="no_services">No services found</string>
-    <string name="no_bookings">No bookings yet</string>
-    <string name="no_data">No data available</string>
-    <string name="network_error">Network error</string>
-    <string name="please_wait">Please wait...</string>
-
-    <!-- Settings -->
+    
+    <!-- Chat -->
+    <string name="chat">Chat</string>
+    <string name="send">Send</string>
+    <string name="type_message">Type a message...</string>
+    <string name="no_chats_yet">No chats yet</string>
+    
+    <!-- Emergency -->
+    <string name="emergency">Emergency</string>
+    <string name="emergency_request">Emergency Request</string>
+    
+    <!-- Other -->
+    <string name="dashboard">Dashboard</string>
+    <string name="welcome">Welcome</string>
+    <string name="services">Services</string>
+    <string name="bookings">Bookings</string>
     <string name="settings">Settings</string>
     <string name="logout">Logout</string>
-    <string name="search">Search</string>
-    <string name="filter">Filter</string>
-    <string name="profile">Profile</string>
-    <string name="edit_profile">Edit Profile</string>
-    <string name="change_password">Change Password</string>
-    <string name="dark_mode">Dark Mode</string>
-    <string name="language">Language</string>
-    <string name="notifications">Notifications</string>
-    <string name="help_support">Help &amp; Support</string>
-    <string name="privacy_policy">Privacy Policy</string>
-    <string name="about">About</string>
-
-    <!-- Auth -->
-    <string name="login">Login</string>
-    <string name="register">Register</string>
-    <string name="forgot_password">Forgot Password?</string>
-    <string name="reset_password">Reset Password</string>
-    <string name="password_reset_sent">Password reset email sent.</string>
-
-    <!-- Other -->
-    <string name="find_workers">Find Workers</string>
-    <string name="post_job">Post a Job</string>
-    <string name="quotes_offers">Quotes &amp; Offers</string>
-    <string name="ratings_reviews">Ratings &amp; Reviews</string>
-    <string name="save_changes">Save Changes</string>
-
-    <!-- Hire/Booking -->
-    <string name="hire">Hire</string>
-    <string name="hire_worker">Hire Worker</string>
-    <string name="hire_request_sent">Hire request sent!</string>
-    <string name="booking_confirmed">Booking confirmed!</string>
-    <string name="booking_cancelled">Booking cancelled.</string>
-    <string name="booking_completed">Booking completed!</string>
-    <string name="booking_status_pending">Pending</string>
-    <string name="booking_status_confirmed">Confirmed</string>
-    <string name="booking_status_in_progress">In Progress</string>
-    <string name="booking_status_completed">Completed</string>
-    <string name="booking_status_cancelled">Cancelled</string>
-
-    <!-- Validation -->
-    <string name="required_field">This field is required</string>
-    <string name="invalid_email">Please enter a valid email</string>
-    <string name="invalid_phone">Please enter a valid phone number</string>
-    <string name="invalid_budget">Please enter a valid budget</string>
-    <string name="invalid_price">Please enter a valid price</string>
-    <string name="password_too_short">Password must be at least 6 characters</string>
-    <string name="passwords_do_not_match">Passwords do not match</string>
-
-    <!-- Errors -->
-    <string name="error_loading_data">Error loading data</string>
-    <string name="error_saving_data">Error saving data</string>
-    <string name="error_deleting_data">Error deleting data</string>
-    <string name="error_uploading_image">Error uploading image</string>
-
-    <!-- Success -->
-    <string name="data_saved">Data saved successfully!</string>
-    <string name="data_deleted">Data deleted successfully!</string>
-    <string name="image_uploaded">Image uploaded successfully!</string>
+    <string name="about">about</string>
+    <string name="change_password">change_password</string>
+    <string name="dark_mode">dark_mode</string>
+    <string name="edit_profile">edit_profile</string>
+    <string name="find_workers">find_workers</string>
+    <string name="help_support">help_support</string>
+    <string name="language">language</string>
+    <string name="notifications">notifications</string>
+    <string name="post_job">post_job</string>
+    <string name="privacy_policy">privacy_policy</string>
+    <string name="profile">profile</string>
+    <string name="quotes_offers">quotes_offers</string>
+    <string name="ratings">ratings</string>
+    <string name="save_changes">save_changes</string>
 </resources>

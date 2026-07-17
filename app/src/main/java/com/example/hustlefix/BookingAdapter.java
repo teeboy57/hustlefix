@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingViewHolder> {
+public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHolder> {
 
     private List<Booking> bookings;
     private OnBookingClickListener listener;
@@ -29,16 +29,47 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
 
     @NonNull
     @Override
-    public BookingViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_booking, parent, false);
-        return new BookingViewHolder(view);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_booking, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull BookingViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Booking booking = bookings.get(position);
-        holder.bind(booking, listener);
+        
+        String serviceName = booking.getServiceName();
+        String clientName = booking.getClientName();
+        String status = booking.getStatus();
+        double price = booking.getPrice();
+        long timestamp = booking.getTimestamp();
+        
+        holder.tvServiceName.setText(serviceName);
+        holder.tvClientName.setText(clientName);
+        holder.tvPrice.setText(String.format("$%.2f", price));
+        
+        if (status == null) status = "pending";
+        holder.tvStatus.setText(status);
+        
+        if (status.equals("completed")) {
+            holder.tvStatus.setTextColor(0xFF4CAF50);
+        } else if (status.equals("pending")) {
+            holder.tvStatus.setTextColor(0xFFFF9800);
+        } else if (status.equals("cancelled")) {
+            holder.tvStatus.setTextColor(0xFFF44336);
+        } else {
+            holder.tvStatus.setTextColor(0xFF2196F3);
+        }
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
+        String dateStr = sdf.format(new Date(timestamp));
+        holder.tvDate.setText(dateStr);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onBookingClick(booking);
+            }
+        });
     }
 
     @Override
@@ -46,68 +77,20 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.BookingV
         return bookings != null ? bookings.size() : 0;
     }
 
-    static class BookingViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvBudget, tvStatus, tvDate, tvClientName;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvServiceName;
+        TextView tvClientName;
+        TextView tvPrice;
+        TextView tvStatus;
+        TextView tvDate;
 
-        public BookingViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvTitle = itemView.findViewById(R.id.tvBookingTitle);
-            tvBudget = itemView.findViewById(R.id.tvBookingBudget);
-            tvStatus = itemView.findViewById(R.id.tvBookingStatus);
-            tvDate = itemView.findViewById(R.id.tvBookingDeadline);
+            tvServiceName = itemView.findViewById(R.id.tvServiceName);
             tvClientName = itemView.findViewById(R.id.tvClientName);
-        }
-
-        void bind(Booking booking, OnBookingClickListener listener) {
-            if (tvTitle != null) {
-                tvTitle.setText(booking.getServiceTitle() != null ? booking.getServiceTitle() : "No Title");
-            }
-            
-            if (tvBudget != null) {
-                tvBudget.setText("$" + String.format("%.2f", booking.getPrice()));
-            }
-            
-            if (tvStatus != null) {
-                String status = booking.getStatus() != null ? booking.getStatus() : "pending";
-                tvStatus.setText(status.toUpperCase());
-                // Set status color
-                switch (status.toLowerCase()) {
-                    case "pending":
-                        tvStatus.setTextColor(0xFFFF9800);
-                        break;
-                    case "confirmed":
-                        tvStatus.setTextColor(0xFF2196F3);
-                        break;
-                    case "in_progress":
-                        tvStatus.setTextColor(0xFF9C27B0);
-                        break;
-                    case "completed":
-                        tvStatus.setTextColor(0xFF4CAF50);
-                        break;
-                    case "cancelled":
-                        tvStatus.setTextColor(0xFFF44336);
-                        break;
-                    default:
-                        tvStatus.setTextColor(0xFF757575);
-                        break;
-                }
-            }
-            
-            if (tvDate != null) {
-                SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-                String date = sdf.format(new Date(booking.getBookingDate()));
-                tvDate.setText(date);
-            }
-            
-            if (tvClientName != null) {
-                tvClientName.setText("Client: " + (booking.getClientName() != null ? booking.getClientName() : "Unknown"));
-            }
-
-            itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onBookingClick(booking);
-                }
-            });
+            tvPrice = itemView.findViewById(R.id.tvPrice);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvDate = itemView.findViewById(R.id.tvDate);
         }
     }
 }

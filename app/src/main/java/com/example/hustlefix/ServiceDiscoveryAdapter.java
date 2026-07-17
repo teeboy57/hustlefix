@@ -44,14 +44,14 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
     }
 
     static class ServiceViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvPrice, tvCategory, tvEntrepreneur, tvDescription;
+        TextView tvTitle, tvPrice, tvCategory, tvServiceProvider, tvDescription;
 
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvServiceTitle);
             tvPrice = itemView.findViewById(R.id.tvServicePrice);
             tvCategory = itemView.findViewById(R.id.tvServiceCategory);
-            tvEntrepreneur = itemView.findViewById(R.id.tvEntrepreneurName);
+            tvServiceProvider = itemView.findViewById(R.id.tvServiceProviderName);
             tvDescription = itemView.findViewById(R.id.tvServiceDescription);
         }
 
@@ -65,8 +65,8 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
             if (tvCategory != null) {
                 tvCategory.setText(service.getCategory() != null ? service.getCategory() : "General");
             }
-            if (tvEntrepreneur != null) {
-                tvEntrepreneur.setText("By: " + (service.getEntrepreneurName() != null ? service.getEntrepreneurName() : "Unknown"));
+            if (tvServiceProvider != null) {
+                tvServiceProvider.setText("By: " + (service.getserviceProviderName() != null ? service.getserviceProviderName() : "Unknown"));
             }
             if (tvDescription != null) {
                 tvDescription.setText(service.getDescription() != null ? service.getDescription() : "");

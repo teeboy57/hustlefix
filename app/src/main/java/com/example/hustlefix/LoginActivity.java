@@ -26,7 +26,7 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton btnLogin;
     private MaterialCheckBox cbRememberMe;
     private TextView tvForgotPassword, btnGoRegister;
-    private MaterialCardView cardGoogleLogin, cardFacebookLogin, cardAppleLogin;
+    private View cardGoogleLogin, cardFacebookLogin, cardAppleLogin;
     private ProgressBar progressBar;
     private SharedPreferences sharedPreferences;
     private String userRole = "";
@@ -101,18 +101,6 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
-
-        cardGoogleLogin.setOnClickListener(v -> {
-            Toast.makeText(this, "Google Sign-In coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        cardFacebookLogin.setOnClickListener(v -> {
-            Toast.makeText(this, "Facebook Sign-In coming soon", Toast.LENGTH_SHORT).show();
-        });
-
-        cardAppleLogin.setOnClickListener(v -> {
-            Toast.makeText(this, "Apple Sign-In coming soon", Toast.LENGTH_SHORT).show();
-        });
     }
 
     private void loginUser() {
@@ -199,7 +187,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void navigateToDashboard(String role) {
-        if ("ENTREPRENEUR".equals(role) || "CLIENT".equals(role)) {
+        if ("service_provider".equals(role) || "CLIENT".equals(role)) {
             SessionHelper.openDashboard(this, role);
             finish();
         } else {

@@ -71,9 +71,9 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
         drawerLayout = findViewById(R.id.drawerLayout);
         navigationView = findViewById(R.id.navigationView);
         toolbar = findViewById(R.id.toolbar);
-        btnSubmitService.setText("POST SERVICE");
+        
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Post a Service");
+            getSupportActionBar().setTitle("Post Service");
         }
     }
     private void setupToolbar() {
@@ -127,8 +127,8 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
     }
     private void navigateToDashboard() {
         Intent intent;
-        if ("ENTREPRENEUR".equals(userRole)) {
-            intent = new Intent(PostServiceActivity.this, EntrepreneurDashboardActivity.class);
+        if ("service_provider".equals(userRole)) {
+            intent = new Intent(PostServiceActivity.this, ServiceProviderDashboardActivity.class);
         } else {
             intent = new Intent(PostServiceActivity.this, ClientDashboardActivity.class);
         }
@@ -177,10 +177,12 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
             chipGroupCategory.setOnCheckedStateChangeListener((group, checkedIds) -> {
                 if (checkedIds != null && !checkedIds.isEmpty()) {
                     int checkedId = checkedIds.get(0);
-                    Chip selectedChip = findViewById(checkedId);
-                    if (selectedChip != null) {
-                        String rawCategory = selectedChip.getText().toString();
-                        selectedCategory = rawCategory.replaceAll("[^a-zA-Z\\s]", "").trim();
+                    if (checkedId == R.id.chipPlumber) {
+                        selectedCategory = "Plumber";
+                    } else if (checkedId == R.id.chipElectrician) {
+                        selectedCategory = "Electrician";
+                    } else {
+                        selectedCategory = "Other";
                     }
                 } else {
                     selectedCategory = "";
@@ -195,9 +197,9 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
                     if (checkedId == R.id.btnNormal) {
                         selectedAvailability = "Available";
                     } else if (checkedId == R.id.btnUrgent) {
-                        selectedAvailability = "Limited Slots";
+                        selectedAvailability = "Urgent";
                     } else if (checkedId == R.id.btnEmergency) {
-                        selectedAvailability = "Booked - Coming Soon";
+                        selectedAvailability = "Waitlist";
                     }
                 }
             });
@@ -279,9 +281,9 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
         service.put("deliveryTime", deliveryTime);
         service.put("availability", selectedAvailability);
         service.put("status", "active");
-        service.put("entrepreneurId", currentUser.getUid());
-        service.put("entrepreneurName", currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "User");
-        service.put("entrepreneurEmail", currentUser.getEmail());
+        service.put("serviceProviderId", currentUser.getUid());
+        service.put("serviceProviderName", currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "User");
+        service.put("serviceProviderEmail", currentUser.getEmail());
         service.put("createdAt", System.currentTimeMillis());
         service.put("bookingsCount", 0);
         service.put("averageRating", 0);
@@ -328,12 +330,12 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Post a Service - Help")
                 .setMessage("Fill in all the required fields:\n\n" +
-                        "â€¢ Service Title: A clear, descriptive title\n" +
-                        "â€¢ Description: Detailed service description\n" +
-                        "â€¢ Category: Select the appropriate category\n" +
-                        "â€¢ Price: Your service price\n" +
-                        "â€¢ Delivery Time: Estimated time to complete\n" +
-                        "â€¢ Location: Where you provide the service\n\n" +
+                        "• Service Title: A clear, descriptive title\n" +
+                        "• Description: Detailed service description\n" +
+                        "• Category: Select the appropriate category\n" +
+                        "• Price: Your service price\n" +
+                        "• Delivery Time: Estimated time to complete\n" +
+                        "• Location: Where you provide the service\n\n" +
                         "Your service will be visible to all clients on the platform.")
                 .setPositiveButton("Got it", null)
                 .show();

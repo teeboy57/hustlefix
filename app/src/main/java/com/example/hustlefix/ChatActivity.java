@@ -51,8 +51,15 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         // Get partner info from intent
-        partnerId = getIntent().getStringExtra("partnerId");
-        partnerName = getIntent().getStringExtra("partnerName");
+        partnerId = getIntent().getStringExtra(ChatLauncher.EXTRA_OTHER_USER_ID);
+        partnerName = getIntent().getStringExtra(ChatLauncher.EXTRA_OTHER_USER_NAME);
+
+        if (partnerId == null) {
+            partnerId = getIntent().getStringExtra("partnerId");
+        }
+        if (partnerName == null) {
+            partnerName = getIntent().getStringExtra("partnerName");
+        }
 
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();

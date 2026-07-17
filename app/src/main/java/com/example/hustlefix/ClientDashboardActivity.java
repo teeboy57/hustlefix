@@ -15,11 +15,13 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import com.google.android.material.card.MaterialCardView;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -40,7 +42,7 @@ import java.util.Map;
 public class ClientDashboardActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG = "ClientDash";
-    
+
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private Toolbar toolbar;
@@ -51,18 +53,20 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
     private TextView tvClientName;
     private TextView tvDate;
     private RecyclerView rvRecentBookings;
-    
+
     private CardView cardFindServices;
     private CardView cardMyBookings;
-    private CardView cardSavedServices;
-    private CardView cardMessages;
-    
+    private View cardSavedServices;
+    private View cardMessages;
+
     // Recent Messages Section
-    private LinearLayout llRecentMessages;
+    private MaterialCardView llRecentMessages;
     private TextView tvRecentMessage1, tvRecentMessage2, tvRecentMessage3;
     private TextView tvMessagePartner1, tvMessagePartner2, tvMessagePartner3;
     private TextView tvMessageTime1, tvMessageTime2, tvMessageTime3;
     private View divider1, divider2;
+
+    private BottomNavigationView bottomNav;
 
     private FirebaseAuth mAuth;
     private String currentUserId;
@@ -85,6 +89,7 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         setupToolbar();
         setupNavigationDrawer();
         setupClickListeners();
+        setupBottomNavigation();
         loadDashboardData();
         loadRecentBookings();
         loadRecentMessages();
@@ -111,7 +116,7 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         cardMyBookings = findViewById(R.id.cardMyBookings);
         cardSavedServices = findViewById(R.id.cardSavedServices);
         cardMessages = findViewById(R.id.cardMessages);
-        
+
         // Recent Messages
         llRecentMessages = findViewById(R.id.llRecentMessages);
         tvRecentMessage1 = findViewById(R.id.tvRecentMessage1);
@@ -125,6 +130,42 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         tvMessageTime3 = findViewById(R.id.tvMessageTime3);
         divider1 = findViewById(R.id.divider1);
         divider2 = findViewById(R.id.divider2);
+
+        // ==============================================
+        // FIX: Use the correct ID from your XML
+        // Choose ONE of the options below and comment out the others
+        // ==============================================
+
+        // Option 1: If your ID is "bottomNav"
+        bottomNav = findViewById(R.id.bottomNav);
+
+        // Option 2: If your ID is "bottom_navigation"
+        // bottomNav = findViewById(R.id.bottomNav);
+
+        // Option 3: If your ID is "nav_view"
+        // bottomNav = findViewById(R.id.bottomNav);
+
+        // Option 4: If your ID is "bottomNavigationView"
+        // bottomNav = findViewById(R.id.bottomNav);
+    }
+
+    private void setupBottomNavigation() {
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                // Already on home page
+                return true;
+            }
+            if (id == R.id.nav_dashboard) {
+                startActivity(new Intent(ClientDashboardActivity.this, RatingsActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_profile) {
+                startActivity(new Intent(ClientDashboardActivity.this, ProfileActivity.class));
+                return true;
+            }
+            return false;
+        });
     }
 
     private void setupToolbar() {
@@ -221,7 +262,7 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
             Intent intent = new Intent(ClientDashboardActivity.this, ChatListActivity.class);
             startActivity(intent);
         });
-        
+
         // Click on recent messages to open chat
         llRecentMessages.setOnClickListener(v -> {
             startActivity(new Intent(this, ChatListActivity.class));
@@ -305,7 +346,7 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                             startActivity(intent);
                         });
                         rvRecentBookings.setAdapter(bookingAdapter);
-                        
+
                         if (tvEmpty != null) {
                             tvEmpty.setVisibility(View.GONE);
                             rvRecentBookings.setVisibility(View.VISIBLE);
@@ -323,14 +364,14 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         if (currentUserId == null) return;
 
         DatabaseReference messagesRef = FirebaseDatabase.getInstance().getReference("messages");
-        
+
         messagesRef.orderByChild("chatId").startAt(currentUserId).endAt(currentUserId + "\uf8ff")
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         if (snapshot.exists()) {
                             Map<String, ChatSummary> chatMap = new HashMap<>();
-                            
+
                             for (DataSnapshot chatSnapshot : snapshot.getChildren()) {
                                 for (DataSnapshot messageSnapshot : chatSnapshot.getChildren()) {
                                     Message message = messageSnapshot.getValue(Message.class);
@@ -359,10 +400,10 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                                     }
                                 }
                             }
-                            
+
                             List<ChatSummary> sortedChats = new ArrayList<>(chatMap.values());
                             sortedChats.sort((c1, c2) -> Long.compare(c2.getLastTimestamp(), c1.getLastTimestamp()));
-                            
+
                             displayRecentMessages(sortedChats);
                         } else {
                             llRecentMessages.setVisibility(View.GONE);
@@ -378,21 +419,21 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
 
     private void displayRecentMessages(List<ChatSummary> chats) {
         int count = Math.min(chats.size(), 3);
-        
+
         if (count == 0) {
             llRecentMessages.setVisibility(View.GONE);
             return;
         }
-        
+
         llRecentMessages.setVisibility(View.VISIBLE);
-        
+
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
-        
+
         ChatSummary chat1 = chats.get(0);
         tvMessagePartner1.setText(chat1.getPartnerName());
         tvRecentMessage1.setText(chat1.getLastMessage());
         tvMessageTime1.setText(sdf.format(new Date(chat1.getLastTimestamp())));
-        
+
         if (count > 1) {
             ChatSummary chat2 = chats.get(1);
             divider1.setVisibility(View.VISIBLE);
@@ -402,7 +443,7 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         } else {
             divider1.setVisibility(View.GONE);
         }
-        
+
         if (count > 2) {
             ChatSummary chat3 = chats.get(2);
             divider2.setVisibility(View.VISIBLE);
@@ -451,7 +492,7 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        if (item.getItemId() == R.id.nav_home) {
             if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 drawerLayout.closeDrawer(GravityCompat.START);
             } else {

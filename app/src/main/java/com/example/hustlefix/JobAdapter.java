@@ -98,8 +98,8 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                     if (listener != null) listener.onViewApplications(job);
                 });
                 btnAction2.setVisibility(View.VISIBLE);
-            } else if ("ENTREPRENEUR".equals(userRole)) {
-                // Entrepreneur viewing jobs
+            } else if ("service_provider".equals(userRole)) {
+                // ServiceProvider viewing jobs
                 btnAction1.setText("Details");
                 btnAction1.setOnClickListener(v -> {
                     if (listener != null) listener.onViewDetails(job);

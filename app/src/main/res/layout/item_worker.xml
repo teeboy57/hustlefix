@@ -3,73 +3,71 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    android:foreground="?attr/selectableItemBackground">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <!-- Header with Profile Image and Name -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="12dp"
-            android:gravity="center_vertical">
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-            <!-- Profile Image -->
             <FrameLayout
                 android:layout_width="60dp"
                 android:layout_height="60dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/ivProfileImage"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:src="@drawable/ic_profile_default"
-                    android:visibility="gone" />
+                    app:civ_border_width="2dp"
+                    app:civ_border_color="@color/brand_primary" />
 
                 <TextView
                     android:id="@+id/tvInitials"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:gravity="center"
                     android:text="JD"
+                    android:textColor="@color/white"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"
-                    android:background="@drawable/circle_background"
-                    android:visibility="visible" />
+                    android:background="@drawable/circle_blue"
+                    android:visibility="gone" />
             </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="12dp">
+                android:layout_marginStart="16dp"
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/tvWorkerName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Worker Name"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#2C3E50" />
+                    android:textColor="@color/text_high_emphasis" />
 
                 <TextView
                     android:id="@+id/tvSkill"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Skill"
-                    android:textSize="13sp"
-                    android:textColor="#667eea"
-                    android:layout_marginTop="2dp" />
+                    android:textSize="14sp"
+                    android:textColor="@color/brand_secondary" />
 
                 <TextView
                     android:id="@+id/tvLocation"
@@ -77,152 +75,93 @@
                     android:layout_height="wrap_content"
                     android:text="Location"
                     android:textSize="12sp"
-                    android:textColor="#7F8C8D"
-                    android:layout_marginTop="2dp" />
+                    android:textColor="@color/text_low_emphasis" />
             </LinearLayout>
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvHourlyRate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="end">
-
-                <TextView
-                    android:id="@+id/tvHourlyRate"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="R0.00"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="#2ECC71" />
-
-                <TextView
-                    android:id="@+id/tvAvailable"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="● Available"
-                    android:textSize="11sp"
-                    android:textColor="#4CAF50"
-                    android:layout_marginTop="4dp" />
-            </LinearLayout>
-
+                android:text="Rate"
+                android:textStyle="bold"
+                android:textColor="@color/brand_accent" />
         </LinearLayout>
 
-        <!-- Stats Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:paddingBottom="8dp">
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="0dp"
+            <RatingBar
+                android:id="@+id/rbRating"
+                style="@style/Widget.AppCompat.RatingBar.Small"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-
-                <RatingBar
-                    android:id="@+id/rbRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:numStars="5"
-                    android:stepSize="0.5"
-                    android:isIndicator="true"
-                    android:rating="0"
-                    style="?android:attr/ratingBarStyleSmall"/>
-
-                <TextView
-                    android:id="@+id/tvRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0.0"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#F9B43A"
-                    android:layout_marginStart="4dp" />
-            </LinearLayout>
+                android:numStars="5"
+                android:rating="0" />
 
             <TextView
-                android:id="@+id/tvExperience"
-                android:layout_width="0dp"
+                android:id="@+id/tvRating"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="0 yrs"
+                android:layout_marginStart="8dp"
+                android:text="0.0"
                 android:textSize="12sp"
-                android:textColor="#95A5A6"
-                android:gravity="center" />
+                android:textStyle="bold" />
+
+            <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
 
             <TextView
-                android:id="@+id/tvCompletedJobs"
-                android:layout_width="0dp"
+                android:id="@+id/tvAvailable"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="0 jobs"
+                android:text="Available"
+                android:textColor="@color/ui_success"
                 android:textSize="12sp"
-                android:textColor="#95A5A6"
-                android:gravity="end" />
-
+                android:textStyle="bold" />
         </LinearLayout>
 
-        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:background="#F8F9FA">
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical|end"
+            android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/btnViewProfile"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:text="Profile"
-                android:textSize="11sp"
-                android:backgroundTint="#667eea"
-                android:textColor="#FFFFFF"
-                android:layout_marginEnd="4dp" />
+            <TextView android:id="@+id/tvExperience" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginEnd="12dp" />
+            <TextView android:id="@+id/tvCompletedJobs" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="11sp" android:layout_marginEnd="16dp" />
 
-            <Button
-                android:id="@+id/btnHire"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:text="Hire"
-                android:textSize="11sp"
-                android:backgroundTint="#4CAF50"
-                android:textColor="#FFFFFF"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp" />
-
-            <Button
-                android:id="@+id/btnQuote"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
-                android:text="Quote"
-                android:textSize="11sp"
-                android:backgroundTint="#F9B43A"
-                android:textColor="#FFFFFF"
-                android:layout_marginStart="2dp"
-                android:layout_marginEnd="2dp" />
-
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnChat"
-                android:layout_width="0dp"
-                android:layout_height="36dp"
-                android:layout_weight="1"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="Chat"
-                android:textSize="11sp"
-                android:backgroundTint="#764ba2"
-                android:textColor="#FFFFFF"
-                android:layout_marginStart="4dp" />
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="36dp"
+                app:icon="@drawable/ic_chat" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnHire"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Hire"
+                android:textAllCaps="false"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minHeight="36dp"
+                app:cornerRadius="12dp"
+                app:backgroundTint="@color/brand_primary" />
+
+            <!-- btnViewProfile and btnQuote placeholders for functionality -->
+            <View android:id="@+id/btnViewProfile" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone" />
+            <View android:id="@+id/btnQuote" android:layout_width="1dp" android:layout_height="1dp" android:visibility="gone" />
 
         </LinearLayout>
 
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>

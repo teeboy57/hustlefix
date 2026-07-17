@@ -66,8 +66,7 @@ public final class ChatLauncher {
         }
         return userId2 + "_" + userId1;
     }
-    public static void ensureChatRoomIndexed(String chatRoomId, String currentUserId, String currentUserName,
-                                             String otherUserId, String otherUserName) {
+    public static void ensureChatRoomIndexed(String chatRoomId, String currentUserId, String currentUserName, String otherUserId, String otherUserName) {
         if (TextUtils.isEmpty(chatRoomId) || TextUtils.isEmpty(currentUserId) || TextUtils.isEmpty(otherUserId)) {
             return;
         }
@@ -102,7 +101,7 @@ public final class ChatLauncher {
             public void onCancelled(@NonNull DatabaseError error) {}
         });
     }
-    /** Opens chat with the other party on a job (client â†” assigned worker). */
+    /** Opens chat with the other party on a job (client Ã¢â€ â€ assigned worker). */
     public static void openChatForJob(Context context, Job job) {
         if (job == null) {
             openChatList(context);

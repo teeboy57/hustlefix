@@ -1,13 +1,11 @@
 package com.example.hustlefix;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -20,7 +18,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.Calendar;
-import java.util.HashSet;
+import java.util.Locale;
 
 public class AnalyticsActivity extends AppCompatActivity {
 
@@ -29,11 +27,19 @@ public class AnalyticsActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private ProgressBar progressBar;
     
-    // Stats TextViews
-    private TextView tvTotalServices, tvTotalBookings, tvTotalRevenue, tvAvgRating;
-    private TextView tvCompletedBookings, tvPendingBookings, tvCancelledBookings;
-    private TextView tvMonthlyRevenue, tvWeeklyBookings, tvTodayBookings;
-    private TextView tvTotalClients, tvAvgPrice, tvCompletionRate;
+    private TextView tvTotalServices;
+    private TextView tvTotalBookings;
+    private TextView tvTotalRevenue;
+    private TextView tvAvgRating;
+    private TextView tvCompletedBookings;
+    private TextView tvPendingBookings;
+    private TextView tvCancelledBookings;
+    private TextView tvMonthlyRevenue;
+    private TextView tvWeeklyBookings;
+    private TextView tvTodayBookings;
+    private TextView tvTotalClients;
+    private TextView tvAvgPrice;
+    private TextView tvCompletionRate;
 
     private FirebaseAuth mAuth;
     private String currentUserId;
@@ -90,27 +96,25 @@ public class AnalyticsActivity extends AppCompatActivity {
 
         setLoading(true);
 
-        // Load services count
         DatabaseReference servicesRef = FirebaseDatabase.getInstance().getReference("services");
-        servicesRef.orderByChild("entrepreneurId").equalTo(currentUserId)
+        servicesRef.orderByChild("serviceProviderId").equalTo(currentUserId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    public void onDataChange(DataSnapshot snapshot) {
                         tvTotalServices.setText(String.valueOf(snapshot.getChildrenCount()));
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                    public void onCancelled(DatabaseError error) {
                         tvTotalServices.setText("0");
                     }
                 });
 
-        // Load bookings analytics
         DatabaseReference bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
-        bookingsRef.orderByChild("entrepreneurId").equalTo(currentUserId)
+        bookingsRef.orderByChild("serviceProviderId").equalTo(currentUserId)
                 .addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    public void onDataChange(DataSnapshot snapshot) {
                         setLoading(false);
                         
                         if (!snapshot.exists()) {
@@ -131,9 +135,8 @@ public class AnalyticsActivity extends AppCompatActivity {
                         int weeklyBookings = 0;
                         int todayBookings = 0;
                         
-                        HashSet<String> uniqueClients = new HashSet<>();
+                        java.util.HashSet<String> uniqueClients = new java.util.HashSet<>();
                         
-                        // Time calculations
                         Calendar calendar = Calendar.getInstance();
                         calendar.set(Calendar.HOUR_OF_DAY, 0);
                         calendar.set(Calendar.MINUTE, 0);
@@ -190,13 +193,13 @@ public class AnalyticsActivity extends AppCompatActivity {
                                     break;
                             }
                             
-                            if (bookingDate >= monthStart) {
+                            if (booking.getTimestamp() >= monthStart) {
                                 monthlyRevenue += price;
                             }
-                            if (bookingDate >= weekStart) {
+                            if (booking.getTimestamp() >= weekStart) {
                                 weeklyBookings++;
                             }
-                            if (bookingDate >= todayStart) {
+                            if (booking.getTimestamp() >= todayStart) {
                                 todayBookings++;
                             }
                         }
@@ -213,9 +216,9 @@ public class AnalyticsActivity extends AppCompatActivity {
                         
                         if (ratingCount > 0) {
                             double avgRating = totalRating / ratingCount;
-                            tvAvgRating.setText(String.format("%.1f ★", avgRating));
+                            tvAvgRating.setText(String.format(Locale.getDefault(), "%.1f \u2605", avgRating));
                         } else {
-                            tvAvgRating.setText("0.0 ★");
+                            tvAvgRating.setText("0.0 \u2605");
                         }
                         
                         tvTotalClients.setText(String.valueOf(uniqueClients.size()));
@@ -223,23 +226,18 @@ public class AnalyticsActivity extends AppCompatActivity {
                         if (totalBookings > 0) {
                             double avgPrice = totalPrice / totalBookings;
                             tvAvgPrice.setText("$" + String.format("%.2f", avgPrice));
-                            int completionRate = (completed * 100) / totalBookings;
-                            tvCompletionRate.setText(completionRate + "%");
+                            int completionRateValue = (completed * 100) / totalBookings;
+                            tvCompletionRate.setText(completionRateValue + "%");
                         } else {
                             tvAvgPrice.setText("$0.00");
                             tvCompletionRate.setText("0%");
                         }
-                        
-                        Log.d(TAG, "Analytics loaded: Bookings=" + totalBookings + 
-                                  ", Revenue=$" + totalRevenue + 
-                                  ", Clients=" + uniqueClients.size());
                     }
 
                     @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
+                    public void onCancelled(DatabaseError error) {
                         setLoading(false);
                         setDefaultValues();
-                        Log.e(TAG, "Error: " + error.getMessage());
                     }
                 });
     }
@@ -248,7 +246,7 @@ public class AnalyticsActivity extends AppCompatActivity {
         tvTotalServices.setText("0");
         tvTotalBookings.setText("0");
         tvTotalRevenue.setText("$0.00");
-        tvAvgRating.setText("0.0 ★");
+        tvAvgRating.setText("0.0 \u2605");
         tvCompletedBookings.setText("0");
         tvPendingBookings.setText("0");
         tvCancelledBookings.setText("0");

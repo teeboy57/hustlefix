@@ -41,12 +41,12 @@ public final class SessionHelper {
     }
     /** Firebase users/{uid}.role value for marketplace listing. */
     public static String firebaseRoleForAppRole(String appRole) {
-        return "ENTREPRENEUR".equals(appRole) ? "worker" : "client";
+        return "service_provider".equals(appRole) ? "worker" : "client";
     }
     public static void openDashboard(Context context, String role) {
         Intent intent;
-        if ("ENTREPRENEUR".equals(role)) {
-            intent = new Intent(context, EntrepreneurDashboardActivity.class);
+        if ("service_provider".equals(role)) {
+            intent = new Intent(context, ServiceProviderDashboardActivity.class);
         } else {
             intent = new Intent(context, ClientDashboardActivity.class);
         }

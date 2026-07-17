@@ -1,60 +1,76 @@
 package com.example.hustlefix;
+
 public class Booking {
     private String bookingId;
-    private String serviceId;
-    private String serviceTitle;
-    private double price;
     private String clientId;
-    private String clientName;
-    private String entrepreneurId;
-    private String entrepreneurName;
-    private String status; // pending, confirmed, in_progress, completed, cancelled
-    private long bookingDate;
-    private long completionDate;
-    private String notes;
+    private String serviceProviderId;
+    private String serviceId;
+    private String status;
+    private double price;
     private double rating;
+    private String serviceName;
+    private String serviceTitle;
+    private String clientName;
+    private String serviceProviderName;
+    private long timestamp;
+    private long bookingDate;
+    private String serviceType;
+    private String notes;
+    private String providerName;
+
     public Booking() {}
-    public Booking(String bookingId, String serviceId, String serviceTitle, double price,
-                   String clientId, String clientName, String entrepreneurId, String entrepreneurName) {
-        this.bookingId = bookingId;
-        this.serviceId = serviceId;
-        this.serviceTitle = serviceTitle;
-        this.price = price;
-        this.clientId = clientId;
-        this.clientName = clientName;
-        this.entrepreneurId = entrepreneurId;
-        this.entrepreneurName = entrepreneurName;
-        this.status = "pending";
-        this.bookingDate = System.currentTimeMillis();
-        this.completionDate = 0;
-        this.notes = "";
-        this.rating = 0;
-    }
-    // Getters and Setters
+
+    // ===== GETTERS =====
     public String getBookingId() { return bookingId; }
-    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
-    public String getServiceId() { return serviceId; }
-    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
-    public String getServiceTitle() { return serviceTitle; }
-    public void setServiceTitle(String serviceTitle) { this.serviceTitle = serviceTitle; }
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
     public String getClientId() { return clientId; }
-    public void setClientId(String clientId) { this.clientId = clientId; }
-    public String getClientName() { return clientName; }
-    public void setClientName(String clientName) { this.clientName = clientName; }
-    public String getEntrepreneurId() { return entrepreneurId; }
-    public void setEntrepreneurId(String entrepreneurId) { this.entrepreneurId = entrepreneurId; }
-    public String getEntrepreneurName() { return entrepreneurName; }
-    public void setEntrepreneurName(String entrepreneurName) { this.entrepreneurName = entrepreneurName; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public long getBookingDate() { return bookingDate; }
-    public void setBookingDate(long bookingDate) { this.bookingDate = bookingDate; }
-    public long getCompletionDate() { return completionDate; }
-    public void setCompletionDate(long completionDate) { this.completionDate = completionDate; }
-    public String getNotes() { return notes; }
-    public void setNotes(String notes) { this.notes = notes; }
+    public String getServiceProviderId() { return serviceProviderId; }
+    public String getServiceId() { return serviceId; }
+    public String getStatus() { return status != null ? status : "pending"; }
+    public double getPrice() { return price; }
     public double getRating() { return rating; }
+    public String getServiceName() { return serviceName != null ? serviceName : "Service"; }
+    public String getServiceTitle() { return serviceTitle != null ? serviceTitle : "Service"; }
+    public String getClientName() { return clientName != null ? clientName : "Client"; }
+    public String getServiceProviderName() { return serviceProviderName != null ? serviceProviderName : "Provider"; }
+    public long getTimestamp() { return timestamp; }
+    public long getBookingDate() { return bookingDate; }
+    public String getServiceType() { return serviceType != null ? serviceType : ""; }
+    public String getNotes() { return notes != null ? notes : ""; }
+    public String getProviderName() { return providerName != null ? providerName : "Provider"; }
+    
+    // Alias methods for compatibility
+    @com.google.firebase.database.Exclude
+    public String getserviceProviderId() { return getServiceProviderId(); }
+    @com.google.firebase.database.Exclude
+    public String getserviceProviderName() { return getServiceProviderName(); }
+    @com.google.firebase.database.Exclude
+    public String getEntrepreneurId() { return getServiceProviderId(); }
+    @com.google.firebase.database.Exclude
+    public String getEntrepreneurName() { return getServiceProviderName(); }
+
+    // ===== SETTERS =====
+    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+    public void setClientId(String clientId) { this.clientId = clientId; }
+    public void setServiceProviderId(String serviceProviderId) { this.serviceProviderId = serviceProviderId; }
+    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
+    public void setStatus(String status) { this.status = status; }
+    public void setPrice(double price) { this.price = price; }
     public void setRating(double rating) { this.rating = rating; }
+    public void setServiceName(String serviceName) { this.serviceName = serviceName; }
+    public void setServiceTitle(String serviceTitle) { this.serviceTitle = serviceTitle; }
+    public void setClientName(String clientName) { this.clientName = clientName; }
+    public void setServiceProviderName(String serviceProviderName) { this.serviceProviderName = serviceProviderName; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    public void setBookingDate(long bookingDate) { this.bookingDate = bookingDate; }
+    public void setServiceType(String serviceType) { this.serviceType = serviceType; }
+    public void setNotes(String notes) { this.notes = notes; }
+    public void setProviderName(String providerName) { this.providerName = providerName; }
+    
+    // Alias setters for compatibility
+    @com.google.firebase.database.Exclude
+    public void setserviceProviderId(String serviceProviderId) { setServiceProviderId(serviceProviderId); }
+    @com.google.firebase.database.Exclude
+    public void setserviceProviderName(String serviceProviderName) { setServiceProviderName(serviceProviderName); }
+    public void setEntrepreneurId(String entrepreneurId) { setServiceProviderId(entrepreneurId); }
+    public void setEntrepreneurName(String entrepreneurName) { setServiceProviderName(entrepreneurName); }
 }

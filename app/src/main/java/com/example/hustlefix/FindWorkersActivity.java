@@ -380,8 +380,7 @@ public class FindWorkersActivity extends AppCompatActivity {
         private String status;
         public HireRequest() {}
         public HireRequest(String id, String clientId, String clientName, String workerId,
-                           String workerName, String jobTitle, String jobDescription,
-                           double budget, String deadline, float proposedRating,
+                           String workerName, String jobTitle, String jobDescription, double budget, String deadline, float proposedRating,
                            long timestamp, String status) {
             this.id = id;
             this.clientId = clientId;

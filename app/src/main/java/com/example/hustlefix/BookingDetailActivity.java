@@ -27,11 +27,12 @@ public class BookingDetailActivity extends AppCompatActivity {
 
     private DatabaseReference bookingsRef;
     private String bookingId;
-    private boolean isEntrepreneur;
+    private boolean isServiceProvider;
+
     private String clientId;
-    private String entrepreneurId;
+    private String serviceProviderId;
     private String clientName;
-    private String entrepreneurName;
+    private String serviceProviderName;
     private String serviceTitle;
 
     @Override
@@ -40,7 +41,7 @@ public class BookingDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_booking_detail);
 
         bookingId = getIntent().getStringExtra("bookingId");
-        isEntrepreneur = getIntent().getBooleanExtra("isEntrepreneur", false);
+        isServiceProvider = getIntent().getBooleanExtra("isServiceProvider", false);
 
         initViews();
         setupToolbar();
@@ -61,8 +62,7 @@ public class BookingDetailActivity extends AppCompatActivity {
         btnChat = findViewById(R.id.btnChat);
         progressBar = findViewById(R.id.progressBar);
 
-        // Show/hide entrepreneur actions
-        if (isEntrepreneur) {
+        if (isServiceProvider) {
             btnAccept.setVisibility(View.VISIBLE);
             btnReject.setVisibility(View.VISIBLE);
             btnComplete.setVisibility(View.VISIBLE);
@@ -71,8 +71,7 @@ public class BookingDetailActivity extends AppCompatActivity {
             btnReject.setVisibility(View.GONE);
             btnComplete.setVisibility(View.GONE);
         }
-        
-        // Hide chat button initially (will be shown if status is confirmed or completed)
+
         btnChat.setVisibility(View.GONE);
     }
 
@@ -93,13 +92,12 @@ public class BookingDetailActivity extends AppCompatActivity {
                     if (snapshot.exists()) {
                         Booking booking = snapshot.getValue(Booking.class);
                         if (booking != null) {
-                            // Store IDs and names for chat
                             clientId = booking.getClientId();
-                            entrepreneurId = booking.getEntrepreneurId();
+                            serviceProviderId = booking.getserviceProviderId();
                             clientName = booking.getClientName();
-                            entrepreneurName = booking.getEntrepreneurName();
+                            serviceProviderName = booking.getserviceProviderName();
                             serviceTitle = booking.getServiceTitle();
-                            
+
                             displayBookingData(booking);
                             showChatButtonIfConfirmed(booking);
                         }
@@ -118,10 +116,10 @@ public class BookingDetailActivity extends AppCompatActivity {
         tvServiceTitle.setText("Service: " + booking.getServiceTitle());
         tvClientName.setText("Client: " + booking.getClientName());
         tvPrice.setText("Price: $" + String.format("%.2f", booking.getPrice()));
-        
+
         String status = booking.getStatus() != null ? booking.getStatus() : "pending";
         tvStatus.setText("Status: " + status.toUpperCase());
-        
+
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         tvDate.setText("Date: " + sdf.format(new Date(booking.getBookingDate())));
     }
@@ -146,13 +144,11 @@ public class BookingDetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     setLoading(false);
                     Toast.makeText(this, "Booking " + status + "!", Toast.LENGTH_SHORT).show();
-                    
-                    // If status is confirmed, show chat button
+
                     if (status.equals("confirmed")) {
                         btnChat.setVisibility(View.VISIBLE);
                     }
-                    
-                    // Refresh data
+
                     loadBookingData();
                 })
                 .addOnFailureListener(e -> {
@@ -162,29 +158,25 @@ public class BookingDetailActivity extends AppCompatActivity {
     }
 
     private void openChat() {
-        // Determine who is the partner to chat with
         String partnerId;
         String partnerName;
-        
-        if (isEntrepreneur) {
-            // Entrepreneur wants to chat with client
+
+        if (isServiceProvider) {
             partnerId = clientId;
             partnerName = clientName;
         } else {
-            // Client wants to chat with entrepreneur
-            partnerId = entrepreneurId;
-            partnerName = entrepreneurName;
+            partnerId = serviceProviderId;
+            partnerName = serviceProviderName;
         }
-        
+
         if (partnerId == null || partnerId.isEmpty()) {
             Toast.makeText(this, "Unable to start chat", Toast.LENGTH_SHORT).show();
             return;
         }
-        
+
         Intent intent = new Intent(BookingDetailActivity.this, ChatActivity.class);
         intent.putExtra("partnerId", partnerId);
         intent.putExtra("partnerName", partnerName);
-        intent.putExtra("bookingId", bookingId);
         startActivity(intent);
     }
 

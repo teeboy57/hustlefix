@@ -102,7 +102,7 @@ public class MyServicesActivity extends AppCompatActivity {
 
         setLoading(true);
         servicesRef = FirebaseDatabase.getInstance().getReference("services");
-        servicesRef.orderByChild("entrepreneurId").equalTo(currentUserId)
+        servicesRef.orderByChild("serviceProviderId").equalTo(currentUserId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {

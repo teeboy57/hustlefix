@@ -191,17 +191,10 @@ public class EmergencyRequestActivity extends AppCompatActivity {
                 int checkedId = checkedIds.get(0);
                 if (checkedId == R.id.chipMedical) {
                     selectedEmergencyType = "Medical";
-                } else if (checkedId == R.id.chipFire) {
-                    selectedEmergencyType = "Fire";
                 } else if (checkedId == R.id.chipSecurity) {
                     selectedEmergencyType = "Security";
-                } else if (checkedId == R.id.chipAccident) {
-                    selectedEmergencyType = "Accident";
-                } else if (checkedId == R.id.chipOther) {
-                    selectedEmergencyType = "Other";
                 } else {
-                    Chip chip = findViewById(checkedId);
-                    selectedEmergencyType = chip != null ? chip.getText().toString() : "";
+                    selectedEmergencyType = "Other";
                 }
             } else {
                 selectedEmergencyType = "";
@@ -284,7 +277,7 @@ public class EmergencyRequestActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(this, "Location permission is required for emergency requests",
                         Toast.LENGTH_LONG).show();
-                tvLocation.setText("Location permission denied â€” enter area in description");
+                tvLocation.setText("Location permission denied - enter area in description");
                 progressLocation.setVisibility(View.GONE);
             }
         }

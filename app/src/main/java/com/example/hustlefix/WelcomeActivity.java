@@ -4,15 +4,18 @@ import android.os.Bundle;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 public class WelcomeActivity extends AppCompatActivity {
-    private Button btnEntrepreneur, btnClient;
+    private Button btnServiceProvider, btnClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LanguageManager.applyLanguage(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome);
-        btnEntrepreneur = findViewById(R.id.btnEntrepreneur);
+        btnServiceProvider = findViewById(R.id.btnServiceProvider);
         btnClient = findViewById(R.id.btnClient);
-        btnEntrepreneur.setOnClickListener(v -> goToLogin("ENTREPRENEUR"));
+
+        // Global Banner is just decorative/text, no need to link unless dynamic
+
+        btnServiceProvider.setOnClickListener(v -> goToLogin("service_provider"));
         btnClient.setOnClickListener(v -> goToLogin("CLIENT"));
     }
     private void goToLogin(String role) {

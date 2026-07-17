@@ -23,8 +23,7 @@ public final class NavigationHelper {
     private NavigationHelper() {}
 
     public static void setupDrawer(
-            AppCompatActivity activity,
-            DrawerLayout drawerLayout,
+            AppCompatActivity activity, DrawerLayout drawerLayout,
             Toolbar toolbar,
             NavigationView navigationView) {
         if (drawerLayout == null || toolbar == null || navigationView == null) {
@@ -132,7 +131,7 @@ public final class NavigationHelper {
             activity.startActivity(new Intent(activity, WelcomeActivity.class));
         }
         if (!(activity instanceof ClientDashboardActivity)
-                && !(activity instanceof EntrepreneurDashboardActivity)) {
+                && !(activity instanceof ServiceProviderDashboardActivity)) {
             activity.finish();
         }
     }
@@ -159,7 +158,7 @@ public final class NavigationHelper {
     }
 
     private static String[] buildMenuLabels(String role) {
-        if ("ENTREPRENEUR".equals(role)) {
+        if ("service_provider".equals(role)) {
             return new String[]{
                     "Home", "Post a Service", "My Services", "My Bookings",
                     "Analytics", "Settings", "Logout"
@@ -185,7 +184,7 @@ public final class NavigationHelper {
                 // My Bookings
                 break;
             case 4:
-                if ("ENTREPRENEUR".equals(role)) {
+                if ("service_provider".equals(role)) {
                     // Analytics
                 } else {
                     activity.startActivity(new Intent(activity, SettingsActivity.class));

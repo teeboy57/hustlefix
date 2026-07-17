@@ -1,151 +1,152 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F5F7FA">
+    android:background="@color/ui_background">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorPrimary"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:background="@color/brand_primary"
+        app:title="Booking Details"
         app:titleTextColor="@color/white"
-        app:title="Booking Details" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="32dp"
-        android:visibility="gone" />
+        app:navigationIcon="@drawable/ic_back"
+        app:navigationIconTint="@color/white"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="20dp">
 
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="4dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="24dp">
 
                     <TextView
                         android:id="@+id/tvServiceTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Service: Title"
-                        android:textSize="16sp"
-                        android:textColor="#212121"
-                        android:layout_marginBottom="8dp" />
+                        android:fontFamily="sans-serif-black"
+                        android:text="Service Title"
+                        android:textColor="@color/text_high_emphasis"
+                        android:textSize="22sp" />
+
+                    <TextView
+                        android:id="@+id/tvPrice"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="sans-serif-bold"
+                        android:text="$0.00"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="20sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="16dp"
+                        android:background="#EEE" />
 
                     <TextView
                         android:id="@+id/tvClientName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Client: Name"
-                        android:textSize="14sp"
-                        android:textColor="#757575"
-                        android:layout_marginBottom="4dp" />
-
-                    <TextView
-                        android:id="@+id/tvPrice"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Price: $0.00"
-                        android:textSize="14sp"
-                        android:textColor="#6200EE"
-                        android:layout_marginBottom="4dp" />
-
-                    <TextView
-                        android:id="@+id/tvStatus"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Status: Pending"
-                        android:textSize="14sp"
-                        android:textColor="#FF9800"
-                        android:layout_marginBottom="4dp" />
+                        android:textColor="@color/text_medium_emphasis"
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tvDate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Date: Today"
-                        android:textSize="14sp"
-                        android:textColor="#757575" />
+                        android:layout_marginTop="8dp"
+                        android:text="Date: Jul 11, 2024"
+                        android:textColor="@color/text_low_emphasis"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/badge_pending"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:text="CONFIRMED"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Entrepreneur Actions -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="24dp"
+                android:orientation="vertical">
 
-                <Button
-                    android:id="@+id/btnAccept"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:text="ACCEPT BOOKING"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:backgroundTint="#4CAF50"
-                    android:visibility="gone" />
-
-                <Button
-                    android:id="@+id/btnReject"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:text="REJECT BOOKING"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:backgroundTint="#F44336"
-                    android:visibility="gone" />
-
-                <Button
-                    android:id="@+id/btnComplete"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:text="MARK COMPLETED"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:backgroundTint="#2196F3"
-                    android:visibility="gone" />
-
-                <!-- Chat Button - Appears after booking is confirmed -->
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnChat"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginTop="8dp"
-                    android:text="💬 CHAT WITH PROVIDER"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:backgroundTint="#6200EE"
+                    android:layout_height="64dp"
+                    android:text="Chat with Provider"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:visibility="gone"
+                    app:cornerRadius="16dp"
+                    app:backgroundTint="@color/brand_primary"
+                    app:icon="@drawable/ic_chat" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAccept"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:text="Accept Booking"
+                    android:textAllCaps="false"
+                    android:visibility="gone"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/ui_success" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnComplete"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:text="Mark as Completed"
+                    android:textAllCaps="false"
+                    android:visibility="gone"
+                    app:cornerRadius="12dp"
+                    app:backgroundTint="@color/brand_secondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnReject"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="12dp"
+                    android:text="Reject Booking"
+                    android:textColor="@color/ui_error"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -153,4 +154,14 @@
         </LinearLayout>
     </ScrollView>
 
-</LinearLayout>
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
