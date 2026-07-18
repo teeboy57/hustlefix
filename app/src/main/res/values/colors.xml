@@ -4,22 +4,28 @@
     <color name="brand_primary">#6A1B9A</color> <!-- Deep Purple -->
     <color name="brand_primary_dark">#4A148C</color>
     <color name="brand_primary_light">#9C4DCC</color>
-    
+    <color name="brand_primary_2nd">#8A56CC</color>
+
+
     <!-- Brand Accent Colors -->
     <color name="brand_secondary">#00BFA5</color> <!-- Bright Teal -->
     <color name="brand_accent">#FFAB40</color> <!-- Vivid Orange -->
-    
+
     <!-- UI Colors -->
     <color name="ui_background">#F8F9FE</color>
     <color name="ui_surface">#FFFFFF</color>
     <color name="ui_error">#FF5252</color>
     <color name="ui_success">#00C853</color>
-    
+
     <!-- Text Colors -->
     <color name="text_high_emphasis">#1A1C1E</color>
     <color name="text_medium_emphasis">#44474E</color>
     <color name="text_low_emphasis">#74777F</color>
     <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_on_gradient">#FFFFFF</color>
+
+    <!-- Card Colors -->
+    <color name="card_surface_translucent">#E6FFFFFF</color>
 
     <!-- Legacy support & Compatibility -->
     <color name="colorPrimary">#6A1B9A</color>
