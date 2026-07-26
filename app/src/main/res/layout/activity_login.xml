@@ -32,7 +32,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Welcome Back"
+                android:text="@string/welcome_back"
                 android:textSize="26sp"
                 android:fontFamily="sans-serif-black"
                 android:textColor="@color/brand_primary" />
@@ -100,16 +100,11 @@
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
-                android:text="Login"
+                android:text="@string/login"
                 android:textAllCaps="false"
                 android:textSize="18sp"
                 app:cornerRadius="16dp"
                 app:backgroundTint="@color/brand_primary" />
-
-            <!-- Social Login placeholder IDs for functionality -->
-            <View android:id="@+id/cardGoogleLogin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <View android:id="@+id/cardFacebookLogin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
-            <View android:id="@+id/cardAppleLogin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
             <TextView
                 android:id="@+id/tvForgotPassword"
@@ -117,9 +112,39 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="16dp"
-                android:text="Forgot Password?"
+                android:text="@string/forgot_password"
                 android:textColor="@color/brand_secondary"
                 android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:layout_marginTop="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_have_account"
+                    android:textColor="@color/text_low_emphasis" />
+
+                <TextView
+                    android:id="@+id/btnGoRegister"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/register"
+                    android:textColor="@color/brand_primary"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+            </LinearLayout>
+
+            <!-- Social Login placeholder IDs for functionality -->
+            <View android:id="@+id/cardGoogleLogin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <View android:id="@+id/cardFacebookLogin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+            <View android:id="@+id/cardAppleLogin" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
         </LinearLayout>
 
@@ -134,30 +159,5 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp" />
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="New to HustleFix? "
-            android:textColor="@color/text_low_emphasis" />
-
-        <TextView
-            android:id="@+id/btnGoRegister"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sign Up Now"
-            android:textColor="@color/brand_primary"
-            android:textStyle="bold" />
-
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

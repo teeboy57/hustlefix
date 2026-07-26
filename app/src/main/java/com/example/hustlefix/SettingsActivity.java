@@ -27,13 +27,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     private MaterialCardView cardProfile;
     private View cardPrivacy;
-    private View cardLanguage;
     private View cardHelp;
     private View cardAbout;
     private View cardAdmin;
-
-    private View cardNotifications;
-    private View cardTheme;
 
     private MaterialButton cardLogout;
 
@@ -41,7 +37,6 @@ public class SettingsActivity extends AppCompatActivity {
     private Switch switchDarkMode;
     private TextView tvUserName;
     private TextView tvUserEmail;
-    private TextView tvLanguage;
 
     private SharedPreferences sharedPreferences;
 
@@ -64,26 +59,18 @@ public class SettingsActivity extends AppCompatActivity {
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
 
-        // ✅ All MaterialCardView
         cardProfile = findViewById(R.id.cardProfile);
         cardPrivacy = findViewById(R.id.cardPrivacy);
-        cardLanguage = findViewById(R.id.cardLanguage);
         cardHelp = findViewById(R.id.cardHelp);
         cardAbout = findViewById(R.id.cardAbout);
         cardAdmin = findViewById(R.id.cardAdmin);
 
-        // ✅ View (could be LinearLayout or any other view)
-        cardNotifications = findViewById(R.id.cardNotifications);
-        cardTheme = findViewById(R.id.cardTheme);
-
-        // ✅ MaterialButton
         cardLogout = findViewById(R.id.cardLogout);
 
         switchNotifications = findViewById(R.id.switchNotifications);
         switchDarkMode = findViewById(R.id.switchDarkMode);
         tvUserName = findViewById(R.id.tvUserName);
         tvUserEmail = findViewById(R.id.tvUserEmail);
-        tvLanguage = findViewById(R.id.tvLanguage);
     }
 
     private void setupToolbar() {
@@ -127,7 +114,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        // ✅ Profile click - check for null
         if (cardProfile != null) {
             cardProfile.setOnClickListener(v -> {
                 Intent intent = new Intent(SettingsActivity.this, ProfileActivity.class);
@@ -135,32 +121,22 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        // ✅ Privacy click
         if (cardPrivacy != null) {
             cardPrivacy.setOnClickListener(v -> showPrivacyDialog());
         }
 
-        // ✅ Language click
-        if (cardLanguage != null) {
-            cardLanguage.setOnClickListener(v -> showLanguageDialog());
-        }
-
-        // ✅ Help click
         if (cardHelp != null) {
             cardHelp.setOnClickListener(v -> showHelpDialog());
         }
 
-        // ✅ About click
         if (cardAbout != null) {
             cardAbout.setOnClickListener(v -> showAboutDialog());
         }
 
-        // ✅ Logout click - MaterialButton
         if (cardLogout != null) {
             cardLogout.setOnClickListener(v -> logout());
         }
 
-        // ✅ Admin click
         if (cardAdmin != null) {
             cardAdmin.setOnClickListener(v -> {
                 Intent intent = new Intent(SettingsActivity.this, AdminActivity.class);
@@ -168,7 +144,6 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        // ✅ Notifications Switch
         if (switchNotifications != null) {
             switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -179,7 +154,6 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        // ✅ Dark Mode Switch
         if (switchDarkMode != null) {
             switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -196,7 +170,6 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void setupAdminReveal() {
-        // ✅ Long press on About card to reveal Admin panel
         if (cardAbout != null && cardAdmin != null) {
             cardAbout.setOnLongClickListener(v -> {
                 if (cardAdmin.getVisibility() == View.GONE) {
@@ -211,37 +184,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
     }
 
-    private void showLanguageDialog() {
-        final String[] languages = {"English", "Afrikaans", "isiZulu", "isiXhosa"};
-        final String[] languageCodes = {
-                LanguageManager.LANGUAGE_ENGLISH,
-                LanguageManager.LANGUAGE_AFRIKAANS,
-                LanguageManager.LANGUAGE_ZULU,
-                LanguageManager.LANGUAGE_XHOSA
-        };
-
-        String currentLang = LanguageManager.getLanguage(this);
-        int currentIndex = 0;
-        for (int i = 0; i < languageCodes.length; i++) {
-            if (languageCodes[i].equals(currentLang)) {
-                currentIndex = i;
-                break;
-            }
-        }
-
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setTitle("Select Language / Khetha Ulimi / Kies Taal");
-        builder.setSingleChoiceItems(languages, currentIndex, (dialog, which) -> {
-            String selectedCode = languageCodes[which];
-            if (!selectedCode.equals(currentLang)) {
-                LanguageManager.changeLanguage(SettingsActivity.this, selectedCode);
-            }
-            dialog.dismiss();
-        });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-        builder.show();
-    }
-
     private void loadSettings() {
         boolean notificationsEnabled = sharedPreferences.getBoolean("notifications_enabled", true);
         boolean darkModeEnabled = sharedPreferences.getBoolean("dark_mode_enabled", false);
@@ -251,26 +193,6 @@ public class SettingsActivity extends AppCompatActivity {
         }
         if (switchDarkMode != null) {
             switchDarkMode.setChecked(darkModeEnabled);
-        }
-
-        // Update language display
-        String currentLang = LanguageManager.getLanguage(this);
-        String displayName;
-        switch (currentLang) {
-            case LanguageManager.LANGUAGE_AFRIKAANS:
-                displayName = "Afrikaans";
-                break;
-            case LanguageManager.LANGUAGE_ZULU:
-                displayName = "isiZulu";
-                break;
-            case LanguageManager.LANGUAGE_XHOSA:
-                displayName = "isiXhosa";
-                break;
-            default:
-                displayName = "English";
-        }
-        if (tvLanguage != null) {
-            tvLanguage.setText(displayName);
         }
     }
 

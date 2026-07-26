@@ -4,15 +4,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,7 +32,14 @@ public class BookingDetailActivity extends AppCompatActivity {
     private Button btnAccept, btnReject, btnComplete, btnChat;
     private ProgressBar progressBar;
 
+    // Rating views
+    private View cardRating;
+    private RatingBar ratingBar;
+    private EditText etReview;
+    private Button btnSubmitRating;
+
     private DatabaseReference bookingsRef;
+    private DatabaseReference usersRef;
     private String bookingId;
     private boolean isServiceProvider;
 
@@ -34,6 +48,8 @@ public class BookingDetailActivity extends AppCompatActivity {
     private String clientName;
     private String serviceProviderName;
     private String serviceTitle;
+    
+    private Booking currentBooking;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +77,12 @@ public class BookingDetailActivity extends AppCompatActivity {
         btnComplete = findViewById(R.id.btnComplete);
         btnChat = findViewById(R.id.btnChat);
         progressBar = findViewById(R.id.progressBar);
+
+        // Rating Section
+        cardRating = findViewById(R.id.cardRating);
+        ratingBar = findViewById(R.id.ratingBar);
+        etReview = findViewById(R.id.etReview);
+        btnSubmitRating = findViewById(R.id.btnSubmitRating);
 
         if (isServiceProvider) {
             btnAccept.setVisibility(View.VISIBLE);
@@ -90,16 +112,17 @@ public class BookingDetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(snapshot -> {
                     setLoading(false);
                     if (snapshot.exists()) {
-                        Booking booking = snapshot.getValue(Booking.class);
-                        if (booking != null) {
-                            clientId = booking.getClientId();
-                            serviceProviderId = booking.getserviceProviderId();
-                            clientName = booking.getClientName();
-                            serviceProviderName = booking.getserviceProviderName();
-                            serviceTitle = booking.getServiceTitle();
+                        currentBooking = snapshot.getValue(Booking.class);
+                        if (currentBooking != null) {
+                            clientId = currentBooking.getClientId();
+                            serviceProviderId = currentBooking.getserviceProviderId();
+                            clientName = currentBooking.getClientName();
+                            serviceProviderName = currentBooking.getserviceProviderName();
+                            serviceTitle = currentBooking.getServiceTitle();
 
-                            displayBookingData(booking);
-                            showChatButtonIfConfirmed(booking);
+                            displayBookingData(currentBooking);
+                            showChatButtonIfConfirmed(currentBooking);
+                            checkRatingStatus(currentBooking);
                         }
                     } else {
                         Toast.makeText(this, "Booking not found", Toast.LENGTH_SHORT).show();
@@ -114,7 +137,7 @@ public class BookingDetailActivity extends AppCompatActivity {
 
     private void displayBookingData(Booking booking) {
         tvServiceTitle.setText("Service: " + booking.getServiceTitle());
-        tvClientName.setText("Client: " + booking.getClientName());
+        tvClientName.setText(isServiceProvider ? "Client: " + booking.getClientName() : "Provider: " + booking.getServiceProviderName());
         tvPrice.setText("Price: $" + String.format("%.2f", booking.getPrice()));
 
         String status = booking.getStatus() != null ? booking.getStatus() : "pending";
@@ -122,6 +145,15 @@ public class BookingDetailActivity extends AppCompatActivity {
 
         SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
         tvDate.setText("Date: " + sdf.format(new Date(booking.getBookingDate())));
+        
+        // Update status badge background based on status
+        if (status.equalsIgnoreCase("completed")) {
+            tvStatus.setBackgroundResource(R.drawable.badge_accepted); // Green-ish badge
+        } else if (status.equalsIgnoreCase("cancelled")) {
+            tvStatus.setBackgroundResource(R.drawable.badge_red);
+        } else {
+            tvStatus.setBackgroundResource(R.drawable.badge_pending);
+        }
     }
 
     private void showChatButtonIfConfirmed(Booking booking) {
@@ -131,11 +163,120 @@ public class BookingDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void checkRatingStatus(Booking booking) {
+        // Only show rating card if:
+        // 1. User is the client
+        // 2. Booking is completed
+        // 3. User hasn't rated yet
+        if (!isServiceProvider && "completed".equalsIgnoreCase(booking.getStatus())) {
+            // Check if a rating already exists for this booking
+            FirebaseDatabase.getInstance().getReference("ratings")
+                    .orderByChild("jobId").equalTo(bookingId)
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()) {
+                                cardRating.setVisibility(View.GONE);
+                            } else {
+                                cardRating.setVisibility(View.VISIBLE);
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {}
+                    });
+        } else {
+            cardRating.setVisibility(View.GONE);
+        }
+    }
+
     private void setupClickListeners() {
         btnAccept.setOnClickListener(v -> updateBookingStatus("confirmed"));
         btnReject.setOnClickListener(v -> updateBookingStatus("cancelled"));
         btnComplete.setOnClickListener(v -> updateBookingStatus("completed"));
         btnChat.setOnClickListener(v -> openChat());
+        btnSubmitRating.setOnClickListener(v -> submitRating());
+    }
+
+    private void submitRating() {
+        float ratingValue = ratingBar.getRating();
+        String review = etReview.getText().toString().trim();
+
+        if (ratingValue == 0) {
+            Toast.makeText(this, "Please select a rating", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        setLoading(true);
+        DatabaseReference ratingsRef = FirebaseDatabase.getInstance().getReference("ratings");
+        String ratingId = ratingsRef.push().getKey();
+
+        Rating ratingObj = new Rating(
+                bookingId,
+                serviceTitle,
+                clientId,
+                clientName,
+                serviceProviderId,
+                serviceProviderName,
+                ratingValue,
+                review,
+                false
+        );
+        ratingObj.setId(ratingId);
+
+        if (ratingId != null) {
+            ratingsRef.child(ratingId).setValue(ratingObj)
+                    .addOnSuccessListener(aVoid -> {
+                        // Also update the rating in the booking record
+                        bookingsRef.child(bookingId).child("rating").setValue(ratingValue);
+                        
+                        // Update the provider's overall stats
+                        updateProviderRating(serviceProviderId, ratingValue);
+                        
+                        cardRating.setVisibility(View.GONE);
+                        Toast.makeText(BookingDetailActivity.this, "Rating submitted!", Toast.LENGTH_SHORT).show();
+                    })
+                    .addOnFailureListener(e -> {
+                        setLoading(false);
+                        Toast.makeText(BookingDetailActivity.this, "Failed to submit rating", Toast.LENGTH_SHORT).show();
+                    });
+        }
+    }
+
+    private void updateProviderRating(String providerId, float newRating) {
+        usersRef = FirebaseDatabase.getInstance().getReference("users").child(providerId);
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    long completedJobs = 0;
+                    if (snapshot.hasChild("completedJobs")) {
+                        Object val = snapshot.child("completedJobs").getValue();
+                        completedJobs = val instanceof Long ? (Long) val : 0;
+                    }
+                    
+                    double currentRating = 0.0;
+                    if (snapshot.hasChild("rating")) {
+                        Object val = snapshot.child("rating").getValue();
+                        currentRating = val instanceof Number ? ((Number) val).doubleValue() : 0.0;
+                    }
+
+                    // Calculate new average rating
+                    double totalRatingScore = (currentRating * completedJobs) + newRating;
+                    completedJobs++;
+                    double newAverageRating = totalRatingScore / completedJobs;
+
+                    usersRef.child("rating").setValue(newAverageRating);
+                    usersRef.child("completedJobs").setValue(completedJobs);
+                }
+                setLoading(false);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                setLoading(false);
+            }
+        });
     }
 
     private void updateBookingStatus(String status) {
@@ -147,6 +288,10 @@ public class BookingDetailActivity extends AppCompatActivity {
 
                     if (status.equals("confirmed")) {
                         btnChat.setVisibility(View.VISIBLE);
+                    }
+                    
+                    if (status.equals("completed") && !isServiceProvider) {
+                        cardRating.setVisibility(View.VISIBLE);
                     }
 
                     loadBookingData();
@@ -186,6 +331,7 @@ public class BookingDetailActivity extends AppCompatActivity {
         btnReject.setEnabled(!isLoading);
         btnComplete.setEnabled(!isLoading);
         btnChat.setEnabled(!isLoading);
+        if (btnSubmitRating != null) btnSubmitRating.setEnabled(!isLoading);
     }
 
     @Override

@@ -132,21 +132,9 @@
                         <Switch android:id="@+id/switchDarkMode" android:layout_width="wrap_content" android:layout_height="wrap_content" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE" android:layout_marginHorizontal="16dp" />
-
-                    <LinearLayout
-                        android:id="@+id/cardLanguage"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="16dp"
-                        android:gravity="center_vertical"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:foreground="?android:attr/selectableItemBackground">
-                        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_language" app:tint="@color/brand_primary" />
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="16dp" android:text="Language" android:textColor="@color/text_high_emphasis" />
-                        <TextView android:id="@+id/tvLanguage" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="English" android:textColor="@color/brand_secondary" android:textStyle="bold" />
-                    </LinearLayout>
+                    <!-- Language option removed as only English is supported -->
+                    <View android:id="@+id/cardLanguage" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
+                    <TextView android:id="@+id/tvLanguage" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

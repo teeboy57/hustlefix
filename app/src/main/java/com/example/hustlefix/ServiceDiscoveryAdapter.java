@@ -8,7 +8,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscoveryAdapter.ServiceViewHolder> {
 
@@ -22,6 +27,11 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
     public ServiceDiscoveryAdapter(List<Service> services, OnServiceClickListener listener) {
         this.services = services;
         this.listener = listener;
+    }
+
+    public void updateList(List<Service> newList) {
+        this.services = newList;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -45,6 +55,7 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
 
     static class ServiceViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvPrice, tvCategory, tvServiceProvider, tvDescription;
+        CircleImageView ivProviderProfile;
 
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -53,6 +64,7 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
             tvCategory = itemView.findViewById(R.id.tvServiceCategory);
             tvServiceProvider = itemView.findViewById(R.id.tvServiceProviderName);
             tvDescription = itemView.findViewById(R.id.tvServiceDescription);
+            ivProviderProfile = itemView.findViewById(R.id.ivProviderProfile);
         }
 
         void bind(Service service, OnServiceClickListener listener) {
@@ -70,6 +82,14 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
             }
             if (tvDescription != null) {
                 tvDescription.setText(service.getDescription() != null ? service.getDescription() : "");
+            }
+
+            if (ivProviderProfile != null) {
+                Glide.with(itemView.getContext())
+                        .load(service.getServiceProviderProfileImageUrl())
+                        .placeholder(R.drawable.ic_profile_default)
+                        .error(R.drawable.ic_profile_default)
+                        .into(ivProviderProfile);
             }
 
             itemView.setOnClickListener(v -> {

@@ -12,6 +12,7 @@ public class Booking {
     private String serviceTitle;
     private String clientName;
     private String serviceProviderName;
+    private String providerProfileImageUrl;
     private long timestamp;
     private long bookingDate;
     private String serviceType;
@@ -32,6 +33,7 @@ public class Booking {
     public String getServiceTitle() { return serviceTitle != null ? serviceTitle : "Service"; }
     public String getClientName() { return clientName != null ? clientName : "Client"; }
     public String getServiceProviderName() { return serviceProviderName != null ? serviceProviderName : "Provider"; }
+    public String getProviderProfileImageUrl() { return providerProfileImageUrl; }
     public long getTimestamp() { return timestamp; }
     public long getBookingDate() { return bookingDate; }
     public String getServiceType() { return serviceType != null ? serviceType : ""; }
@@ -60,6 +62,7 @@ public class Booking {
     public void setServiceTitle(String serviceTitle) { this.serviceTitle = serviceTitle; }
     public void setClientName(String clientName) { this.clientName = clientName; }
     public void setServiceProviderName(String serviceProviderName) { this.serviceProviderName = serviceProviderName; }
+    public void setProviderProfileImageUrl(String providerProfileImageUrl) { this.providerProfileImageUrl = providerProfileImageUrl; }
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
     public void setBookingDate(long bookingDate) { this.bookingDate = bookingDate; }
     public void setServiceType(String serviceType) { this.serviceType = serviceType; }

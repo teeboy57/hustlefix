@@ -11,7 +11,10 @@ public class Service {
     private String serviceProviderId;
     private String serviceProviderName;
     private String serviceProviderEmail;
+    private String serviceProviderProfileImageUrl;
+    private String serviceImageUrl; // New field for service photo
     private String status;
+    private String availability;
     private long createdAt;
     private int bookingsCount;
     private double averageRating;
@@ -33,6 +36,7 @@ public class Service {
         this.serviceProviderName = serviceProviderName;
         this.serviceProviderEmail = serviceProviderEmail;
         this.status = "active";
+        this.availability = "Available";
         this.createdAt = System.currentTimeMillis();
         this.bookingsCount = 0;
         this.averageRating = 0;
@@ -69,8 +73,17 @@ public class Service {
     public String getserviceProviderEmail() { return serviceProviderEmail; }
     public void setserviceProviderEmail(String serviceProviderEmail) { this.serviceProviderEmail = serviceProviderEmail; }
 
+    public String getServiceProviderProfileImageUrl() { return serviceProviderProfileImageUrl; }
+    public void setServiceProviderProfileImageUrl(String serviceProviderProfileImageUrl) { this.serviceProviderProfileImageUrl = serviceProviderProfileImageUrl; }
+
+    public String getServiceImageUrl() { return serviceImageUrl; }
+    public void setServiceImageUrl(String serviceImageUrl) { this.serviceImageUrl = serviceImageUrl; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getAvailability() { return availability; }
+    public void setAvailability(String availability) { this.availability = availability; }
 
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }

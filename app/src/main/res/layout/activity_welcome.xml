@@ -29,23 +29,24 @@
         android:id="@+id/logoBackdrop"
         android:layout_width="119dp"
         android:layout_height="124dp"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="80dp"
         android:background="@drawable/logo_circle_gradient"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.43"
+        app:layout_constraintHorizontal_bias="0.599"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/globalBanner" />
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="169dp"
-        android:layout_height="160dp"
+        android:layout_width="187dp"
+        android:layout_height="171dp"
         android:src="@drawable/hustlefix_logo"
         app:layout_constraintBottom_toBottomOf="@id/logoBackdrop"
         app:layout_constraintEnd_toEndOf="@id/logoBackdrop"
-        app:layout_constraintHorizontal_bias="0.468"
+        app:layout_constraintHorizontal_bias="0.727"
         app:layout_constraintStart_toStartOf="@id/logoBackdrop"
-        app:layout_constraintTop_toTopOf="@+id/logoBackdrop" />
+        app:layout_constraintTop_toTopOf="@+id/logoBackdrop"
+        app:layout_constraintVertical_bias="1.0" />
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"

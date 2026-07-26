@@ -7,20 +7,20 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     
     <!-- Roles -->
-    <string name="role_service_provider">Service Provider</string>
+    <string name="role_service_provider">Hustler</string>
     <string name="role_client">Client</string>
     
     <!-- Welcome Screen -->
     <string name="welcome_banner">HustleFix</string>
     <string name="welcome_hustle">Welcome to HustleFix</string>
     <string name="select_role">Choose Your Role</string>
-    <string name="provider_role">I am a Service Provider</string>
+    <string name="provider_role">I am a Hustler</string>
     <string name="client_role">I am a Client</string>
     <string name="design_champions">Empowering Service Professionals</string>
     
     <!-- Dashboard -->
     <string name="welcome_back">Welcome Back</string>
-    <string name="service_provider_dashboard">Service Provider Dashboard</string>
+    <string name="service_provider_dashboard">Hustler Dashboard</string>
     <string name="my_services">My Services</string>
     <string name="my_business">My Business</string>
     <string name="business_manager">Business Manager</string>
@@ -40,7 +40,7 @@
     <string name="recent_activity">Recent Activity</string>
     <string name="no_orders">No orders yet</string>
     <string name="no_activity">No recent activity</string>
-    <string name="find_work">Find Work</string>
+    <string name="find_work">Find Workers</string>
     <string name="bookings_action">My Bookings</string>
     
     <!-- Auth -->
@@ -49,7 +49,9 @@
     <string name="login">Login</string>
     <string name="register">Register</string>
     <string name="forgot_password">Forgot Password?</string>
-    
+    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="already_have_account">Already have an account? </string>
+
     <!-- Common -->
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
@@ -73,7 +75,13 @@
     <!-- Emergency -->
     <string name="emergency">Emergency</string>
     <string name="emergency_request">Emergency Request</string>
-    
+
+    <!-- Booking & Rating -->
+    <string name="rate_hustler">Rate the Hustler</string>
+    <string name="review_hint">Tell us about your experience (optional)</string>
+    <string name="submit_review">Submit Review</string>
+    <string name="rating_submitted">Rating submitted!</string>
+
     <!-- Other -->
     <string name="dashboard">Dashboard</string>
     <string name="welcome">Welcome</string>
@@ -81,18 +89,17 @@
     <string name="bookings">Bookings</string>
     <string name="settings">Settings</string>
     <string name="logout">Logout</string>
-    <string name="about">about</string>
-    <string name="change_password">change_password</string>
-    <string name="dark_mode">dark_mode</string>
-    <string name="edit_profile">edit_profile</string>
-    <string name="find_workers">find_workers</string>
-    <string name="help_support">help_support</string>
-    <string name="language">language</string>
-    <string name="notifications">notifications</string>
-    <string name="post_job">post_job</string>
-    <string name="privacy_policy">privacy_policy</string>
-    <string name="profile">profile</string>
-    <string name="quotes_offers">quotes_offers</string>
-    <string name="ratings">ratings</string>
-    <string name="save_changes">save_changes</string>
+    <string name="about">About</string>
+    <string name="change_password">Change Password</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="find_workers">Find Workers</string>
+    <string name="help_support">Help &amp; Support</string>
+    <string name="notifications">Notifications</string>
+    <string name="post_job">Post Job</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="profile">Profile</string>
+    <string name="quotes_offers">Quotes &amp; Offers</string>
+    <string name="ratings">Ratings</string>
+    <string name="save_changes">Save Changes</string>
 </resources>

@@ -201,7 +201,9 @@ public class ServiceDetailActivity extends AppCompatActivity {
             booking.put("clientName", user.getDisplayName() != null ? user.getDisplayName() : "Client");
             booking.put("serviceProviderId", service.getserviceProviderId());
             booking.put("serviceProviderName", service.getserviceProviderName() != null ? service.getserviceProviderName() : "ServiceProvider");
+            booking.put("providerProfileImageUrl", service.getServiceProviderProfileImageUrl());
             booking.put("status", "pending");
+            booking.put("timestamp", System.currentTimeMillis());
             booking.put("bookingDate", System.currentTimeMillis());
             booking.put("notes", "");
             booking.put("rating", 0);

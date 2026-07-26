@@ -3,15 +3,20 @@ package com.example.hustlefix;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHolder> {
 
@@ -39,31 +44,42 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
         Booking booking = bookings.get(position);
         
         String serviceName = booking.getServiceName();
-        String clientName = booking.getClientName();
+        String providerName = booking.getServiceProviderName();
         String status = booking.getStatus();
         double price = booking.getPrice();
         long timestamp = booking.getTimestamp();
+        String imageUrl = booking.getProviderProfileImageUrl();
         
         holder.tvServiceName.setText(serviceName);
-        holder.tvClientName.setText(clientName);
+        holder.tvClientName.setText(providerName); // Changed from Client Name to Provider Name for "My Bookings"
         holder.tvPrice.setText(String.format("$%.2f", price));
         
         if (status == null) status = "pending";
-        holder.tvStatus.setText(status);
+        holder.tvStatus.setText(status.toUpperCase());
         
-        if (status.equals("completed")) {
+        // Color coding based on status
+        if (status.equalsIgnoreCase("completed")) {
             holder.tvStatus.setTextColor(0xFF4CAF50);
-        } else if (status.equals("pending")) {
+        } else if (status.equalsIgnoreCase("pending")) {
             holder.tvStatus.setTextColor(0xFFFF9800);
-        } else if (status.equals("cancelled")) {
+        } else if (status.equalsIgnoreCase("cancelled")) {
             holder.tvStatus.setTextColor(0xFFF44336);
-        } else {
+        } else if (status.equalsIgnoreCase("accepted")) {
             holder.tvStatus.setTextColor(0xFF2196F3);
+        } else {
+            holder.tvStatus.setTextColor(0xFF757575);
         }
         
         SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
         String dateStr = sdf.format(new Date(timestamp));
         holder.tvDate.setText(dateStr);
+
+        // Load profile image
+        Glide.with(holder.itemView.getContext())
+                .load(imageUrl)
+                .placeholder(R.drawable.ic_profile_default)
+                .error(R.drawable.ic_profile_default)
+                .into(holder.ivProviderProfile);
 
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
@@ -83,6 +99,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
         TextView tvPrice;
         TextView tvStatus;
         TextView tvDate;
+        CircleImageView ivProviderProfile;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -91,6 +108,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
             tvPrice = itemView.findViewById(R.id.tvPrice);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvDate = itemView.findViewById(R.id.tvDate);
+            ivProviderProfile = itemView.findViewById(R.id.ivProviderProfile);
         }
     }
 }
