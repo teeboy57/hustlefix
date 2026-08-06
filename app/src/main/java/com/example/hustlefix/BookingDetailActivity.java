@@ -138,7 +138,7 @@ public class BookingDetailActivity extends AppCompatActivity {
     private void displayBookingData(Booking booking) {
         tvServiceTitle.setText("Service: " + booking.getServiceTitle());
         tvClientName.setText(isServiceProvider ? "Client: " + booking.getClientName() : "Provider: " + booking.getServiceProviderName());
-        tvPrice.setText("Price: $" + String.format("%.2f", booking.getPrice()));
+        tvPrice.setText("Price: R" + String.format("%.2f", booking.getPrice()));
 
         String status = booking.getStatus() != null ? booking.getStatus() : "pending";
         tvStatus.setText("Status: " + status.toUpperCase());

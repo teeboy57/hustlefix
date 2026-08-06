@@ -32,6 +32,7 @@ public class SettingsActivity extends AppCompatActivity {
     private View cardAdmin;
 
     private MaterialButton cardLogout;
+    private MaterialButton btnDeleteAccount;
 
     private Switch switchNotifications;
     private Switch switchDarkMode;
@@ -66,6 +67,7 @@ public class SettingsActivity extends AppCompatActivity {
         cardAdmin = findViewById(R.id.cardAdmin);
 
         cardLogout = findViewById(R.id.cardLogout);
+        btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
 
         switchNotifications = findViewById(R.id.switchNotifications);
         switchDarkMode = findViewById(R.id.switchDarkMode);
@@ -135,6 +137,10 @@ public class SettingsActivity extends AppCompatActivity {
 
         if (cardLogout != null) {
             cardLogout.setOnClickListener(v -> logout());
+        }
+
+        if (btnDeleteAccount != null) {
+            btnDeleteAccount.setOnClickListener(v -> deleteAccount());
         }
 
         if (cardAdmin != null) {
@@ -247,6 +253,53 @@ public class SettingsActivity extends AppCompatActivity {
                     finish();
                 })
                 .setNegativeButton("No", null)
+                .show();
+    }
+
+    private void deleteAccount() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete Account")
+                .setMessage("Are you sure you want to permanently delete your account? This action cannot be undone and all your data will be lost.")
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    String uid = user.getUid();
+                    
+                    // 1. Delete user data from database
+                    com.google.firebase.database.FirebaseDatabase.getInstance().getReference("users").child(uid).removeValue()
+                            .addOnSuccessListener(aVoid -> {
+                                // 2. Delete user's services if they are a provider
+                                com.google.firebase.database.FirebaseDatabase.getInstance().getReference("services")
+                                        .orderByChild("serviceProviderId").equalTo(uid)
+                                        .addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(@NonNull com.google.firebase.database.DataSnapshot snapshot) {
+                                                for (com.google.firebase.database.DataSnapshot ds : snapshot.getChildren()) {
+                                                    ds.getRef().removeValue();
+                                                }
+                                                // 3. Delete the account from Authentication
+                                                user.delete().addOnCompleteListener(task -> {
+                                                    if (task.isSuccessful()) {
+                                                        Toast.makeText(SettingsActivity.this, "Account deleted successfully", Toast.LENGTH_LONG).show();
+                                                        SessionHelper.logout(SettingsActivity.this);
+                                                        finish();
+                                                    } else {
+                                                        String error = task.getException() != null ? task.getException().getMessage() : "Unknown error";
+                                                        Toast.makeText(SettingsActivity.this, "Failed to delete account: " + error + ". You might need to re-login to perform this action.", Toast.LENGTH_LONG).show();
+                                                    }
+                                                });
+                                            }
+
+                                            @Override
+                                            public void onCancelled(@NonNull com.google.firebase.database.DatabaseError error) {}
+                                        });
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(SettingsActivity.this, "Failed to delete user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
+                })
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 }

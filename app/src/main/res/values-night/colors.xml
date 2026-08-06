@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- UI Colors -->
+    <color name="ui_background">#121212</color>
+    <color name="ui_surface">#1E1E1E</color>
+
+    <!-- Text Colors -->
+    <color name="text_high_emphasis">#FFFFFF</color>
+    <color name="text_medium_emphasis">#E0E0E0</color>
+    <color name="text_low_emphasis">#BDBDBD</color>
+
+    <!-- Global Colors -->
+    <color name="black">#FFFFFF</color>
+    <color name="white">#FFFFFF</color>
+</resources>

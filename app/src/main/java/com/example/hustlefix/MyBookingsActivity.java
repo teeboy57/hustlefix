@@ -94,8 +94,13 @@ public class MyBookingsActivity extends AppCompatActivity {
         setLoading(true);
         bookingsRef = FirebaseDatabase.getInstance().getReference("bookings");
         
-        // Query bookings where clientId matches current user
-        bookingsRef.orderByChild("clientId").equalTo(currentUserId)
+        String role = SessionHelper.getRole(this);
+        String queryField = "service_provider".equals(role) ? "serviceProviderId" : "clientId";
+        
+        Log.d("MyBookings", "Loading bookings for role: " + role + " using field: " + queryField);
+
+        // Query bookings based on role
+        bookingsRef.orderByChild(queryField).equalTo(currentUserId)
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {

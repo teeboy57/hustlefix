@@ -84,27 +84,36 @@ public final class NavigationHelper {
         // Post Service
         if (itemId == R.id.nav_post_job) {
             activity.startActivity(new Intent(activity, PostServiceActivity.class));
-            if (!(activity instanceof PostServiceActivity)) {
-                activity.finish();
-            }
+            return true;
+        }
+
+        // Find Services
+        if (itemId == R.id.nav_find_workers) {
+            activity.startActivity(new Intent(activity, FindServicesActivity.class));
             return true;
         }
 
         // My Services
         if (itemId == R.id.nav_my_services) {
-            // Navigate to My Services
+            activity.startActivity(new Intent(activity, MyServicesActivity.class));
             return true;
         }
 
         // My Bookings
         if (itemId == R.id.nav_my_bookings) {
-            // Navigate to My Bookings
+            activity.startActivity(new Intent(activity, MyBookingsActivity.class));
+            return true;
+        }
+
+        // Inbox
+        if (itemId == R.id.nav_messages) {
+            activity.startActivity(new Intent(activity, ChatListActivity.class));
             return true;
         }
 
         // Analytics
         if (itemId == R.id.nav_analytics) {
-            // Navigate to Analytics
+            activity.startActivity(new Intent(activity, AnalyticsActivity.class));
             return true;
         }
 
@@ -170,34 +179,25 @@ public final class NavigationHelper {
     }
 
     private static void navigateByIndex(Activity activity, int index, String role) {
-        switch (index) {
-            case 0:
-                openHome(activity);
-                break;
-            case 1:
-                activity.startActivity(new Intent(activity, PostServiceActivity.class));
-                break;
-            case 2:
-                // My Services or Find Services
-                break;
-            case 3:
-                // My Bookings
-                break;
-            case 4:
-                if ("service_provider".equals(role)) {
-                    // Analytics
-                } else {
-                    activity.startActivity(new Intent(activity, SettingsActivity.class));
-                }
-                break;
-            case 5:
-                activity.startActivity(new Intent(activity, SettingsActivity.class));
-                break;
-            case 6:
-                confirmLogout(activity);
-                break;
-            default:
-                break;
+        boolean isProvider = "service_provider".equals(role);
+        if (isProvider) {
+            switch (index) {
+                case 0: openHome(activity); break;
+                case 1: activity.startActivity(new Intent(activity, PostServiceActivity.class)); break;
+                case 2: activity.startActivity(new Intent(activity, MyServicesActivity.class)); break;
+                case 3: activity.startActivity(new Intent(activity, MyBookingsActivity.class)); break;
+                case 4: activity.startActivity(new Intent(activity, AnalyticsActivity.class)); break;
+                case 5: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
+                case 6: confirmLogout(activity); break;
+            }
+        } else {
+            switch (index) {
+                case 0: openHome(activity); break;
+                case 1: activity.startActivity(new Intent(activity, FindServicesActivity.class)); break;
+                case 2: activity.startActivity(new Intent(activity, MyBookingsActivity.class)); break;
+                case 3: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
+                case 4: confirmLogout(activity); break;
+            }
         }
     }
 

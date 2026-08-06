@@ -52,7 +52,7 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
         
         holder.tvServiceName.setText(serviceName);
         holder.tvClientName.setText(providerName); // Changed from Client Name to Provider Name for "My Bookings"
-        holder.tvPrice.setText(String.format("$%.2f", price));
+        holder.tvPrice.setText(String.format("R%.2f", price));
         
         if (status == null) status = "pending";
         holder.tvStatus.setText(status.toUpperCase());

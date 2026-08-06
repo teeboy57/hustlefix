@@ -98,11 +98,14 @@ public class RegisterActivity extends AppCompatActivity {
             etPassword.requestFocus();
             return;
         }
-        if (password.length() < 6) {
-            etPassword.setError("Password must be at least 6 characters");
+
+        String passwordError = validatePassword(password);
+        if (passwordError != null) {
+            etPassword.setError(passwordError);
             etPassword.requestFocus();
             return;
         }
+
         if (!password.equals(confirmPassword)) {
             etConfirmPassword.setError("Passwords do not match");
             etConfirmPassword.requestFocus();
@@ -136,6 +139,54 @@ public class RegisterActivity extends AppCompatActivity {
                         saveUserProfile(user, fullName, email, phone);
                     });
                 });
+    }
+
+    private String validatePassword(String password) {
+        if (password.length() < 8) {
+            return "Password must be at least 8 characters";
+        }
+        
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        boolean hasDigit = false;
+        boolean hasSpecial = false;
+        String specialChars = "!@#$%^&*()-_=+";
+        
+        for (char c : password.toCharArray()) {
+            if (Character.isUpperCase(c)) hasUpper = true;
+            else if (Character.isLowerCase(c)) hasLower = true;
+            else if (Character.isDigit(c)) hasDigit = true;
+            else if (specialChars.indexOf(c) != -1) hasSpecial = true;
+        }
+        
+        if (!hasUpper || !hasLower) {
+            return "Include both uppercase and lowercase letters";
+        }
+        if (!hasDigit) {
+            return "Include at least one number";
+        }
+        if (!hasSpecial) {
+            return "Include at least one special character (!@#$%^&*()-_=+)";
+        }
+        
+        // Check for repeated characters (3 or more)
+        for (int i = 0; i < password.length() - 2; i++) {
+            if (password.charAt(i) == password.charAt(i + 1) && 
+                password.charAt(i) == password.charAt(i + 2)) {
+                return "Avoid repeating characters (e.g., 'aaa' or '111')";
+            }
+        }
+        
+        // Check for keyboard patterns
+        String[] patterns = {"qwerty", "asdfgh", "zxcvbn", "123456", "qazwsx", "1qaz", "2wsx"};
+        String lowerPassword = password.toLowerCase();
+        for (String pattern : patterns) {
+            if (lowerPassword.contains(pattern)) {
+                return "Avoid common keyboard patterns (e.g., 'qwerty')";
+            }
+        }
+        
+        return null; // Valid
     }
 
     private void saveUserProfile(FirebaseUser user, String fullName, String email, String phone) {

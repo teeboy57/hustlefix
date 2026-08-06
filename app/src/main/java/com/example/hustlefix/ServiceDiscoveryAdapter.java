@@ -56,6 +56,7 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
     static class ServiceViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvPrice, tvCategory, tvServiceProvider, tvDescription;
         CircleImageView ivProviderProfile;
+        android.widget.ImageView ivServiceBanner;
 
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -65,14 +66,26 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
             tvServiceProvider = itemView.findViewById(R.id.tvServiceProviderName);
             tvDescription = itemView.findViewById(R.id.tvServiceDescription);
             ivProviderProfile = itemView.findViewById(R.id.ivProviderProfile);
+            ivServiceBanner = itemView.findViewById(R.id.ivServiceBanner);
         }
 
         void bind(Service service, OnServiceClickListener listener) {
+            if (ivServiceBanner != null) {
+                if (service.getServiceImageUrl() != null && !service.getServiceImageUrl().isEmpty()) {
+                    ivServiceBanner.setVisibility(View.VISIBLE);
+                    Glide.with(itemView.getContext())
+                            .load(service.getServiceImageUrl())
+                            .centerCrop()
+                            .into(ivServiceBanner);
+                } else {
+                    ivServiceBanner.setVisibility(View.GONE);
+                }
+            }
             if (tvTitle != null) {
                 tvTitle.setText(service.getTitle() != null ? service.getTitle() : "No Title");
             }
             if (tvPrice != null) {
-                tvPrice.setText("$" + String.format("%.2f", service.getPrice()));
+                tvPrice.setText("R" + String.format("%.2f", service.getPrice()));
             }
             if (tvCategory != null) {
                 tvCategory.setText(service.getCategory() != null ? service.getCategory() : "General");

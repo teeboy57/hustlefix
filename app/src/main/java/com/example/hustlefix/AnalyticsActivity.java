@@ -209,8 +209,8 @@ public class AnalyticsActivity extends AppCompatActivity {
                         tvPendingBookings.setText(String.valueOf(pending));
                         tvCancelledBookings.setText(String.valueOf(cancelled));
                         
-                        tvTotalRevenue.setText("$" + String.format("%.2f", totalRevenue));
-                        tvMonthlyRevenue.setText("$" + String.format("%.2f", monthlyRevenue));
+                        tvTotalRevenue.setText("R" + String.format("%.2f", totalRevenue));
+                        tvMonthlyRevenue.setText("R" + String.format("%.2f", monthlyRevenue));
                         tvWeeklyBookings.setText(String.valueOf(weeklyBookings));
                         tvTodayBookings.setText(String.valueOf(todayBookings));
                         
@@ -225,11 +225,11 @@ public class AnalyticsActivity extends AppCompatActivity {
                         
                         if (totalBookings > 0) {
                             double avgPrice = totalPrice / totalBookings;
-                            tvAvgPrice.setText("$" + String.format("%.2f", avgPrice));
+                            tvAvgPrice.setText("R" + String.format("%.2f", avgPrice));
                             int completionRateValue = (completed * 100) / totalBookings;
                             tvCompletionRate.setText(completionRateValue + "%");
                         } else {
-                            tvAvgPrice.setText("$0.00");
+                            tvAvgPrice.setText("R0.00");
                             tvCompletionRate.setText("0%");
                         }
                     }
@@ -245,16 +245,16 @@ public class AnalyticsActivity extends AppCompatActivity {
     private void setDefaultValues() {
         tvTotalServices.setText("0");
         tvTotalBookings.setText("0");
-        tvTotalRevenue.setText("$0.00");
+        tvTotalRevenue.setText("R0.00");
         tvAvgRating.setText("0.0 \u2605");
         tvCompletedBookings.setText("0");
         tvPendingBookings.setText("0");
         tvCancelledBookings.setText("0");
-        tvMonthlyRevenue.setText("$0.00");
+        tvMonthlyRevenue.setText("R0.00");
         tvWeeklyBookings.setText("0");
         tvTodayBookings.setText("0");
         tvTotalClients.setText("0");
-        tvAvgPrice.setText("$0.00");
+        tvAvgPrice.setText("R0.00");
         tvCompletionRate.setText("0%");
     }
 

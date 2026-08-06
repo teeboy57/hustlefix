@@ -3,6 +3,7 @@ package com.example.hustlefix;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -178,15 +179,13 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
     }
 
     private void setupNavigationDrawer() {
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-        navigationView.setNavigationItemSelectedListener(this);
+        NavigationHelper.setupDrawer(this, drawerLayout, toolbar, navigationView);
+
+        // Hide provider-only items
+        Menu menu = navigationView.getMenu();
+        if (menu.findItem(R.id.nav_post_job) != null) menu.findItem(R.id.nav_post_job).setVisible(false);
+        if (menu.findItem(R.id.nav_my_services) != null) menu.findItem(R.id.nav_my_services).setVisible(false);
+        if (menu.findItem(R.id.nav_analytics) != null) menu.findItem(R.id.nav_analytics).setVisible(false);
     }
 
     private void updateNavHeader() {
@@ -457,37 +456,7 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        } else if (id == R.id.nav_find_workers) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            startActivity(new Intent(this, FindServicesActivity.class));
-            return true;
-        } else if (id == R.id.nav_my_bookings) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            startActivity(new Intent(this, MyBookingsActivity.class));
-            return true;
-        } else if (id == R.id.nav_saved) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            startActivity(new Intent(this, SavedServicesActivity.class));
-            return true;
-        } else if (id == R.id.nav_messages) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            startActivity(new Intent(this, ChatListActivity.class));
-            return true;
-        } else if (id == R.id.nav_settings) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        } else if (id == R.id.nav_logout) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            logout();
-            return true;
-        }
-        return false;
+        return NavigationHelper.handleNavigationItem(this, item.getItemId());
     }
 
     @Override

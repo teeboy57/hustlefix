@@ -115,25 +115,73 @@
                     android:inputType="textCapWords" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Delivery Time -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:textColorHint="#757575"
-                app:hintTextColor="#6200EE"
-                app:boxBackgroundColor="@android:color/white"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                android:text="Service Portfolio Photo"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/brand_primary"
+                android:layout_marginBottom="12dp" />
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etDeliveryTime"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardServiceImage"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:layout_marginBottom="24dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <FrameLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Delivery Time (e.g. 24 hours)"
-                    android:textColor="#212121"
-                    android:textSize="16sp"
-                    android:inputType="text" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:id="@+id/ivServiceImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_image_placeholder" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutAddPhoto"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:src="@drawable/ic_attach"
+                            app:tint="@color/brand_primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Change Photo"
+                            android:textColor="@color/brand_primary"
+                            android:textStyle="bold"
+                            android:layout_marginTop="8dp" />
+                    </LinearLayout>
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRemovePhoto"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="-16dp"
+                android:layout_marginBottom="16dp"
+                android:text="Remove Photo"
+                android:textColor="@color/ui_error"
+                android:visibility="gone" />
 
             <!-- Update Button -->
             <com.google.android.material.button.MaterialButton

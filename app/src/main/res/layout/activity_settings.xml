@@ -214,13 +214,25 @@
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
-                android:layout_marginBottom="32dp"
+                android:layout_marginBottom="12dp"
                 android:text="Logout"
                 android:textAllCaps="false"
                 android:textColor="@color/ui_error"
                 app:strokeColor="@color/ui_error"
                 app:cornerRadius="16dp"
                 app:icon="@drawable/ic_logout"
+                app:iconTint="@color/ui_error" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDeleteAccount"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginBottom="32dp"
+                android:text="Delete Account"
+                android:textAllCaps="false"
+                android:textColor="@color/ui_error"
+                app:icon="@drawable/ic_delete"
                 app:iconTint="@color/ui_error" />
 
             <!-- Hidden Admin Card -->

@@ -12,14 +12,24 @@
         android:title="Post a Service" />
 
     <item
+        android:id="@+id/nav_find_workers"
+        android:icon="@drawable/ic_search"
+        android:title="Find Services" />
+
+    <item
         android:id="@+id/nav_my_services"
         android:icon="@drawable/ic_work"
         android:title="My Services" />
 
     <item
         android:id="@+id/nav_my_bookings"
-        android:icon="@drawable/ic_quotes"
+        android:icon="@drawable/ic_calendar"
         android:title="My Bookings" />
+
+    <item
+        android:id="@+id/nav_messages"
+        android:icon="@drawable/ic_chat"
+        android:title="Inbox" />
 
     <item
         android:id="@+id/nav_analytics"

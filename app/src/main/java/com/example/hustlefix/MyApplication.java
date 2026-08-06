@@ -3,6 +3,10 @@ package com.example.hustlefix;
 import android.app.Application;
 import android.content.Context;
 
+import com.cloudinary.android.MediaManager;
+import java.util.HashMap;
+import java.util.Map;
+
 import androidx.appcompat.app.AppCompatDelegate;
 
 public class MyApplication extends Application {
@@ -17,6 +21,10 @@ public class MyApplication extends Application {
     public void onCreate() {
         super.onCreate();
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-        // Facebook SDK removed - will be added later if needed
+        
+        // Initialize Cloudinary
+        Map config = new HashMap();
+        config.put("cloud_name", "tbst3u90");
+        MediaManager.init(this, config);
     }
 }

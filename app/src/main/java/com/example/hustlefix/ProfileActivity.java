@@ -11,6 +11,7 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -29,8 +30,12 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.cloudinary.android.MediaManager;
+import com.cloudinary.android.callback.ErrorInfo;
+import com.cloudinary.android.callback.UploadCallback;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -66,13 +71,12 @@ public class ProfileActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private DatabaseReference databaseReference;
-    private StorageReference storageReference;
 
     private Uri imageUri;
     private String currentPhotoUrl;
     private String userRole = "client";
 
-    private ActivityResultLauncher<Intent> galleryLauncher;
+    private ActivityResultLauncher<androidx.activity.result.PickVisualMediaRequest> galleryLauncher;
     private ActivityResultLauncher<Intent> cameraLauncher;
     private ActivityResultLauncher<String> permissionLauncher;
 
@@ -129,15 +133,14 @@ public class ProfileActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
-        storageReference = FirebaseStorage.getInstance().getReference("profile_images");
     }
 
     private void setupLaunchers() {
         galleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        imageUri = result.getData().getData();
+                new ActivityResultContracts.PickVisualMedia(),
+                uri -> {
+                    if (uri != null) {
+                        imageUri = uri;
                         loadPreviewImage(imageUri);
                     }
                 }
@@ -243,9 +246,9 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void openGallery() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        galleryLauncher.launch(Intent.createChooser(intent, "Select Picture"));
+        galleryLauncher.launch(new androidx.activity.result.PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build());
     }
 
     private void removeProfilePhoto() {
@@ -282,45 +285,34 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void uploadImageAndSave(String name, String phone, String location) {
-        // Robust Format Fix: Standardize all uploads to JPEG using Glide's bitmap transformation.
-        // This solves issues with HEIC, large PNGs, and incorrect rotation.
-        Glide.with(this)
-                .asBitmap()
-                .load(imageUri)
-                .override(1024, 1024) // Optimal resolution for high-quality profile pics
-                .centerCrop()
-                .into(new CustomTarget<Bitmap>() {
+        setLoading(true);
+        
+        // Using Cloudinary for robust image uploads
+        MediaManager.get().upload(imageUri)
+                .unsigned("hustle_fix")
+                .callback(new UploadCallback() {
                     @Override
-                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                        resource.compress(Bitmap.CompressFormat.JPEG, 85, baos);
-                        byte[] data = baos.toByteArray();
+                    public void onStart(String requestId) {}
 
-                        // Fixed filename ensures we overwrite the old one to save storage space
-                        final StorageReference fileReference = storageReference.child(currentUser.getUid() + ".jpg");
-                        StorageMetadata metadata = new StorageMetadata.Builder()
-                                .setContentType("image/jpeg")
-                                .build();
+                    @Override
+                    public void onProgress(String requestId, long bytes, long totalBytes) {}
 
-                        fileReference.putBytes(data, metadata)
-                                .addOnSuccessListener(taskSnapshot -> fileReference.getDownloadUrl().addOnSuccessListener(uri -> {
-                                    saveUserDataToDatabase(name, phone, location, uri.toString());
-                                }))
-                                .addOnFailureListener(e -> {
-                                    setLoading(false);
-                                    Toast.makeText(ProfileActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
+                    @Override
+                    public void onSuccess(String requestId, Map resultData) {
+                        String secureUrl = (String) resultData.get("secure_url");
+                        saveUserDataToDatabase(name, phone, location, secureUrl);
                     }
 
                     @Override
-                    public void onLoadCleared(@Nullable android.graphics.drawable.Drawable placeholder) {}
-
-                    @Override
-                    public void onLoadFailed(@Nullable android.graphics.drawable.Drawable errorDrawable) {
+                    public void onError(String requestId, ErrorInfo error) {
                         setLoading(false);
-                        Toast.makeText(ProfileActivity.this, "Incompatible image format. Please try another.", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Cloudinary Error: " + error.getDescription());
+                        Toast.makeText(ProfileActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_LONG).show();
                     }
-                });
+
+                    @Override
+                    public void onReschedule(String requestId, ErrorInfo error) {}
+                }).dispatch();
     }
 
     private void saveUserDataToDatabase(String name, String phone, String location, String photoUrl) {

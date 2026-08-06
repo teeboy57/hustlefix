@@ -3,6 +3,7 @@ package com.example.hustlefix;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -128,6 +129,7 @@ public class ServiceProviderDashboardActivity extends AppCompatActivity implemen
                 return true;
             }
             if (id == R.id.nav_dashboard) {
+                startActivity(new Intent(this, AnalyticsActivity.class));
                 return true;
             }
             if (id == R.id.nav_profile) {
@@ -148,15 +150,13 @@ public class ServiceProviderDashboardActivity extends AppCompatActivity implemen
     }
 
     private void setupNavigationDrawer() {
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this,
-                drawerLayout,
-                toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-        navigationView.setNavigationItemSelectedListener(this);
+        NavigationHelper.setupDrawer(this, drawerLayout, toolbar, navigationView);
+        
+        // Hide client-only items
+        Menu menu = navigationView.getMenu();
+        if (menu.findItem(R.id.nav_find_workers) != null) {
+            menu.findItem(R.id.nav_find_workers).setVisible(false);
+        }
     }
 
     private void updateNavHeader() {
@@ -307,7 +307,7 @@ public class ServiceProviderDashboardActivity extends AppCompatActivity implemen
                         }
 
                         if (tvTotalRevenue != null) {
-                            tvTotalRevenue.setText("$" + String.format("%.2f", revenue));
+                            tvTotalRevenue.setText("R" + String.format("%.2f", revenue));
                         }
                         if (tvRating != null) {
                             if (ratingCount > 0) {
@@ -321,7 +321,7 @@ public class ServiceProviderDashboardActivity extends AppCompatActivity implemen
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
                         if (tvTotalBookings != null) tvTotalBookings.setText("0");
-                        if (tvTotalRevenue != null) tvTotalRevenue.setText("$0");
+                        if (tvTotalRevenue != null) tvTotalRevenue.setText("R0");
                         if (tvRating != null) tvRating.setText("0.0 Star");
                     }
                 });
@@ -382,31 +382,7 @@ public class ServiceProviderDashboardActivity extends AppCompatActivity implemen
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_home) {
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        } else if (id == R.id.nav_post_job) {
-            startActivity(new Intent(this, PostServiceActivity.class));
-            return true;
-        } else if (id == R.id.nav_my_services) {
-            startActivity(new Intent(this, MyServicesActivity.class));
-            return true;
-        } else if (id == R.id.nav_my_bookings) {
-            startActivity(new Intent(this, MyBookingsActivity.class));
-            return true;
-        } else if (id == R.id.nav_analytics) {
-            startActivity(new Intent(this, AnalyticsActivity.class));
-            return true;
-        } else if (id == R.id.nav_settings) {
-            startActivity(new Intent(this, SettingsActivity.class));
-            return true;
-        } else if (id == R.id.nav_logout) {
-            logout();
-            return true;
-        }
-        return false;
+        return NavigationHelper.handleNavigationItem(this, item.getItemId());
     }
 
     @Override

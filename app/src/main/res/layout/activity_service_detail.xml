@@ -38,90 +38,93 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp">
+                    android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/tvServiceTitle"
+                    <ImageView
+                        android:id="@+id/ivServiceImage"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-black"
-                        android:text="Service Title"
-                        android:textColor="@color/text_high_emphasis"
-                        android:textSize="24sp" />
-
-                    <TextView
-                        android:id="@+id/tvServicePrice"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:fontFamily="sans-serif-bold"
-                        android:text="$0.00"
-                        android:textColor="@color/brand_primary"
-                        android:textSize="22sp" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="20dp"
-                        android:background="#EEE" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Description"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_high_emphasis"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:id="@+id/tvServiceDescription"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Service detailed description goes here..."
-                        android:textColor="@color/text_medium_emphasis"
-                        android:textSize="14sp"
-                        android:lineSpacingExtra="4dp" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginVertical="20dp"
-                        android:background="#EEE" />
+                        android:layout_height="240dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_image_placeholder"
+                        android:visibility="gone" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_location" app:tint="@color/brand_primary" />
-                        <TextView android:id="@+id/tvServiceLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Location" />
-                    </LinearLayout>
+                        android:orientation="vertical"
+                        android:padding="24dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_calendar" app:tint="@color/brand_primary" />
-                        <TextView android:id="@+id/tvServiceDeliveryTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Delivery Time" />
-                    </LinearLayout>
+                        <TextView
+                            android:id="@+id/tvServiceTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-black"
+                            android:text="Service Title"
+                            android:textColor="@color/text_high_emphasis"
+                            android:textSize="24sp" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
-                        <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_person" app:tint="@color/brand_primary" />
-                        <TextView android:id="@+id/tvServiceProviderName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Provider Name" android:textStyle="bold" />
-                    </LinearLayout>
+                        <TextView
+                            android:id="@+id/tvServicePrice"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="sans-serif-bold"
+                            android:text="R0.00"
+                            android:textColor="@color/brand_primary"
+                            android:textSize="22sp" />
 
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginVertical="20dp"
+                            android:background="#EEE" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Description"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_high_emphasis"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/tvServiceDescription"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Service detailed description goes here..."
+                            android:textColor="@color/text_medium_emphasis"
+                            android:textSize="14sp"
+                            android:lineSpacingExtra="4dp" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginVertical="20dp"
+                            android:background="#EEE" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+                            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_location" app:tint="@color/brand_primary" />
+                            <TextView android:id="@+id/tvServiceLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Location" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+                            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_person" app:tint="@color/brand_primary" />
+                            <TextView android:id="@+id/tvServiceProviderName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Provider Name" android:textStyle="bold" />
+                        </LinearLayout>
+
+                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
         </LinearLayout>
     </ScrollView>
 

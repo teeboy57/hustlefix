@@ -3,6 +3,7 @@ package com.example.hustlefix;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -10,6 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -21,7 +23,8 @@ import java.util.Map;
 public class ServiceDetailActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
-    private TextView tvTitle, tvDescription, tvPrice, tvLocation, tvDeliveryTime, tvServiceProvider;
+    private TextView tvTitle, tvDescription, tvPrice, tvLocation, tvServiceProvider;
+    private ImageView ivServiceImage;
     private Button btnBookNow;
     private Button btnSave;
     private ProgressBar progressBar;
@@ -63,8 +66,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
             tvDescription = findViewById(R.id.tvServiceDescription);
             tvPrice = findViewById(R.id.tvServicePrice);
             tvLocation = findViewById(R.id.tvServiceLocation);
-            tvDeliveryTime = findViewById(R.id.tvServiceDeliveryTime);
             tvServiceProvider = findViewById(R.id.tvServiceProviderName);
+            ivServiceImage = findViewById(R.id.ivServiceImage);
             btnBookNow = findViewById(R.id.btnBookNow);
             btnSave = findViewById(R.id.btnSave);
             progressBar = findViewById(R.id.progressBar);
@@ -121,10 +124,16 @@ public class ServiceDetailActivity extends AppCompatActivity {
         try {
             tvTitle.setText(service.getTitle() != null ? service.getTitle() : "No Title");
             tvDescription.setText(service.getDescription() != null ? service.getDescription() : "No Description");
-            tvPrice.setText("$" + String.format("%.2f", service.getPrice()));
+            tvPrice.setText("R" + String.format("%.2f", service.getPrice()));
             tvLocation.setText(service.getLocation() != null ? service.getLocation() : "Not specified");
-            tvDeliveryTime.setText(service.getDeliveryTime() != null ? service.getDeliveryTime() : "Not specified");
             tvServiceProvider.setText(service.getserviceProviderName() != null ? service.getserviceProviderName() : "Unknown");
+            
+            if (service.getServiceImageUrl() != null && !service.getServiceImageUrl().isEmpty()) {
+                ivServiceImage.setVisibility(View.VISIBLE);
+                Glide.with(this).load(service.getServiceImageUrl()).into(ivServiceImage);
+            } else {
+                ivServiceImage.setVisibility(View.GONE);
+            }
         } catch (Exception e) {
             ErrorUtils.showError(this, e);
         }

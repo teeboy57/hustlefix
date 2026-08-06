@@ -5,10 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,6 +56,7 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
     static class ServiceViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvPrice, tvCategory, tvStatus, tvDate;
         Button btnEdit, btnDelete;
+        ImageView ivServiceBanner;
 
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -63,12 +67,23 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
             tvDate = itemView.findViewById(R.id.tvServiceDate);
             btnEdit = itemView.findViewById(R.id.btnEditService);
             btnDelete = itemView.findViewById(R.id.btnDeleteService);
+            ivServiceBanner = itemView.findViewById(R.id.ivServiceBanner);
         }
 
         void bind(Service service, OnServiceClickListener listener) {
             tvTitle.setText(service.getTitle());
-            tvPrice.setText("$" + String.format("%.2f", service.getPrice()));
+            tvPrice.setText("R" + String.format("%.2f", service.getPrice()));
             tvCategory.setText(service.getCategory() != null ? service.getCategory() : "General");
+
+            if (service.getServiceImageUrl() != null && !service.getServiceImageUrl().isEmpty()) {
+                ivServiceBanner.setVisibility(View.VISIBLE);
+                Glide.with(itemView.getContext())
+                        .load(service.getServiceImageUrl())
+                        .centerCrop()
+                        .into(ivServiceBanner);
+            } else {
+                ivServiceBanner.setVisibility(View.GONE);
+            }
 
             String status = service.getStatus() != null ? service.getStatus() : "active";
             tvStatus.setText(status.toUpperCase());

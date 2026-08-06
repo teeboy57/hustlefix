@@ -144,7 +144,7 @@
                             android:id="@+id/tvTotalRevenue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="$0"
+                            android:text="R0"
                             android:textSize="18sp"
                             android:textStyle="bold"
                             android:textColor="#FF9800" />
@@ -351,7 +351,7 @@
                             android:id="@+id/tvMonthlyRevenue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="$0"
+                            android:text="R0"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="#6200EE" />
@@ -501,7 +501,7 @@
                             android:id="@+id/tvAvgPrice"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="$0"
+                            android:text="R0"
                             android:textSize="16sp"
                             android:textStyle="bold"
                             android:textColor="#00BCD4" />
