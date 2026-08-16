@@ -57,17 +57,17 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
         if (status == null) status = "pending";
         holder.tvStatus.setText(status.toUpperCase());
         
-        // Color coding based on status
+        // Color coding based on status using background badges
         if (status.equalsIgnoreCase("completed")) {
-            holder.tvStatus.setTextColor(0xFF4CAF50);
+            holder.tvStatus.setBackgroundResource(R.drawable.badge_accepted);
         } else if (status.equalsIgnoreCase("pending")) {
-            holder.tvStatus.setTextColor(0xFFFF9800);
+            holder.tvStatus.setBackgroundResource(R.drawable.badge_pending);
         } else if (status.equalsIgnoreCase("cancelled")) {
-            holder.tvStatus.setTextColor(0xFFF44336);
-        } else if (status.equalsIgnoreCase("accepted")) {
-            holder.tvStatus.setTextColor(0xFF2196F3);
+            holder.tvStatus.setBackgroundResource(R.drawable.badge_red);
+        } else if (status.equalsIgnoreCase("accepted") || status.equalsIgnoreCase("confirmed")) {
+            holder.tvStatus.setBackgroundResource(R.drawable.badge_accepted);
         } else {
-            holder.tvStatus.setTextColor(0xFF757575);
+            holder.tvStatus.setBackgroundResource(R.drawable.status_badge);
         }
         
         SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
@@ -86,6 +86,10 @@ public class BookingAdapter extends RecyclerView.Adapter<BookingAdapter.ViewHold
                 listener.onBookingClick(booking);
             }
         });
+
+        // Add fade-in animation
+        android.view.animation.Animation animation = android.view.animation.AnimationUtils.loadAnimation(holder.itemView.getContext(), R.anim.fade_in);
+        holder.itemView.startAnimation(animation);
     }
 
     @Override

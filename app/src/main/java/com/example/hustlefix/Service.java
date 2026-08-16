@@ -12,7 +12,7 @@ public class Service {
     private String serviceProviderName;
     private String serviceProviderEmail;
     private String serviceProviderProfileImageUrl;
-    private String serviceImageUrl; // New field for service photo
+    private java.util.List<String> serviceImageUrls; // List of work photos
     private String status;
     private String availability;
     private long createdAt;
@@ -76,8 +76,15 @@ public class Service {
     public String getServiceProviderProfileImageUrl() { return serviceProviderProfileImageUrl; }
     public void setServiceProviderProfileImageUrl(String serviceProviderProfileImageUrl) { this.serviceProviderProfileImageUrl = serviceProviderProfileImageUrl; }
 
-    public String getServiceImageUrl() { return serviceImageUrl; }
-    public void setServiceImageUrl(String serviceImageUrl) { this.serviceImageUrl = serviceImageUrl; }
+    public java.util.List<String> getServiceImageUrls() { return serviceImageUrls; }
+    public void setServiceImageUrls(java.util.List<String> serviceImageUrls) { this.serviceImageUrls = serviceImageUrls; }
+
+    public String getServiceImageUrl() {
+        if (serviceImageUrls != null && !serviceImageUrls.isEmpty()) {
+            return serviceImageUrls.get(0);
+        }
+        return null;
+    }
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }

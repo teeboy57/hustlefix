@@ -40,6 +40,14 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvServiceImages"
+                        android:layout_width="match_parent"
+                        android:layout_height="240dp"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        android:visibility="gone" />
+
                     <ImageView
                         android:id="@+id/ivServiceImage"
                         android:layout_width="match_parent"

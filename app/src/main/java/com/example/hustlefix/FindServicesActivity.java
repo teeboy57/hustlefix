@@ -15,6 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -33,6 +34,7 @@ public class FindServicesActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView tvEmpty;
     private SearchView searchView;
+    private View btnSort;
 
     private DatabaseReference servicesRef;
     private List<Service> serviceList;
@@ -61,8 +63,16 @@ public class FindServicesActivity extends AppCompatActivity {
             progressBar = findViewById(R.id.progressBar);
             tvEmpty = findViewById(R.id.tvEmpty);
             searchView = findViewById(R.id.searchView);
+            btnSort = findViewById(R.id.btnSort);
 
-            rvServices.setLayoutManager(new LinearLayoutManager(this));
+            androidx.recyclerview.widget.GridLayoutManager gridLayoutManager = new androidx.recyclerview.widget.GridLayoutManager(this, 2);
+            rvServices.setLayoutManager(gridLayoutManager);
+            
+            // Add some padding/spacing between grid items
+            int spacing = (int) (8 * getResources().getDisplayMetrics().density);
+            rvServices.setPadding(spacing, spacing, spacing, spacing);
+            rvServices.setClipToPadding(false);
+
             serviceList = new ArrayList<>();
             filteredList = new ArrayList<>();
             serviceAdapter = new ServiceDiscoveryAdapter(filteredList, new ServiceDiscoveryAdapter.OnServiceClickListener() {
@@ -79,9 +89,30 @@ public class FindServicesActivity extends AppCompatActivity {
                 }
             });
             rvServices.setAdapter(serviceAdapter);
+            
+            if (btnSort != null) {
+                btnSort.setOnClickListener(v -> showSortDialog());
+            }
         } catch (Exception e) {
             ErrorUtils.showError(this, e);
         }
+    }
+
+    private void showSortDialog() {
+        String[] options = {"Price: Low to High", "Price: High to Low", "Newest First"};
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Sort By")
+                .setItems(options, (dialog, which) -> {
+                    if (which == 0) {
+                        filteredList.sort((s1, s2) -> Double.compare(s1.getPrice(), s2.getPrice()));
+                    } else if (which == 1) {
+                        filteredList.sort((s1, s2) -> Double.compare(s2.getPrice(), s1.getPrice()));
+                    } else if (which == 2) {
+                        filteredList.sort((s1, s2) -> Long.compare(s2.getCreatedAt(), s1.getCreatedAt()));
+                    }
+                    serviceAdapter.notifyDataSetChanged();
+                })
+                .show();
     }
 
     private void setupToolbar() {
@@ -151,7 +182,13 @@ public class FindServicesActivity extends AppCompatActivity {
                                     serviceList.add(service);
                                 }
                             }
-                            filter(searchView != null ? searchView.getQuery().toString() : "");
+                            
+                            String preselectedCategory = getIntent().getStringExtra("category");
+                            if (preselectedCategory != null && !preselectedCategory.isEmpty()) {
+                                searchView.setQuery(preselectedCategory, true);
+                            } else {
+                                filter(searchView != null ? searchView.getQuery().toString() : "");
+                            }
                         } else {
                             updateEmptyView();
                         }

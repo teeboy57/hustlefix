@@ -60,7 +60,14 @@ public class SavedServicesActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmpty);
 
-        rvSavedServices.setLayoutManager(new LinearLayoutManager(this));
+        androidx.recyclerview.widget.GridLayoutManager gridLayoutManager = new androidx.recyclerview.widget.GridLayoutManager(this, 2);
+        rvSavedServices.setLayoutManager(gridLayoutManager);
+        
+        // Add padding for grid
+        int spacing = (int) (8 * getResources().getDisplayMetrics().density);
+        rvSavedServices.setPadding(spacing, spacing, spacing, spacing);
+        rvSavedServices.setClipToPadding(false);
+
         savedServiceList = new ArrayList<>();
         serviceAdapter = new ServiceDiscoveryAdapter(savedServiceList, new ServiceDiscoveryAdapter.OnServiceClickListener() {
             @Override

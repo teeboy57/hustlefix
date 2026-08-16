@@ -140,6 +140,9 @@ public class ChatListActivity extends AppCompatActivity {
                                     chat.setLastMessage(message.getMessageText());
                                     chat.setLastTimestamp(message.getTimestamp());
                                     chatMap.put(chatId, chat);
+                                    
+                                    // Fetch partner profile image
+                                    fetchPartnerProfile(chat);
                                 } else {
                                     ChatSummary existing = chatMap.get(chatId);
                                     if (message.getTimestamp() > existing.getLastTimestamp()) {
@@ -174,6 +177,18 @@ public class ChatListActivity extends AppCompatActivity {
                 Toast.makeText(ChatListActivity.this, "Error loading chats", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void fetchPartnerProfile(ChatSummary chat) {
+        if (chat.getPartnerId() == null) return;
+        
+        FirebaseDatabase.getInstance().getReference("users").child(chat.getPartnerId())
+                .child("profileImage").get().addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists()) {
+                        chat.setPartnerProfileUrl(snapshot.getValue(String.class));
+                        chatAdapter.notifyDataSetChanged();
+                    }
+                });
     }
 
     private void setLoading(boolean isLoading) {

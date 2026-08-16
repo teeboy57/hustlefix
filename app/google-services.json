@@ -1,0 +1,29 @@
+ {
+  "project_info": {
+    "project_number": "44384967843",
+    "project_id": "hustlefix-9c7f6",
+    "storage_bucket": "hustlefix-9c7f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:44384967843:android:adc3fb5d701d02c680f316",
+        "android_client_info": {
+          "package_name": "com.example.hustlefix"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB2Up_7ypYyyqh0PjCe3vRZ7u4gz-kAVGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

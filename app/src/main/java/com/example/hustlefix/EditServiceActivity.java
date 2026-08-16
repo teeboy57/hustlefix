@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
@@ -41,7 +42,9 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EditServiceActivity extends AppCompatActivity {
@@ -52,9 +55,12 @@ public class EditServiceActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Toolbar toolbar;
     
-    private ImageView ivServiceImage;
+    private RecyclerView rvPickedImages;
+    private PickedImageAdapter pickedImageAdapter;
+    private List<Uri> imageUris = new ArrayList<>();
+    private List<String> existingUrls = new ArrayList<>();
+    private Uri tempUri;
     private View layoutAddPhoto;
-    private Uri imageUri;
 
     private DatabaseReference servicesRef;
     private FirebaseAuth mAuth;
@@ -96,8 +102,23 @@ public class EditServiceActivity extends AppCompatActivity {
         btnRemovePhoto = findViewById(R.id.btnRemovePhoto);
         progressBar = findViewById(R.id.progressBar);
         
-        ivServiceImage = findViewById(R.id.ivServiceImage);
+        rvPickedImages = findViewById(R.id.rvPickedImages);
         layoutAddPhoto = findViewById(R.id.layoutAddPhoto);
+        
+        setupRecyclerView();
+    }
+
+    private void setupRecyclerView() {
+        pickedImageAdapter = new PickedImageAdapter(imageUris, position -> {
+            imageUris.remove(position);
+            pickedImageAdapter.notifyItemRemoved(position);
+            if (imageUris.isEmpty() && existingUrls.isEmpty()) {
+                rvPickedImages.setVisibility(View.GONE);
+                layoutAddPhoto.setVisibility(View.VISIBLE);
+                btnRemovePhoto.setVisibility(View.GONE);
+            }
+        });
+        rvPickedImages.setAdapter(pickedImageAdapter);
     }
 
     private void setupToolbar() {
@@ -115,11 +136,14 @@ public class EditServiceActivity extends AppCompatActivity {
 
     private void setupLaunchers() {
         galleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.PickVisualMedia(),
-                uri -> {
-                    if (uri != null) {
-                        imageUri = uri;
-                        loadPreviewImage(imageUri);
+                new ActivityResultContracts.PickMultipleVisualMedia(10),
+                uris -> {
+                    if (uris != null && !uris.isEmpty()) {
+                        imageUris.addAll(uris);
+                        pickedImageAdapter.notifyDataSetChanged();
+                        rvPickedImages.setVisibility(View.VISIBLE);
+                        layoutAddPhoto.setVisibility(View.GONE);
+                        btnRemovePhoto.setVisibility(View.VISIBLE);
                     }
                 }
         );
@@ -128,7 +152,7 @@ public class EditServiceActivity extends AppCompatActivity {
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        loadPreviewImage(imageUri);
+                        loadPreviewImage(tempUri);
                     }
                 }
         );
@@ -143,8 +167,11 @@ public class EditServiceActivity extends AppCompatActivity {
 
     private void loadPreviewImage(Uri uri) {
         if (uri == null) return;
-        Glide.with(this).load(uri).centerCrop().into(ivServiceImage);
+        imageUris.add(uri);
+        pickedImageAdapter.notifyDataSetChanged();
+        rvPickedImages.setVisibility(View.VISIBLE);
         layoutAddPhoto.setVisibility(View.GONE);
+        btnRemovePhoto.setVisibility(View.VISIBLE);
     }
 
     private void loadServiceData() {
@@ -170,13 +197,24 @@ public class EditServiceActivity extends AppCompatActivity {
         etPrice.setText(String.valueOf(currentService.getPrice()));
         etLocation.setText(currentService.getLocation());
         
-        if (currentService.getServiceImageUrl() != null && !currentService.getServiceImageUrl().isEmpty()) {
-            Glide.with(this).load(currentService.getServiceImageUrl()).centerCrop().into(ivServiceImage);
+        if (currentService.getServiceImageUrls() != null && !currentService.getServiceImageUrls().isEmpty()) {
+            existingUrls.clear();
+            existingUrls.addAll(currentService.getServiceImageUrls());
+            
+            // For now, let's just convert strings to URIs for display in the same adapter
+            imageUris.clear();
+            for (String url : existingUrls) {
+                imageUris.add(Uri.parse(url));
+            }
+            pickedImageAdapter.notifyDataSetChanged();
+            
+            rvPickedImages.setVisibility(View.VISIBLE);
             layoutAddPhoto.setVisibility(View.GONE);
             btnRemovePhoto.setVisibility(View.VISIBLE);
         } else {
             layoutAddPhoto.setVisibility(View.VISIBLE);
             btnRemovePhoto.setVisibility(View.GONE);
+            rvPickedImages.setVisibility(View.GONE);
         }
     }
 
@@ -210,9 +248,10 @@ public class EditServiceActivity extends AppCompatActivity {
     private void openCamera() {
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, "Edit Service Photo");
-        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Uri cameraImageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
+        this.tempUri = cameraImageUri;
         cameraLauncher.launch(intent);
     }
 
@@ -223,11 +262,12 @@ public class EditServiceActivity extends AppCompatActivity {
     }
 
     private void removePhoto() {
-        ivServiceImage.setImageResource(R.drawable.ic_image_placeholder);
+        imageUris.clear();
+        existingUrls.clear();
+        pickedImageAdapter.notifyDataSetChanged();
+        rvPickedImages.setVisibility(View.GONE);
         layoutAddPhoto.setVisibility(View.VISIBLE);
         btnRemovePhoto.setVisibility(View.GONE);
-        imageUri = null;
-        if (currentService != null) currentService.setServiceImageUrl("");
     }
 
     private void updateService() {
@@ -239,50 +279,73 @@ public class EditServiceActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(title) || TextUtils.isEmpty(description) || TextUtils.isEmpty(priceStr)) return;
 
         setLoading(true);
-        if (imageUri != null) {
-            uploadImageAndUpdate(title, description, priceStr, location);
+        
+        // Logic: 
+        // 1. Keep existing URLs that are still in imageUris (this is tricky with parsing URIs)
+        // 2. Upload new local URIs from imageUris
+        
+        // For simplicity in this iteration, if any new images are picked, we re-upload all or just append.
+        // Let's implement a clean "re-upload everything" for now if changed, or just update text if not.
+        
+        // Filter local URIs (those starting with content:// or file://)
+        List<Uri> localUris = new ArrayList<>();
+        List<String> remainingRemoteUrls = new ArrayList<>();
+        
+        for (Uri uri : imageUris) {
+            if (uri.getScheme() != null && (uri.getScheme().equals("content") || uri.getScheme().equals("file"))) {
+                localUris.add(uri);
+            } else {
+                remainingRemoteUrls.add(uri.toString());
+            }
+        }
+
+        if (!localUris.isEmpty()) {
+            uploadNewImagesAndSave(localUris, remainingRemoteUrls, title, description, priceStr, location);
         } else {
-            performUpdate(title, description, priceStr, location, 
-                    currentService != null ? currentService.getServiceImageUrl() : null);
+            performUpdate(title, description, priceStr, location, remainingRemoteUrls);
         }
     }
 
-    private void uploadImageAndUpdate(String title, String desc, String price, String loc) {
-        // Use Cloudinary for service image updates
-        MediaManager.get().upload(imageUri)
+    private void uploadNewImagesAndSave(List<Uri> localUris, List<String> remoteUrls, String title, String desc, String price, String loc) {
+        List<String> allUrls = new ArrayList<>(remoteUrls);
+        uploadRecursive(0, localUris, allUrls, title, desc, price, loc);
+    }
+
+    private void uploadRecursive(int index, List<Uri> localUris, List<String> allUrls, String title, String desc, String price, String loc) {
+        if (index >= localUris.size()) {
+            performUpdate(title, desc, price, loc, allUrls);
+            return;
+        }
+
+        MediaManager.get().upload(localUris.get(index))
                 .unsigned("hustle_fix")
                 .callback(new UploadCallback() {
                     @Override
-                    public void onStart(String requestId) {}
-
-                    @Override
-                    public void onProgress(String requestId, long bytes, long totalBytes) {}
-
-                    @Override
                     public void onSuccess(String requestId, Map resultData) {
-                        String secureUrl = (String) resultData.get("secure_url");
-                        performUpdate(title, desc, price, loc, secureUrl);
+                        allUrls.add((String) resultData.get("secure_url"));
+                        uploadRecursive(index + 1, localUris, allUrls, title, desc, price, loc);
                     }
-
                     @Override
                     public void onError(String requestId, ErrorInfo error) {
                         setLoading(false);
-                        android.util.Log.e(TAG, "Cloudinary Error: " + error.getDescription());
-                        Toast.makeText(EditServiceActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(EditServiceActivity.this, "Upload failed", Toast.LENGTH_SHORT).show();
                     }
-
+                    @Override
+                    public void onStart(String requestId) {}
+                    @Override
+                    public void onProgress(String requestId, long bytes, long totalBytes) {}
                     @Override
                     public void onReschedule(String requestId, ErrorInfo error) {}
                 }).dispatch();
     }
 
-    private void performUpdate(String title, String desc, String price, String loc, String imageUrl) {
+    private void performUpdate(String title, String desc, String price, String loc, List<String> imageUrls) {
         Map<String, Object> updates = new HashMap<>();
         updates.put("title", title);
         updates.put("description", desc);
         updates.put("price", Double.parseDouble(price));
         updates.put("location", loc);
-        updates.put("serviceImageUrl", imageUrl);
+        updates.put("serviceImageUrls", imageUrls);
 
         servicesRef.child(serviceId).updateChildren(updates)
                 .addOnSuccessListener(aVoid -> {

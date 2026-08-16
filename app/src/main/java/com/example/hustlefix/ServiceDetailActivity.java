@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,6 +26,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TextView tvTitle, tvDescription, tvPrice, tvLocation, tvServiceProvider;
     private ImageView ivServiceImage;
+    private RecyclerView rvServiceImages;
     private Button btnBookNow;
     private Button btnSave;
     private ProgressBar progressBar;
@@ -68,6 +70,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
             tvLocation = findViewById(R.id.tvServiceLocation);
             tvServiceProvider = findViewById(R.id.tvServiceProviderName);
             ivServiceImage = findViewById(R.id.ivServiceImage);
+            rvServiceImages = findViewById(R.id.rvServiceImages);
             btnBookNow = findViewById(R.id.btnBookNow);
             btnSave = findViewById(R.id.btnSave);
             progressBar = findViewById(R.id.progressBar);
@@ -128,11 +131,18 @@ public class ServiceDetailActivity extends AppCompatActivity {
             tvLocation.setText(service.getLocation() != null ? service.getLocation() : "Not specified");
             tvServiceProvider.setText(service.getserviceProviderName() != null ? service.getserviceProviderName() : "Unknown");
             
-            if (service.getServiceImageUrl() != null && !service.getServiceImageUrl().isEmpty()) {
+            if (service.getServiceImageUrls() != null && !service.getServiceImageUrls().isEmpty()) {
+                rvServiceImages.setVisibility(View.VISIBLE);
+                ivServiceImage.setVisibility(View.GONE);
+                ServiceImageAdapter adapter = new ServiceImageAdapter(service.getServiceImageUrls());
+                rvServiceImages.setAdapter(adapter);
+            } else if (service.getServiceImageUrl() != null && !service.getServiceImageUrl().isEmpty()) {
                 ivServiceImage.setVisibility(View.VISIBLE);
+                rvServiceImages.setVisibility(View.GONE);
                 Glide.with(this).load(service.getServiceImageUrl()).into(ivServiceImage);
             } else {
                 ivServiceImage.setVisibility(View.GONE);
+                rvServiceImages.setVisibility(View.GONE);
             }
         } catch (Exception e) {
             ErrorUtils.showError(this, e);

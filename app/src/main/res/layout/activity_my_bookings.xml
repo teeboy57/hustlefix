@@ -52,17 +52,42 @@
             android:layout_gravity="center"
             android:visibility="gone" />
 
-        <TextView
+        <LinearLayout
             android:id="@+id/tvEmpty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
+            android:orientation="vertical"
             android:padding="32dp"
-            android:text="No bookings yet"
-            android:textColor="@color/text_low_emphasis"
-            android:textSize="16sp"
-            android:visibility="gone" />
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/ic_calendar"
+                android:alpha="0.2"
+                app:tint="@color/brand_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="No bookings yet"
+                android:textColor="@color/text_high_emphasis"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:text="When you book a service or receive an order, it will show up here."
+                android:textColor="@color/text_low_emphasis"
+                android:textSize="14sp" />
+
+        </LinearLayout>
 
     </FrameLayout>
 

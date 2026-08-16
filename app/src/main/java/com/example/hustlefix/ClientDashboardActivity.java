@@ -59,6 +59,8 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
     private CardView cardMyBookings;
     private View cardSavedServices;
     private View cardMessages;
+    
+    private View catPlumber, catElectrician, catCleaning, catMore;
 
     // Recent Messages Section
     private MaterialCardView llRecentMessages;
@@ -117,6 +119,11 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
         cardMyBookings = findViewById(R.id.cardMyBookings);
         cardSavedServices = findViewById(R.id.cardSavedServices);
         cardMessages = findViewById(R.id.cardMessages);
+        
+        catPlumber = findViewById(R.id.catPlumber);
+        catElectrician = findViewById(R.id.catElectrician);
+        catCleaning = findViewById(R.id.catCleaning);
+        catMore = findViewById(R.id.catMore);
 
         // Recent Messages
         llRecentMessages = findViewById(R.id.llRecentMessages);
@@ -257,15 +264,29 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
 
         cardMessages.setOnClickListener(v -> {
             Log.d(TAG, "Messages clicked");
-            Toast.makeText(ClientDashboardActivity.this, "Opening Messages...", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(ClientDashboardActivity.this, ChatListActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ChatListActivity.class));
+        });
+
+        // Click on welcome header to go to profile
+        findViewById(R.id.tvClientName).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
         });
 
         // Click on recent messages to open chat
         llRecentMessages.setOnClickListener(v -> {
             startActivity(new Intent(this, ChatListActivity.class));
         });
+        
+        catPlumber.setOnClickListener(v -> openFindServicesWithCategory("Plumber"));
+        catElectrician.setOnClickListener(v -> openFindServicesWithCategory("Electrician"));
+        catCleaning.setOnClickListener(v -> openFindServicesWithCategory("Cleaning"));
+        catMore.setOnClickListener(v -> startActivity(new Intent(this, FindServicesActivity.class)));
+    }
+
+    private void openFindServicesWithCategory(String category) {
+        Intent intent = new Intent(this, FindServicesActivity.class);
+        intent.putExtra("category", category);
+        startActivity(intent);
     }
 
     private void loadDashboardData() {

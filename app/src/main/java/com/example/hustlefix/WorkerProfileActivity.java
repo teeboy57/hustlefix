@@ -12,6 +12,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -29,6 +32,11 @@ public class WorkerProfileActivity extends AppCompatActivity {
     private RatingBar rbRating;
     private Button btnHire, btnChat;
     private LinearLayout btnCall, btnMessage;
+    
+    private RecyclerView rvReviews;
+    private ReviewAdapter reviewAdapter;
+    private java.util.List<Rating> reviewList = new java.util.ArrayList<>();
+
     private DatabaseReference workerRef;
     private String workerId;
     private Worker worker;
@@ -69,6 +77,15 @@ public class WorkerProfileActivity extends AppCompatActivity {
         btnChat = findViewById(R.id.btnChat);
         btnCall = findViewById(R.id.btnCall);
         btnMessage = findViewById(R.id.btnMessage);
+        
+        rvReviews = findViewById(R.id.rvReviews);
+        setupRecyclerView();
+    }
+
+    private void setupRecyclerView() {
+        reviewAdapter = new ReviewAdapter(reviewList);
+        rvReviews.setLayoutManager(new LinearLayoutManager(this));
+        rvReviews.setAdapter(reviewAdapter);
     }
     private void setupToolbar() {
         setSupportActionBar(toolbar);
@@ -86,6 +103,7 @@ public class WorkerProfileActivity extends AppCompatActivity {
                 worker = snapshot.getValue(Worker.class);
                 if (worker != null) {
                     displayWorkerData();
+                    loadReviews();
                 } else {
                     Toast.makeText(WorkerProfileActivity.this, "Worker not found", Toast.LENGTH_SHORT).show();
                     finish();
@@ -142,6 +160,29 @@ public class WorkerProfileActivity extends AppCompatActivity {
             tvInitials.setText(worker.getInitials());
         }
     }
+    private void loadReviews() {
+        FirebaseDatabase.getInstance().getReference("ratings")
+                .orderByChild("ratedId").equalTo(workerId)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        reviewList.clear();
+                        for (DataSnapshot postSnapshot : snapshot.getChildren()) {
+                            Rating rating = postSnapshot.getValue(Rating.class);
+                            if (rating != null) {
+                                reviewList.add(rating);
+                            }
+                        }
+                        // Newest reviews first
+                        java.util.Collections.reverse(reviewList);
+                        reviewAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {}
+                });
+    }
+
     private void setupClickListeners() {
         // Hire button - opens FindWorkersActivity or Chat
         btnHire.setOnClickListener(v -> {

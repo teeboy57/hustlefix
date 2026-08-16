@@ -25,6 +25,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
@@ -51,8 +52,10 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PostServiceActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -64,9 +67,11 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
     private NavigationView navigationView;
     private Toolbar toolbar;
     
-    private ImageView ivServiceImage;
+    private RecyclerView rvPickedImages;
+    private PickedImageAdapter pickedImageAdapter;
+    private List<Uri> imageUris = new ArrayList<>();
+    private Uri tempUri; // For camera
     private View layoutAddPhoto;
-    private Uri imageUri;
     
     private String selectedCategory = "";
     private FirebaseAuth mAuth;
@@ -106,8 +111,22 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
         navigationView = findViewById(R.id.navigationView);
         toolbar = findViewById(R.id.toolbar);
         
-        ivServiceImage = findViewById(R.id.ivServiceImage);
+        rvPickedImages = findViewById(R.id.rvPickedImages);
         layoutAddPhoto = findViewById(R.id.layoutAddPhoto);
+        
+        setupRecyclerView();
+    }
+
+    private void setupRecyclerView() {
+        pickedImageAdapter = new PickedImageAdapter(imageUris, position -> {
+            imageUris.remove(position);
+            pickedImageAdapter.notifyItemRemoved(position);
+            if (imageUris.isEmpty()) {
+                rvPickedImages.setVisibility(View.GONE);
+                layoutAddPhoto.setVisibility(View.VISIBLE);
+            }
+        });
+        rvPickedImages.setAdapter(pickedImageAdapter);
     }
 
     private void setupToolbar() {
@@ -144,11 +163,13 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
 
     private void setupLaunchers() {
         galleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.PickVisualMedia(),
-                uri -> {
-                    if (uri != null) {
-                        imageUri = uri;
-                        loadPreviewImage(imageUri);
+                new ActivityResultContracts.PickMultipleVisualMedia(10),
+                uris -> {
+                    if (uris != null && !uris.isEmpty()) {
+                        imageUris.addAll(uris);
+                        pickedImageAdapter.notifyDataSetChanged();
+                        rvPickedImages.setVisibility(View.VISIBLE);
+                        layoutAddPhoto.setVisibility(View.GONE);
                     }
                 }
         );
@@ -157,7 +178,7 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        loadPreviewImage(imageUri);
+                        loadPreviewImage(tempUri);
                     }
                 }
         );
@@ -173,10 +194,9 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
 
     private void loadPreviewImage(Uri uri) {
         if (uri == null) return;
-        Glide.with(this)
-                .load(uri)
-                .centerCrop()
-                .into(ivServiceImage);
+        imageUris.add(uri);
+        pickedImageAdapter.notifyDataSetChanged();
+        rvPickedImages.setVisibility(View.VISIBLE);
         layoutAddPhoto.setVisibility(View.GONE);
     }
 
@@ -208,10 +228,13 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
     private void openCamera() {
         ContentValues values = new ContentValues();
         values.put(MediaStore.Images.Media.TITLE, "New Service Photo");
-        imageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Uri cameraImageUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
+        // Note: We need a way to pass cameraImageUri to the result launcher. 
+        // For simplicity, let's just define a tempUri field.
+        this.tempUri = cameraImageUri;
         cameraLauncher.launch(intent);
     }
 
@@ -222,9 +245,10 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
     }
 
     private void removePhoto() {
-        ivServiceImage.setImageResource(R.drawable.ic_image_placeholder);
+        imageUris.clear();
+        pickedImageAdapter.notifyDataSetChanged();
+        rvPickedImages.setVisibility(View.GONE);
         layoutAddPhoto.setVisibility(View.VISIBLE);
-        imageUri = null;
     }
 
     private void setupCategorySelection() {
@@ -275,16 +299,25 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
         String serviceId = databaseReference.push().getKey();
         if (serviceId == null) { setLoading(false); return; }
 
-        if (imageUri != null) {
-            uploadServiceImageAndSave(serviceId, currentUser, title, description, price, location, profileImage);
+        if (!imageUris.isEmpty()) {
+            uploadMultipleImagesAndSave(serviceId, currentUser, title, description, price, location, profileImage);
         } else {
             saveServiceToDatabase(serviceId, currentUser, title, description, price, location, profileImage, null);
         }
     }
 
-    private void uploadServiceImageAndSave(String serviceId, FirebaseUser currentUser, String title, String description, String price, String location, String profileImage) {
-        // Using Cloudinary for service work portfolio photos
-        MediaManager.get().upload(imageUri)
+    private void uploadMultipleImagesAndSave(String serviceId, FirebaseUser currentUser, String title, String description, String price, String location, String profileImage) {
+        List<String> uploadedUrls = new ArrayList<>();
+        uploadRecursive(0, serviceId, currentUser, title, description, price, location, profileImage, uploadedUrls);
+    }
+
+    private void uploadRecursive(int index, String serviceId, FirebaseUser currentUser, String title, String description, String price, String location, String profileImage, List<String> uploadedUrls) {
+        if (index >= imageUris.size()) {
+            saveServiceToDatabase(serviceId, currentUser, title, description, price, location, profileImage, uploadedUrls);
+            return;
+        }
+
+        MediaManager.get().upload(imageUris.get(index))
                 .unsigned("hustle_fix")
                 .callback(new UploadCallback() {
                     @Override
@@ -295,15 +328,14 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
 
                     @Override
                     public void onSuccess(String requestId, Map resultData) {
-                        String secureUrl = (String) resultData.get("secure_url");
-                        saveServiceToDatabase(serviceId, currentUser, title, description, price, location, profileImage, secureUrl);
+                        uploadedUrls.add((String) resultData.get("secure_url"));
+                        uploadRecursive(index + 1, serviceId, currentUser, title, description, price, location, profileImage, uploadedUrls);
                     }
 
                     @Override
                     public void onError(String requestId, ErrorInfo error) {
                         setLoading(false);
-                        android.util.Log.e("PostServiceActivity", "Cloudinary Error: " + error.getDescription());
-                        Toast.makeText(PostServiceActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(PostServiceActivity.this, "Upload failed at image " + (index + 1), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -311,7 +343,7 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
                 }).dispatch();
     }
 
-    private void saveServiceToDatabase(String serviceId, FirebaseUser currentUser, String title, String description, String price, String location, String profileImage, String serviceImageUrl) {
+    private void saveServiceToDatabase(String serviceId, FirebaseUser currentUser, String title, String description, String price, String location, String profileImage, List<String> serviceImageUrls) {
         Map<String, Object> service = new HashMap<>();
         service.put("serviceId", serviceId);
         service.put("title", title);
@@ -324,7 +356,7 @@ public class PostServiceActivity extends AppCompatActivity implements Navigation
         service.put("serviceProviderName", currentUser.getDisplayName() != null ? currentUser.getDisplayName() : "User");
         service.put("serviceProviderEmail", currentUser.getEmail());
         service.put("serviceProviderProfileImageUrl", profileImage);
-        service.put("serviceImageUrl", serviceImageUrl);
+        service.put("serviceImageUrls", serviceImageUrls);
         service.put("createdAt", System.currentTimeMillis());
         service.put("bookingsCount", 0);
         service.put("averageRating", 0);

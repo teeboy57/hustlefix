@@ -4,6 +4,7 @@ public class ChatSummary {
     private String chatId;
     private String partnerId;
     private String partnerName;
+    private String partnerProfileUrl;
     private String lastMessage;
     private long lastTimestamp;
 
@@ -23,6 +24,8 @@ public class ChatSummary {
     public void setPartnerId(String partnerId) { this.partnerId = partnerId; }
     public String getPartnerName() { return partnerName; }
     public void setPartnerName(String partnerName) { this.partnerName = partnerName; }
+    public String getPartnerProfileUrl() { return partnerProfileUrl; }
+    public void setPartnerProfileUrl(String partnerProfileUrl) { this.partnerProfileUrl = partnerProfileUrl; }
     public String getLastMessage() { return lastMessage; }
     public void setLastMessage(String lastMessage) { this.lastMessage = lastMessage; }
     public long getLastTimestamp() { return lastTimestamp; }

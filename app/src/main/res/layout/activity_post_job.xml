@@ -180,7 +180,7 @@
                         <com.google.android.material.card.MaterialCardView
                             android:id="@+id/cardServiceImage"
                             android:layout_width="match_parent"
-                            android:layout_height="200dp"
+                            android:layout_height="wrap_content"
                             app:cardCornerRadius="12dp"
                             app:cardElevation="0dp"
                             app:strokeWidth="1dp"
@@ -189,22 +189,24 @@
                             android:clickable="true"
                             android:focusable="true">
 
-                            <FrameLayout
+                            <LinearLayout
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent">
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="8dp">
 
-                                <ImageView
-                                    android:id="@+id/ivServiceImage"
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rvPickedImages"
                                     android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:scaleType="centerCrop"
-                                    android:src="@drawable/ic_image_placeholder" />
+                                    android:layout_height="120dp"
+                                    android:orientation="horizontal"
+                                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                                    android:visibility="gone" />
 
                                 <LinearLayout
                                     android:id="@+id/layoutAddPhoto"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="120dp"
                                     android:orientation="vertical"
                                     android:gravity="center">
 
@@ -217,12 +219,12 @@
                                     <TextView
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
-                                        android:text="Add Portfolio Photo"
+                                        android:text="Add Work Photos"
                                         android:textColor="@color/brand_primary"
                                         android:textStyle="bold"
                                         android:layout_marginTop="8dp" />
                                 </LinearLayout>
-                            </FrameLayout>
+                            </LinearLayout>
                         </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.button.MaterialButton

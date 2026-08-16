@@ -3,10 +3,13 @@ package com.example.hustlefix;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,6 +47,12 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());
         holder.tvTime.setText(sdf.format(new Date(chat.getLastTimestamp())));
 
+        Glide.with(holder.itemView.getContext())
+                .load(chat.getPartnerProfileUrl())
+                .placeholder(R.drawable.ic_profile_default)
+                .error(R.drawable.ic_profile_default)
+                .into(holder.ivPartnerProfile);
+
         holder.itemView.setOnClickListener(v -> listener.onChatClick(chat));
     }
 
@@ -54,12 +63,14 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
 
     static class ChatViewHolder extends RecyclerView.ViewHolder {
         TextView tvPartnerName, tvLastMessage, tvTime;
+        ImageView ivPartnerProfile;
 
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
             tvPartnerName = itemView.findViewById(R.id.tvPartnerName);
             tvLastMessage = itemView.findViewById(R.id.tvLastMessage);
             tvTime = itemView.findViewById(R.id.tvTime);
+            ivPartnerProfile = itemView.findViewById(R.id.ivPartnerProfile);
         }
     }
 }

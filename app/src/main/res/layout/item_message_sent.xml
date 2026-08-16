@@ -1,17 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
     android:gravity="end"
-    android:padding="4dp">
+    android:orientation="horizontal"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="4dp">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="@drawable/bg_message_sent"
-        android:padding="8dp"
+        android:backgroundTint="@color/brand_primary"
+        android:orientation="vertical"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="10dp"
         android:maxWidth="280dp">
 
         <TextView
@@ -20,16 +24,17 @@
             android:layout_height="wrap_content"
             android:text="Message text"
             android:textColor="@color/white"
-            android:textSize="14sp" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/tvTime"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="2dp"
             android:text="12:00"
-            android:textSize="10sp"
             android:textColor="#CCFFFFFF"
-            android:layout_gravity="end" />
+            android:textSize="10sp" />
 
     </LinearLayout>
 
