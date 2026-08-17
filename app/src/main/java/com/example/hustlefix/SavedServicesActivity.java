@@ -29,7 +29,7 @@ public class SavedServicesActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private RecyclerView rvSavedServices;
     private ProgressBar progressBar;
-    private TextView tvEmpty;
+    private View tvEmpty;
 
     private DatabaseReference savedRef;
     private FirebaseAuth mAuth;

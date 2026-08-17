@@ -109,6 +109,10 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
         holder.itemView.setOnClickListener(v -> {
             activity.viewWorkerProfile(worker);
         });
+
+        // Add fade-in animation
+        android.view.animation.Animation animation = android.view.animation.AnimationUtils.loadAnimation(holder.itemView.getContext(), R.anim.fade_in);
+        holder.itemView.startAnimation(animation);
     }
     private void showAvailableJobsForWorker(Worker worker) {
         // Get available jobs from Firebase

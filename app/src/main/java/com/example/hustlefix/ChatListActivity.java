@@ -34,7 +34,7 @@ public class ChatListActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private RecyclerView rvChats;
     private ProgressBar progressBar;
-    private TextView tvEmpty;
+    private View tvEmpty;
 
     private DatabaseReference messagesRef;
     private FirebaseAuth mAuth;

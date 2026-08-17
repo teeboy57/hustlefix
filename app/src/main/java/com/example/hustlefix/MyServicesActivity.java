@@ -29,7 +29,7 @@ public class MyServicesActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private RecyclerView rvServices;
     private ProgressBar progressBar;
-    private TextView tvEmpty;
+    private View tvEmpty;
 
     private DatabaseReference servicesRef;
     private FirebaseAuth mAuth;
@@ -60,7 +60,14 @@ public class MyServicesActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmpty);
 
-        rvServices.setLayoutManager(new LinearLayoutManager(this));
+        androidx.recyclerview.widget.GridLayoutManager gridLayoutManager = new androidx.recyclerview.widget.GridLayoutManager(this, 2);
+        rvServices.setLayoutManager(gridLayoutManager);
+        
+        // Add padding for grid
+        int spacing = (int) (8 * getResources().getDisplayMetrics().density);
+        rvServices.setPadding(spacing, spacing, spacing, spacing);
+        rvServices.setClipToPadding(false);
+
         serviceList = new ArrayList<>();
         serviceAdapter = new ServiceAdapter(serviceList, new ServiceAdapter.OnServiceClickListener() {
             @Override
@@ -157,6 +164,10 @@ public class MyServicesActivity extends AppCompatActivity {
 
     private void setLoading(boolean isLoading) {
         progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+    }
+
+    public void openPostService(View view) {
+        startActivity(new Intent(this, PostServiceActivity.class));
     }
 
     @Override

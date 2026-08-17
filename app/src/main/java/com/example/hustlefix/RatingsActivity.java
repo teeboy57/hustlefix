@@ -32,7 +32,8 @@ public class RatingsActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private ProgressBar progressBar;
-    private TextView tvAverageRating, tvTotalReviews, tvEmpty;
+    private TextView tvAverageRating, tvTotalReviews;
+    private View tvEmpty;
     private RecyclerView rvReviews;
 
     private DatabaseReference bookingsRef;

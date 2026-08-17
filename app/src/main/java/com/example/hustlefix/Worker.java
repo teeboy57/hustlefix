@@ -18,6 +18,7 @@ public class Worker {
     private String about;
     private double hourlyRate;
     private String availability;
+    private boolean verified;
     private Map<String, Boolean> skills;
     private Map<String, Integer> ratings;
     public Worker() {
@@ -80,6 +81,10 @@ public class Worker {
     public void setHourlyRate(double hourlyRate) { this.hourlyRate = hourlyRate; }
     public String getAvailability() { return availability; }
     public void setAvailability(String availability) { this.availability = availability; }
+    
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
+
     public Map<String, Boolean> getSkills() { return skills; }
     public void setSkills(Map<String, Boolean> skills) { this.skills = skills; }
     public Map<String, Integer> getRatings() { return ratings; }

@@ -61,7 +61,7 @@ public class ServiceProviderDashboardActivity extends AppCompatActivity implemen
     private CardView cardMyServices;
     private CardView cardMyBookings;
     private CardView cardMessages;
-    private MaterialButton cardAnalyticsQuick;
+    private View cardAnalyticsQuick;
 
     private BottomNavigationView bottomNav;
 

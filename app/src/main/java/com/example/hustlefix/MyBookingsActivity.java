@@ -31,7 +31,7 @@ public class MyBookingsActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private RecyclerView rvBookings;
     private ProgressBar progressBar;
-    private TextView tvEmpty;
+    private View tvEmpty;
 
     private DatabaseReference bookingsRef;
     private FirebaseAuth mAuth;
@@ -116,14 +116,17 @@ public class MyBookingsActivity extends AppCompatActivity {
                                     bookingList.add(booking);
                                 }
                             }
+                        }
+
+                        if (bookingList.isEmpty()) {
+                            tvEmpty.setVisibility(View.VISIBLE);
+                            rvBookings.setVisibility(View.GONE);
+                        } else {
                             // Reverse to show newest first
                             java.util.Collections.reverse(bookingList);
                             bookingAdapter.notifyDataSetChanged();
                             tvEmpty.setVisibility(View.GONE);
                             rvBookings.setVisibility(View.VISIBLE);
-                        } else {
-                            tvEmpty.setVisibility(View.VISIBLE);
-                            rvBookings.setVisibility(View.GONE);
                         }
                     }
 
