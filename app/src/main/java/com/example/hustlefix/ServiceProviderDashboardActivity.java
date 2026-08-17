@@ -128,6 +128,10 @@ public class ServiceProviderDashboardActivity extends AppCompatActivity implemen
             if (id == R.id.nav_home) {
                 return true;
             }
+            if (id == R.id.nav_wallet) {
+                startActivity(new Intent(this, WalletActivity.class));
+                return true;
+            }
             if (id == R.id.nav_dashboard) {
                 startActivity(new Intent(this, AnalyticsActivity.class));
                 return true;

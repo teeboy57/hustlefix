@@ -8,6 +8,9 @@ public class User {
     private String profileImage;
     private String phone;
     private String location;
+    private boolean isVerified;
+    private String verificationStatus;
+    private double walletBalance;
 
     public User() {
         // Default constructor required for Firebase/Gson
@@ -40,4 +43,13 @@ public class User {
 
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+
+    public boolean isVerified() { return isVerified; }
+    public void setVerified(boolean verified) { isVerified = verified; }
+
+    public String getVerificationStatus() { return verificationStatus; }
+    public void setVerificationStatus(String verificationStatus) { this.verificationStatus = verificationStatus; }
+
+    public double getWalletBalance() { return walletBalance; }
+    public void setWalletBalance(double walletBalance) { this.walletBalance = walletBalance; }
 }

@@ -63,7 +63,7 @@ public class ProfileActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private ImageView ivProfileImage;
     private View cardProfileImage;
-    private TextView tvChangePhoto;
+    private TextView tvChangePhoto, tvWalletBalance;
     private TextInputEditText etDisplayName, etEmail, etPhone, etLocation;
     private MaterialButton btnSave, btnChangePassword;
     private ProgressBar progressBar;
@@ -117,6 +117,7 @@ public class ProfileActivity extends AppCompatActivity {
         etLocation = findViewById(R.id.etLocation);
         btnSave = findViewById(R.id.btnSave);
         btnChangePassword = findViewById(R.id.btnChangePassword);
+        tvWalletBalance = findViewById(R.id.tvWalletBalance);
         progressBar = findViewById(R.id.progressBar);
     }
 
@@ -191,6 +192,11 @@ public class ProfileActivity extends AppCompatActivity {
                         if (phone != null) etPhone.setText(phone);
                         if (location != null) etLocation.setText(location);
                         
+                        Double balance = snapshot.child("walletBalance").getValue(Double.class);
+                        if (balance != null) {
+                            tvWalletBalance.setText(String.format("R%.2f", balance));
+                        }
+
                         if (imageUri == null && photoUrl != null && !photoUrl.isEmpty()) {
                             currentPhotoUrl = photoUrl;
                             loadPreviewImage(Uri.parse(photoUrl));

@@ -105,6 +105,12 @@ public final class NavigationHelper {
             return true;
         }
 
+        // Wallet
+        if (itemId == R.id.nav_wallet) {
+            activity.startActivity(new Intent(activity, WalletActivity.class));
+            return true;
+        }
+
         // Inbox
         if (itemId == R.id.nav_messages) {
             activity.startActivity(new Intent(activity, ChatListActivity.class));
@@ -170,11 +176,11 @@ public final class NavigationHelper {
         if ("service_provider".equals(role)) {
             return new String[]{
                     "Home", "Post a Service", "My Services", "My Bookings",
-                    "Analytics", "Settings", "Logout"
+                    "My Wallet", "Analytics", "Settings", "Logout"
             };
         }
         return new String[]{
-                "Home", "Find Services", "My Bookings", "Settings", "Logout"
+                "Home", "Find Services", "My Bookings", "My Wallet", "Settings", "Logout"
         };
     }
 
@@ -186,17 +192,19 @@ public final class NavigationHelper {
                 case 1: activity.startActivity(new Intent(activity, PostServiceActivity.class)); break;
                 case 2: activity.startActivity(new Intent(activity, MyServicesActivity.class)); break;
                 case 3: activity.startActivity(new Intent(activity, MyBookingsActivity.class)); break;
-                case 4: activity.startActivity(new Intent(activity, AnalyticsActivity.class)); break;
-                case 5: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
-                case 6: confirmLogout(activity); break;
+                case 4: activity.startActivity(new Intent(activity, WalletActivity.class)); break;
+                case 5: activity.startActivity(new Intent(activity, AnalyticsActivity.class)); break;
+                case 6: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
+                case 7: confirmLogout(activity); break;
             }
         } else {
             switch (index) {
                 case 0: openHome(activity); break;
                 case 1: activity.startActivity(new Intent(activity, FindServicesActivity.class)); break;
                 case 2: activity.startActivity(new Intent(activity, MyBookingsActivity.class)); break;
-                case 3: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
-                case 4: confirmLogout(activity); break;
+                case 3: activity.startActivity(new Intent(activity, WalletActivity.class)); break;
+                case 4: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
+                case 5: confirmLogout(activity); break;
             }
         }
     }

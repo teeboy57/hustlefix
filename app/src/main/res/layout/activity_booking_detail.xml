@@ -231,6 +231,16 @@
                     android:textColor="@color/ui_error"
                     android:visibility="gone" />
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="4dp"
+                    android:text="Cancel Booking"
+                    android:textColor="@color/ui_error"
+                    android:visibility="gone" />
+
             </LinearLayout>
 
         </LinearLayout>

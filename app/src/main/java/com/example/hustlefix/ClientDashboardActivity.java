@@ -164,6 +164,10 @@ public class ClientDashboardActivity extends AppCompatActivity implements Naviga
                 // Already on home page
                 return true;
             }
+            if (id == R.id.nav_wallet) {
+                startActivity(new Intent(ClientDashboardActivity.this, WalletActivity.class));
+                return true;
+            }
             if (id == R.id.nav_dashboard) {
                 startActivity(new Intent(ClientDashboardActivity.this, RatingsActivity.class));
                 return true;

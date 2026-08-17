@@ -32,7 +32,7 @@ public class BookingDetailActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private TextView tvServiceTitle, tvClientName, tvPrice, tvStatus, tvDate, tvPaymentStatus;
-    private Button btnAccept, btnReject, btnComplete, btnChat, btnPay;
+    private Button btnAccept, btnReject, btnComplete, btnChat, btnPay, btnCancel;
     private ProgressBar progressBar;
 
     // Rating views
@@ -81,6 +81,7 @@ public class BookingDetailActivity extends AppCompatActivity {
         btnComplete = findViewById(R.id.btnComplete);
         btnChat = findViewById(R.id.btnChat);
         btnPay = findViewById(R.id.btnPay);
+        btnCancel = findViewById(R.id.btnCancel);
         progressBar = findViewById(R.id.progressBar);
 
         // Rating Section
@@ -93,10 +94,12 @@ public class BookingDetailActivity extends AppCompatActivity {
             btnAccept.setVisibility(View.VISIBLE);
             btnReject.setVisibility(View.VISIBLE);
             btnComplete.setVisibility(View.VISIBLE);
+            btnCancel.setVisibility(View.GONE);
         } else {
             btnAccept.setVisibility(View.GONE);
             btnReject.setVisibility(View.GONE);
             btnComplete.setVisibility(View.GONE);
+            btnCancel.setVisibility(View.VISIBLE);
         }
 
         btnChat.setVisibility(View.GONE);
@@ -170,6 +173,13 @@ public class BookingDetailActivity extends AppCompatActivity {
             btnComplete.setVisibility(View.VISIBLE);
         }
 
+        // Show/Hide Cancel button for client
+        if (!isServiceProvider && ("pending".equalsIgnoreCase(status) || "confirmed".equalsIgnoreCase(status))) {
+            if (btnCancel != null) btnCancel.setVisibility(View.VISIBLE);
+        } else {
+            if (btnCancel != null) btnCancel.setVisibility(View.GONE);
+        }
+
         // Update status badge background based on status
         if (status.equalsIgnoreCase("completed")) {
             tvStatus.setBackgroundResource(R.drawable.badge_accepted); // Green-ish badge
@@ -215,7 +225,47 @@ public class BookingDetailActivity extends AppCompatActivity {
         btnComplete.setOnClickListener(v -> completeJobAndReleaseFunds());
         btnChat.setOnClickListener(v -> openChat());
         if (btnPay != null) btnPay.setOnClickListener(v -> showPaymentSelectionDialog());
+        if (btnCancel != null) btnCancel.setOnClickListener(v -> showCancelConfirmation());
         btnSubmitRating.setOnClickListener(v -> submitRating());
+    }
+
+    private void showCancelConfirmation() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Cancel Booking")
+                .setMessage("Are you sure you want to cancel this service?")
+                .setPositiveButton("Yes, Cancel", (dialog, which) -> cancelBooking())
+                .setNegativeButton("No", null)
+                .show();
+    }
+
+    private void cancelBooking() {
+        setLoading(true);
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("status", "cancelled");
+        
+        // If money was in Escrow, simulate a refund by setting it back to UNPAID
+        if (currentBooking != null && "ESCROW".equals(currentBooking.getPaymentStatus())) {
+            updates.put("paymentStatus", "REFUNDED");
+            
+            // Actually add money back to client wallet
+            FirebaseDatabase.getInstance().getReference("users").child(clientId)
+                    .child("walletBalance").get().addOnSuccessListener(snapshot -> {
+                        double current = snapshot.exists() ? snapshot.getValue(Double.class) : 0;
+                        FirebaseDatabase.getInstance().getReference("users").child(clientId)
+                                .child("walletBalance").setValue(current + currentBooking.getPrice());
+                    });
+        }
+        
+        bookingsRef.child(bookingId).updateChildren(updates)
+                .addOnSuccessListener(aVoid -> {
+                    setLoading(false);
+                    Toast.makeText(this, "Booking cancelled successfully", Toast.LENGTH_SHORT).show();
+                    loadBookingData();
+                })
+                .addOnFailureListener(e -> {
+                    setLoading(false);
+                    Toast.makeText(this, "Failed to cancel: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void showPaymentSelectionDialog() {
@@ -229,13 +279,32 @@ public class BookingDetailActivity extends AppCompatActivity {
     }
 
     private void payToEscrow() {
+        if (currentBooking == null) return;
+        
         setLoading(true);
-        bookingsRef.child(bookingId).child("paymentStatus").setValue("ESCROW")
-                .addOnSuccessListener(aVoid -> {
-                    setLoading(false);
-                    Toast.makeText(this, "Funds secured in Escrow!", Toast.LENGTH_SHORT).show();
-                    loadBookingData();
-                });
+        DatabaseReference clientWalletRef = FirebaseDatabase.getInstance().getReference("users")
+                .child(clientId).child("walletBalance");
+
+        clientWalletRef.get().addOnSuccessListener(snapshot -> {
+            double balance = snapshot.exists() ? snapshot.getValue(Double.class) : 0;
+            if (balance >= currentBooking.getPrice()) {
+                // Deduct from client
+                clientWalletRef.setValue(balance - currentBooking.getPrice())
+                        .addOnSuccessListener(aVoid -> {
+                            // Update booking to ESCROW
+                            bookingsRef.child(bookingId).child("paymentStatus").setValue("ESCROW")
+                                    .addOnSuccessListener(aVoid2 -> {
+                                        setLoading(false);
+                                        Toast.makeText(this, "R" + currentBooking.getPrice() + " secured in Escrow!", Toast.LENGTH_SHORT).show();
+                                        recordTransaction(clientId, "Service Payment", -currentBooking.getPrice());
+                                        loadBookingData();
+                                    });
+                        });
+            } else {
+                setLoading(false);
+                Toast.makeText(this, "Insufficient wallet balance! Please top up in Profile.", Toast.LENGTH_LONG).show();
+            }
+        }).addOnFailureListener(e -> setLoading(false));
     }
 
     private void completeJobAndReleaseFunds() {
@@ -245,15 +314,39 @@ public class BookingDetailActivity extends AppCompatActivity {
         
         if (currentBooking != null && "ESCROW".equals(currentBooking.getPaymentStatus())) {
             updates.put("paymentStatus", "RELEASED");
+            
+            // Actually add money to Hustler wallet
+            FirebaseDatabase.getInstance().getReference("users").child(serviceProviderId)
+                    .child("walletBalance").get().addOnSuccessListener(snapshot -> {
+                        double current = snapshot.exists() ? snapshot.getValue(Double.class) : 0;
+                        FirebaseDatabase.getInstance().getReference("users").child(serviceProviderId)
+                                .child("walletBalance").setValue(current + currentBooking.getPrice());
+                    });
         }
         
         bookingsRef.child(bookingId).updateChildren(updates)
                 .addOnSuccessListener(aVoid -> {
                     setLoading(false);
-                    Toast.makeText(this, "Job completed and funds released!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Job completed and funds released to Hustler!", Toast.LENGTH_LONG).show();
+                    recordTransaction(serviceProviderId, "Service Payout", currentBooking.getPrice());
                     loadBookingData();
                 })
                 .addOnFailureListener(e -> setLoading(false));
+    }
+
+    private void recordTransaction(String userId, String type, double amount) {
+        DatabaseReference transRef = FirebaseDatabase.getInstance().getReference("transactions").child(userId);
+        String id = transRef.push().getKey();
+        if (id == null) return;
+
+        Map<String, Object> trans = new HashMap<>();
+        trans.put("id", id);
+        trans.put("type", type);
+        trans.put("amount", amount);
+        trans.put("timestamp", System.currentTimeMillis());
+        if (currentBooking != null) trans.put("serviceTitle", currentBooking.getServiceTitle());
+
+        transRef.child(id).setValue(trans);
     }
 
     private void updateBookingStatus(String status) {
@@ -384,6 +477,8 @@ public class BookingDetailActivity extends AppCompatActivity {
         btnReject.setEnabled(!isLoading);
         btnComplete.setEnabled(!isLoading);
         btnChat.setEnabled(!isLoading);
+        if (btnPay != null) btnPay.setEnabled(!isLoading);
+        if (btnCancel != null) btnCancel.setEnabled(!isLoading);
         if (btnSubmitRating != null) btnSubmitRating.setEnabled(!isLoading);
     }
 

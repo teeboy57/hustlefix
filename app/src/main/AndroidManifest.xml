@@ -157,6 +157,10 @@
             android:name=".PaymentMethodsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".WalletActivity"
+            android:exported="false" />
+
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">

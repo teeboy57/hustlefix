@@ -200,6 +200,9 @@ public class RegisterActivity extends AppCompatActivity {
         userMap.put("available", true);
         userMap.put("rating", 0);
         userMap.put("completedJobs", 0);
+        userMap.put("walletBalance", 5000.0); // Starting balance for school project
+        userMap.put("isVerified", false);
+        userMap.put("verificationStatus", "Not Verified");
         
         if (!TextUtils.isEmpty(phone)) {
             userMap.put("phone", phone);
