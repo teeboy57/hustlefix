@@ -25,6 +25,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class WorkerProfileActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private CircleImageView ivProfileImage;
+    private ImageView ivVerifiedBadge;
     private TextView tvInitials;
     private TextView tvWorkerName, tvWorkerSkill, tvWorkerLocation;
     private TextView tvRating, tvExperience, tvCompletedJobs, tvHourlyRate;
@@ -62,6 +63,7 @@ public class WorkerProfileActivity extends AppCompatActivity {
     private void initViews() {
         toolbar = findViewById(R.id.toolbar);
         ivProfileImage = findViewById(R.id.ivProfileImage);
+        ivVerifiedBadge = findViewById(R.id.ivVerifiedBadge);
         tvInitials = findViewById(R.id.tvInitials);
         tvWorkerName = findViewById(R.id.tvWorkerName);
         tvWorkerSkill = findViewById(R.id.tvWorkerSkill);
@@ -144,6 +146,12 @@ public class WorkerProfileActivity extends AppCompatActivity {
         if (worker.getAvailability() != null && !worker.getAvailability().isEmpty()) {
             tvAvailability.append("\n" + worker.getAvailability());
         }
+        
+        // Show/Hide Verified Badge
+        if (ivVerifiedBadge != null) {
+            ivVerifiedBadge.setVisibility(worker.isVerified() ? View.VISIBLE : View.GONE);
+        }
+
         // Profile image or initials
         if (worker.getProfileImage() != null && !worker.getProfileImage().isEmpty()) {
             Glide.with(this)

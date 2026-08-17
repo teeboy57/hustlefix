@@ -101,6 +101,71 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         tvForgotPassword.setOnClickListener(v -> showForgotPasswordDialog());
+
+        cardGoogleLogin.setOnClickListener(v -> loginWithGoogle());
+        cardAppleLogin.setOnClickListener(v -> loginWithApple());
+    }
+
+    private void loginWithGoogle() {
+        Log.d(TAG, "Google login clicked. Current role: " + userRole);
+        if (userRole == null || userRole.isEmpty()) {
+            userRole = "CLIENT"; // Default fallback
+        }
+        
+        AuthHelper.signInWithGoogle(this, userRole, new AuthHelper.AuthCallback() {
+            @Override
+            public void onSuccess() {
+                // Success is handled in onActivityResult
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void loginWithApple() {
+        Log.d(TAG, "Apple login clicked. Current role: " + userRole);
+        if (userRole == null || userRole.isEmpty()) {
+            userRole = "CLIENT";
+        }
+        
+        setLoading(true);
+        AuthHelper.signInWithApple(this, userRole, new AuthHelper.AuthCallback() {
+            @Override
+            public void onSuccess() {
+                setLoading(false);
+                navigateToDashboard(userRole);
+            }
+
+            @Override
+            public void onError(String message) {
+                setLoading(false);
+                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == AuthHelper.RC_GOOGLE_SIGN_IN) {
+            setLoading(true);
+            AuthHelper.handleGoogleSignInResult(this, requestCode, resultCode, data, userRole, new AuthHelper.AuthCallback() {
+                @Override
+                public void onSuccess() {
+                    setLoading(false);
+                    navigateToDashboard(userRole);
+                }
+
+                @Override
+                public void onError(String message) {
+                    setLoading(false);
+                    Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+                }
+            });
+        }
     }
 
     private void loginUser() {

@@ -30,6 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
     private View cardHelp;
     private View cardAbout;
     private View cardAdmin;
+    private View cardPaymentSettings;
 
     private MaterialButton cardLogout;
     private MaterialButton btnDeleteAccount;
@@ -65,6 +66,7 @@ public class SettingsActivity extends AppCompatActivity {
         cardHelp = findViewById(R.id.cardHelp);
         cardAbout = findViewById(R.id.cardAbout);
         cardAdmin = findViewById(R.id.cardAdmin);
+        cardPaymentSettings = findViewById(R.id.cardPaymentSettings);
 
         cardLogout = findViewById(R.id.cardLogout);
         btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
@@ -133,6 +135,12 @@ public class SettingsActivity extends AppCompatActivity {
 
         if (cardAbout != null) {
             cardAbout.setOnClickListener(v -> showAboutDialog());
+        }
+
+        if (cardPaymentSettings != null) {
+            cardPaymentSettings.setOnClickListener(v -> {
+                startActivity(new Intent(SettingsActivity.this, PaymentMethodsActivity.class));
+            });
         }
 
         if (cardLogout != null) {

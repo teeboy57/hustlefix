@@ -1,5 +1,6 @@
 package com.example.hustlefix;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -153,9 +154,25 @@ public class ServiceDetailActivity extends AppCompatActivity {
         try {
             btnBookNow.setOnClickListener(v -> bookService());
             btnSave.setOnClickListener(v -> saveService());
+            
+            // Link to Worker Profile for social proof
+            if (tvServiceProvider != null) {
+                tvServiceProvider.setOnClickListener(v -> openWorkerProfile());
+            }
         } catch (Exception e) {
             ErrorUtils.showError(this, e);
         }
+    }
+
+    private void openWorkerProfile() {
+        if (service == null || service.getserviceProviderId() == null) {
+            Toast.makeText(this, "Profile not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        Intent intent = new Intent(this, WorkerProfileActivity.class);
+        intent.putExtra("worker_id", service.getserviceProviderId());
+        startActivity(intent);
     }
 
     private void saveService() {

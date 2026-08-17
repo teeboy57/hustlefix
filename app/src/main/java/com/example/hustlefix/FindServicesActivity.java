@@ -32,7 +32,7 @@ public class FindServicesActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private RecyclerView rvServices;
     private ProgressBar progressBar;
-    private TextView tvEmpty;
+    private View tvEmpty;
     private SearchView searchView;
     private View btnSort;
 

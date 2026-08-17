@@ -18,6 +18,7 @@ public class Booking {
     private String serviceType;
     private String notes;
     private String providerName;
+    private String paymentStatus; // UNPAID, ESCROW, RELEASED
 
     public Booking() {}
 
@@ -39,6 +40,9 @@ public class Booking {
     public String getServiceType() { return serviceType != null ? serviceType : ""; }
     public String getNotes() { return notes != null ? notes : ""; }
     public String getProviderName() { return providerName != null ? providerName : "Provider"; }
+    
+    public String getPaymentStatus() { return paymentStatus != null ? paymentStatus : "UNPAID"; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
     
     // Alias methods for compatibility
     @com.google.firebase.database.Exclude

@@ -63,7 +63,7 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
     static class ServiceViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvPrice, tvCategory, tvServiceProvider, tvDescription;
         CircleImageView ivProviderProfile;
-        android.widget.ImageView ivServiceBanner;
+        ImageView ivServiceBanner, ivVerifiedBadge;
 
         public ServiceViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -71,9 +71,9 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
             tvPrice = itemView.findViewById(R.id.tvServicePrice);
             tvCategory = itemView.findViewById(R.id.tvServiceCategory);
             tvServiceProvider = itemView.findViewById(R.id.tvServiceProviderName);
-            tvDescription = itemView.findViewById(R.id.tvServiceDescription);
             ivProviderProfile = itemView.findViewById(R.id.ivProviderProfile);
             ivServiceBanner = itemView.findViewById(R.id.ivServiceBanner);
+            ivVerifiedBadge = itemView.findViewById(R.id.ivVerifiedBadge);
         }
 
         void bind(Service service, OnServiceClickListener listener) {
@@ -115,6 +115,11 @@ public class ServiceDiscoveryAdapter extends RecyclerView.Adapter<ServiceDiscove
             }
             if (tvServiceProvider != null) {
                 tvServiceProvider.setText(service.getserviceProviderName() != null ? service.getserviceProviderName() : "Unknown");
+            }
+            
+            // Check verification status instantly from model
+            if (ivVerifiedBadge != null) {
+                ivVerifiedBadge.setVisibility(service.isProviderVerified() ? View.VISIBLE : View.GONE);
             }
 
             if (ivProviderProfile != null) {

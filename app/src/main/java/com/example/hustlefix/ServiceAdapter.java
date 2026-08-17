@@ -46,6 +46,10 @@ public class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.ServiceV
     public void onBindViewHolder(@NonNull ServiceViewHolder holder, int position) {
         Service service = services.get(position);
         holder.bind(service, listener);
+        
+        // Add fade-in animation
+        android.view.animation.Animation animation = android.view.animation.AnimationUtils.loadAnimation(holder.itemView.getContext(), R.anim.fade_in);
+        holder.itemView.startAnimation(animation);
     }
 
     @Override
