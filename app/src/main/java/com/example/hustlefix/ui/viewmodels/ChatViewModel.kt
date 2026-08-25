@@ -32,14 +32,19 @@ class ChatViewModel : ViewModel() {
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val currentUserId: String? = auth.currentUser?.uid
 
-    private var currentChatRef: DatabaseReference? = null
+    private var listRef: DatabaseReference? = null
+    private var listListener: ValueEventListener? = null
+    
+    private var chatRef: DatabaseReference? = null
     private var chatListener: ValueEventListener? = null
 
     fun loadChatList() {
         val uid = currentUserId ?: return
         _listUiState.value = _listUiState.value.copy(isLoading = true)
 
-        database.getReference("messages").addValueEventListener(object : ValueEventListener {
+        listRef?.let { ref -> listListener?.let { ref.removeEventListener(it) } }
+        listRef = database.getReference("messages")
+        listListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val chatMap = mutableMapOf<String, ChatSummary>()
                 for (chatSnapshot in snapshot.children) {
@@ -52,30 +57,33 @@ class ChatViewModel : ViewModel() {
                     }
 
                     if (messages.isNotEmpty()) {
-                        val lastMsg = messages.maxByOrNull { it.timestamp }!!
-                        val partnerId = if (lastMsg.senderId == uid) lastMsg.receiverId else lastMsg.senderId
-                        val partnerName = if (lastMsg.senderId == uid) lastMsg.receiverName else lastMsg.senderName
+                        val lastMsg = messages.maxByOrNull { it.timestamp }
+                        if (lastMsg != null) {
+                            val partnerId = if (lastMsg.senderId == uid) lastMsg.receiverId else lastMsg.senderId
+                            val partnerName = if (lastMsg.senderId == uid) lastMsg.receiverName else lastMsg.senderName
 
-                        val summary = ChatSummary().apply {
-                            this.chatId = chatId
-                            this.partnerId = partnerId
-                            this.partnerName = partnerName
-                            this.lastMessage = lastMsg.messageText
-                            this.lastTimestamp = lastMsg.timestamp
+                            val summary = ChatSummary().apply {
+                                this.chatId = chatId
+                                this.partnerId = partnerId
+                                this.partnerName = partnerName
+                                this.lastMessage = lastMsg.messageText
+                                this.lastTimestamp = lastMsg.timestamp ?: 0L
+                            }
+                            chatMap[chatId] = summary
+                            fetchPartnerProfile(summary)
                         }
-                        chatMap[chatId] = summary
-                        fetchPartnerProfile(summary)
                     }
                 }
                 _listUiState.value = _listUiState.value.copy(
-                    chats = chatMap.values.sortedByDescending { it.lastTimestamp },
+                    chats = chatMap.values.sortedByDescending { it.lastTimestamp ?: 0L },
                     isLoading = false
                 )
             }
             override fun onCancelled(error: DatabaseError) {
                 _listUiState.value = _listUiState.value.copy(isLoading = false)
             }
-        })
+        }
+        listListener?.let { listRef?.addValueEventListener(it) }
     }
 
     private fun fetchPartnerProfile(summary: ChatSummary) {
@@ -98,8 +106,8 @@ class ChatViewModel : ViewModel() {
         
         _chatUiState.value = _chatUiState.value.copy(partnerName = partnerName, isLoading = true)
         
-        currentChatRef?.removeEventListener(chatListener!!)
-        currentChatRef = database.getReference("messages").child(chatId)
+        chatRef?.let { ref -> chatListener?.let { ref.removeEventListener(it) } }
+        chatRef = database.getReference("messages").child(chatId)
         
         chatListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -108,7 +116,7 @@ class ChatViewModel : ViewModel() {
                     ds.getValue(Message::class.java)?.let { list.add(it) }
                 }
                 _chatUiState.value = _chatUiState.value.copy(
-                    messages = list.sortedBy { it.timestamp },
+                    messages = list.sortedBy { it.getTimestamp() ?: 0L },
                     isLoading = false
                 )
             }
@@ -116,7 +124,7 @@ class ChatViewModel : ViewModel() {
                 _chatUiState.value = _chatUiState.value.copy(isLoading = false)
             }
         }
-        currentChatRef?.addValueEventListener(chatListener!!)
+        chatListener?.let { chatRef?.addValueEventListener(it) }
     }
 
     fun sendMessage(partnerId: String, partnerName: String, text: String) {
@@ -135,6 +143,7 @@ class ChatViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        currentChatRef?.let { ref -> chatListener?.let { ref.removeEventListener(it) } }
+        listRef?.let { ref -> listListener?.let { ref.removeEventListener(it) } }
+        chatRef?.let { ref -> chatListener?.let { ref.removeEventListener(it) } }
     }
 }

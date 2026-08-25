@@ -136,22 +136,30 @@ public class SendQuoteActivity extends AppCompatActivity {
             return;
         }
         setLoading(true);
-        String quoteId = quotesRef.push().getKey();
-        if (quoteId == null) {
-            setLoading(false);
-            Toast.makeText(this, "Failed to create quote", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        
         Quote quote = new Quote(
                 jobId, jobTitle,
                 currentUser.getUid(), workerDisplayName,
                 clientId, clientName,
                 message, amount, timeline
         );
-        quote.setId(quoteId);
-        quotesRef.child(quoteId).setValue(quote)
+        
+        quotesRef.child(jobId).child(currentUser.getUid()).setValue(quote)
                 .addOnSuccessListener(aVoid -> {
-                    ApplicationsHelper.saveApplicationForQuote(quote);
+                    // Update job application count
+                    FirebaseDatabase.getInstance().getReference("jobs").child(jobId).child("applicationsCount")
+                        .runTransaction(new com.google.firebase.database.Transaction.Handler() {
+                            @Override
+                            public com.google.firebase.database.Transaction.Result doTransaction(com.google.firebase.database.MutableData currentData) {
+                                Integer count = currentData.getValue(Integer.class);
+                                if (count == null) count = 0;
+                                currentData.setValue(count + 1);
+                                return com.google.firebase.database.Transaction.success(currentData);
+                            }
+                            @Override
+                            public void onComplete(DatabaseError error, boolean committed, DataSnapshot snapshot) {}
+                        });
+                        
                     setLoading(false);
                     Toast.makeText(SendQuoteActivity.this,
                             "Quote sent successfully!", Toast.LENGTH_LONG).show();

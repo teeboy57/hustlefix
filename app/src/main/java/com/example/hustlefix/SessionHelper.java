@@ -44,17 +44,12 @@ public final class SessionHelper {
         return "service_provider".equals(appRole) ? "worker" : "client";
     }
     public static void openDashboard(Context context, String role) {
-        Intent intent;
-        if ("service_provider".equals(role)) {
-            intent = new Intent(context, ServiceProviderDashboardActivity.class);
-        } else {
-            intent = new Intent(context, ClientDashboardActivity.class);
-        }
+        Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         context.startActivity(intent);
     }
     public static void openStartScreen(Context context) {
-        Intent intent = new Intent(context, WelcomeActivity.class);
+        Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         context.startActivity(intent);
     }

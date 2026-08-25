@@ -7,6 +7,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import android.content.Context
 import com.example.hustlefix.SessionHelper
+import com.example.hustlefix.data.UserRepository
+import com.google.firebase.database.FirebaseDatabase
+import kotlinx.coroutines.tasks.await
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 
 data class AuthUiState(
     val isLoading: Boolean = false,
@@ -15,13 +20,19 @@ data class AuthUiState(
     val isRegisterSuccessful: Boolean = false
 )
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel(
+    private val userRepository: UserRepository = UserRepository(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-
     fun login(email: String, password: String, context: Context) {
+        if (!com.example.hustlefix.util.NetworkUtils.isNetworkAvailable(context)) {
+            _uiState.value = _uiState.value.copy(error = "No internet connection")
+            return
+        }
+        
         if (email.isEmpty() || password.isEmpty()) {
             _uiState.value = _uiState.value.copy(error = "Please fill in all fields")
             return
@@ -31,8 +42,46 @@ class AuthViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    SessionHelper.setLoggedIn(context, true)
-                    _uiState.value = _uiState.value.copy(isLoading = false, isLoginSuccessful = true)
+                    val user = auth.currentUser
+                    if (user != null) {
+                        viewModelScope.launch {
+                            try {
+                                val userProfileResult = userRepository.getUserProfile(user.uid)
+                                val profile = userProfileResult.getOrNull()
+                                
+                                if (profile == null) {
+                                    auth.signOut()
+                                    _uiState.value = _uiState.value.copy(isLoading = false, error = "User profile not found. Please register.")
+                                    return@launch
+                                }
+                                
+                                if (profile.isSuspended) {
+                                    auth.signOut()
+                                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Your account has been suspended.")
+                                } else {
+                                    val appRole = if (profile.role == "worker") "service_provider" else "client"
+                                    SessionHelper.saveRole(context, appRole)
+                                    SessionHelper.setLoggedIn(context, true)
+                                    
+                                    // Update FCM Token
+                                    try {
+                                        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                                            viewModelScope.launch {
+                                                userRepository.updateFcmToken(user.uid, token)
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        // FCM not available, ignore for now
+                                    }
+                                    
+                                    _uiState.value = _uiState.value.copy(isLoading = false, isLoginSuccessful = true)
+                                }
+                            } catch (e: Exception) {
+                                auth.signOut()
+                                _uiState.value = _uiState.value.copy(isLoading = false, error = "Login failed: ${e.message}")
+                            }
+                        }
+                    }
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false, 
@@ -42,7 +91,7 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-    fun register(fullName: String, email: String, phone: String, pass: String, context: Context) {
+    fun register(fullName: String, email: String, phone: String, pass: String, role: String, context: Context) {
         if (email.isEmpty() || pass.isEmpty() || fullName.isEmpty()) {
             _uiState.value = _uiState.value.copy(error = "Please fill in all fields")
             return
@@ -52,9 +101,30 @@ class AuthViewModel : ViewModel() {
         auth.createUserWithEmailAndPassword(email, pass)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    SessionHelper.setLoggedIn(context, true)
-                    // In a real app, you'd save the extra user data to Realtime Database here
-                    _uiState.value = _uiState.value.copy(isLoading = false, isRegisterSuccessful = true)
+                    val user = auth.currentUser
+                    if (user != null) {
+                        val firebaseRole = if (role == "service_provider") "worker" else "client"
+                        val userMap = mutableMapOf<String, Any>(
+                            "name" to fullName,
+                            "email" to email,
+                            "phone" to phone,
+                            "role" to firebaseRole,
+                            "isVerified" to false,
+                            "isSuspended" to false,
+                            "createdAt" to System.currentTimeMillis()
+                        )
+                        
+                        viewModelScope.launch {
+                            val result = userRepository.saveUserProfile(user.uid, userMap)
+                            if (result.isSuccess) {
+                                SessionHelper.saveRole(context, role)
+                                SessionHelper.setLoggedIn(context, true)
+                                _uiState.value = _uiState.value.copy(isLoading = false, isRegisterSuccessful = true)
+                            } else {
+                                _uiState.value = _uiState.value.copy(isLoading = false, error = result.exceptionOrNull()?.message ?: "Failed to save profile")
+                            }
+                        }
+                    }
                 } else {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false, 

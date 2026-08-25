@@ -38,8 +38,12 @@ class SplashActivity : ComponentActivity() {
                         )
                     )
                     delay(1500L)
-                    startActivity(Intent(this@SplashActivity, WelcomeActivity::class.java))
-                    finish()
+                    try {
+                        startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                        finish()
+                    } catch (e: Exception) {
+                        // Log or handle
+                    }
                 }
 
                 Box(

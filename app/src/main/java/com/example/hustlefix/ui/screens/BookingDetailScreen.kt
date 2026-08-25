@@ -9,7 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +26,7 @@ import coil.request.ImageRequest
 import com.example.hustlefix.Booking
 import com.example.hustlefix.R
 import com.example.hustlefix.Service
+import com.example.hustlefix.ui.theme.getStatusColor
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -38,10 +39,85 @@ fun BookingDetailScreen(
     isLoading: Boolean,
     onStatusUpdate: (String) -> Unit,
     onChatClick: () -> Unit,
+    onTrackClick: (String) -> Unit,
+    onRatingSubmit: (Float, String, Boolean) -> Unit = { _, _, _ -> },
+    onPayClick: () -> Unit = {},
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+    var showCancelDialog by remember { mutableStateOf(false) }
+    var showRatingDialog by remember { mutableStateOf(false) }
+    var pendingStatusUpdate by remember { mutableStateOf<String?>(null) }
     
+    if (showCancelDialog) {
+        AlertDialog(
+            onDismissRequest = { showCancelDialog = false },
+            title = { Text("Confirm Cancellation") },
+            text = { Text("Are you sure you want to cancel this booking? This action cannot be undone.") },
+            confirmButton = {
+                TextButton(onClick = { 
+                    pendingStatusUpdate?.let { onStatusUpdate(it) }
+                    showCancelDialog = false 
+                }) { 
+                    Text("YES, CANCEL", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) 
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCancelDialog = false }) { Text("GO BACK") }
+            }
+        )
+    }
+
+                    if (showRatingDialog) {
+        var ratingScore by remember { mutableStateOf(5f) }
+        var comment by remember { mutableStateOf("") }
+        var isAnonymous by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showRatingDialog = false },
+            title = { Text("Rate the Pro", fontWeight = FontWeight.Black) },
+            text = {
+                Column {
+                    Text("How was your experience with " + (booking?.getWorkerName() ?: "this Pro") + "?")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Slider(
+                        value = ratingScore,
+                        onValueChange = { ratingScore = it },
+                        valueRange = 1f..5f,
+                        steps = 3
+                    )
+                    Text("${ratingScore.toInt()} Stars", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    OutlinedTextField(
+                        value = comment,
+                        onValueChange = { comment = it },
+                        label = { Text("Your Review") },
+                        placeholder = { Text("Tell others about the quality of work...") },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+                        Checkbox(checked = isAnonymous, onCheckedChange = { isAnonymous = it })
+                        Text("Post review anonymously", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { 
+                    onRatingSubmit(ratingScore, comment, isAnonymous)
+                    showRatingDialog = false 
+                }) {
+                    Text("SUBMIT REVIEW")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRatingDialog = false }) { Text("NOT NOW") }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -88,9 +164,9 @@ fun BookingDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(booking.serviceTitle ?: "Service", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
+                            Text(booking.getServiceTitle() ?: "Service", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
                             Text(
-                                "Date: " + SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(booking.bookingDate)),
+                                "Date: " + SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(booking.getTimestamp())),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -112,11 +188,15 @@ fun BookingDetailScreen(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Detail Items
-                    BookingInfoRow(label = "Price", value = "R${String.format("%.2f", booking.price)}", icon = Icons.Default.Payments)
-                    BookingInfoRow(label = "Payment", value = booking.paymentStatus ?: "UNPAID", icon = Icons.Default.Security)
+                    BookingInfoRow(label = "Total Price", value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice())}", icon = Icons.Default.Payments)
+                    if (isServiceProvider) {
+                        BookingInfoRow(label = "Platform Fee", value = "R0.00 (0%)", icon = Icons.Default.Info)
+                        BookingInfoRow(label = "Your Payout", value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice())}", icon = Icons.Default.AccountBalanceWallet)
+                    }
+                    BookingInfoRow(label = "Payment Status", value = booking.getPaymentStatus() ?: "UNPAID", icon = Icons.Default.Security)
                     BookingInfoRow(
                         label = if (isServiceProvider) "Client" else "Provider", 
-                        value = if (isServiceProvider) booking.clientName ?: "User" else booking.serviceProviderName ?: "Pro", 
+                        value = if (isServiceProvider) booking.getClientName() ?: "User" else booking.getServiceProviderName() ?: "Pro", 
                         icon = Icons.Default.Person
                     )
 
@@ -142,14 +222,17 @@ fun BookingDetailScreen(
                                         Text("ACCEPT")
                                     }
                                     OutlinedButton(
-                                        onClick = { onStatusUpdate("cancelled") },
+                                        onClick = { 
+                                            pendingStatusUpdate = "cancelled"
+                                            showCancelDialog = true 
+                                        },
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                                     ) {
                                         Text("REJECT")
                                     }
                                 }
-                            } else if (booking.status == "confirmed" || booking.status == "completed") {
+                            } else if (booking.status == "confirmed" || booking.status == "paid" || booking.status == "completed") {
                                 Button(
                                     onClick = onChatClick,
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -160,7 +243,7 @@ fun BookingDetailScreen(
                                     Text("OPEN CHAT", fontWeight = FontWeight.Bold)
                                 }
                                 
-                                if (isServiceProvider && booking.status == "confirmed") {
+                                if (isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
                                     Spacer(modifier = Modifier.height(12.dp))
                                     OutlinedButton(
                                         onClick = { onStatusUpdate("completed") },
@@ -168,6 +251,56 @@ fun BookingDetailScreen(
                                         shape = RoundedCornerShape(16.dp)
                                     ) {
                                         Text("MARK AS COMPLETED", fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
+                                    if (booking.status == "confirmed") {
+                                        Button(
+                                            onClick = onPayClick,
+                                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                                            shape = RoundedCornerShape(16.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                        ) {
+                                            Icon(Icons.Default.Payment, contentDescription = null)
+                                            Spacer(modifier = Modifier.width(12.dp))
+                                            Text("PAY NOW", fontWeight = FontWeight.Bold)
+                                        }
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                    }
+                                    
+                                    Button(
+                                        onClick = { onStatusUpdate("completed") },
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                                    ) {
+                                        Text("CONFIRM COMPLETION", fontWeight = FontWeight.Bold)
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Button(
+                                        onClick = { onTrackClick(booking.getWorkerId() ?: "") },
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                                    ) {
+                                        Icon(Icons.Default.MyLocation, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text("TRACK WORKER LIVE", fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                if (!isServiceProvider && booking.status == "completed") {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    OutlinedButton(
+                                        onClick = { showRatingDialog = true },
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                        shape = RoundedCornerShape(16.dp)
+                                    ) {
+                                        Icon(Icons.Default.Star, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text("LEAVE A REVIEW", fontWeight = FontWeight.Bold)
                                     }
                                 }
                             } else {

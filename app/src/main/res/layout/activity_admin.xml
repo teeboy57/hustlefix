@@ -34,68 +34,68 @@
                 app:cardBackgroundColor="#FFFFFF"
                 android:layout_marginBottom="16dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="24dp">
-
-                    <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_workers"
-                        android:tint="#667eea" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="Sample Workers"
-                        android:textSize="22sp"
-                        android:textStyle="bold"
-                        android:textColor="#2C3E50"
-                        android:layout_marginTop="12dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="Add sample worker data to test the app"
-                        android:textSize="14sp"
-                        android:textColor="#7F8C8D"
-                        android:layout_marginBottom="24dp" />
-
-                    <Button
-                        android:id="@+id/btnAddWorkers"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:text="ADD 8 SAMPLE WORKERS"
-                        android:backgroundTint="#4CAF50"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold"
-                        android:layout_marginBottom="16dp" />
-
-                    <Button
-                        android:id="@+id/btnClearWorkers"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:text="CLEAR ALL WORKERS"
-                        android:backgroundTint="#FF4444"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold" />
-
-                    <ProgressBar
-                        android:id="@+id/progressBar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="16dp"
-                        android:visibility="gone" />
-
-                </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_workers"
+                    android:tint="#667eea" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:text="Sample Workers"
+                    android:textColor="#2C3E50"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="24dp"
+                    android:text="Add sample worker data to test the app"
+                    android:textColor="#7F8C8D"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btnAddWorkers"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="16dp"
+                    android:backgroundTint="#4CAF50"
+                    android:text="ADD 8 SAMPLE WORKERS"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <Button
+                    android:id="@+id/btnClearWorkers"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:backgroundTint="#FF4444"
+                    android:text="CLEAR ALL WORKERS"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="16dp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

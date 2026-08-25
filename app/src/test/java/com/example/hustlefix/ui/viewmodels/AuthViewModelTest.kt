@@ -35,6 +35,14 @@ class AuthViewModelTest {
         // Mock static NetworkUtils
         mockkObject(com.example.hustlefix.util.NetworkUtils)
         every { com.example.hustlefix.util.NetworkUtils.isNetworkAvailable(any()) } returns true
+        
+        // Mock FirebaseMessaging
+        mockkStatic(com.google.firebase.messaging.FirebaseMessaging::class)
+        val messaging = mockk<com.google.firebase.messaging.FirebaseMessaging>()
+        every { com.google.firebase.messaging.FirebaseMessaging.getInstance() } returns messaging
+        val tokenTask = mockk<Task<String>>()
+        every { messaging.token } returns tokenTask
+        every { tokenTask.addOnSuccessListener(any()) } returns tokenTask
     }
 
     @After
@@ -51,6 +59,13 @@ class AuthViewModelTest {
         val task = mockk<Task<AuthResult>>()
         every { task.isSuccessful } returns true
         every { task.exception } returns null
+        
+        // Handle addOnCompleteListener
+        val slot = slot<com.google.android.gms.tasks.OnCompleteListener<AuthResult>>()
+        every { task.addOnCompleteListener(capture(slot)) } answers {
+            slot.captured.onComplete(task)
+            task
+        }
         
         every { auth.signInWithEmailAndPassword(any(), any()) } returns task
         every { auth.currentUser } returns firebaseUser
@@ -72,6 +87,12 @@ class AuthViewModelTest {
         
         val task = mockk<Task<AuthResult>>()
         every { task.isSuccessful } returns true
+        
+        val slot = slot<com.google.android.gms.tasks.OnCompleteListener<AuthResult>>()
+        every { task.addOnCompleteListener(capture(slot)) } answers {
+            slot.captured.onComplete(task)
+            task
+        }
         
         every { auth.signInWithEmailAndPassword(any(), any()) } returns task
         every { auth.currentUser } returns firebaseUser

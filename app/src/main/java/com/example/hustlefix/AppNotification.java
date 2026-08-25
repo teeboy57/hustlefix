@@ -10,8 +10,8 @@ public class AppNotification {
     private String message;
     private String type; // booking, payment, chat, emergency, general
     private String relatedId;
-    private long timestamp;
-    private boolean read;
+    private Long timestamp;
+    private Boolean read;
 
     public AppNotification() {
     }
@@ -40,10 +40,10 @@ public class AppNotification {
     public void setType(String type) { this.type = type; }
     public String getRelatedId() { return relatedId; }
     public void setRelatedId(String relatedId) { this.relatedId = relatedId; }
-    public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-    public boolean isRead() { return read; }
-    public void setRead(boolean read) { this.read = read; }
+    public Long getTimestamp() { return timestamp != null ? timestamp : 0L; }
+    public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
+    public Boolean isRead() { return read != null ? read : false; }
+    public void setRead(Boolean read) { this.read = read; }
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();

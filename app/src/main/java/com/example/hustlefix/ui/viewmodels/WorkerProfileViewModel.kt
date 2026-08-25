@@ -20,6 +20,8 @@ class WorkerProfileViewModel : ViewModel() {
     val uiState: StateFlow<WorkerProfileUiState> = _uiState.asStateFlow()
 
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private var reviewsQuery: Query? = null
+    private var reviewsListener: ValueEventListener? = null
 
     fun loadWorker(workerId: String) {
         if (workerId.isEmpty()) return
@@ -43,18 +45,26 @@ class WorkerProfileViewModel : ViewModel() {
     }
 
     private fun loadReviews(workerId: String) {
-        database.getReference("ratings").orderByChild("ratedId").equalTo(workerId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val list = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }
-                    _uiState.value = _uiState.value.copy(
-                        reviews = list.sortedByDescending { it.timestamp },
-                        isLoading = false
-                    )
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                }
-            })
+        reviewsListener?.let { reviewsQuery?.removeEventListener(it) }
+        
+        reviewsQuery = database.getReference("ratings").orderByChild("ratedId").equalTo(workerId)
+        reviewsListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull { it.getValue(Rating::class.java) }
+                _uiState.value = _uiState.value.copy(
+                    reviews = list.sortedByDescending { it.timestamp },
+                    isLoading = false
+                )
+            }
+            override fun onCancelled(error: DatabaseError) {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+        reviewsListener?.let { reviewsQuery?.addValueEventListener(it) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        reviewsListener?.let { reviewsQuery?.removeEventListener(it) }
     }
 }

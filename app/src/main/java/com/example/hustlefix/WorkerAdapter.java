@@ -60,7 +60,7 @@ public class WorkerAdapter extends RecyclerView.Adapter<WorkerAdapter.WorkerView
             holder.tvAvailable.setTextColor(0xFFFF4444);
         }
         // Set rating bar
-        holder.rbRating.setRating((float) worker.getRating());
+        holder.rbRating.setRating(worker.getRating().floatValue());
         // Load profile image if available
         if (worker.getProfileImage() != null && !worker.getProfileImage().isEmpty()) {
             Glide.with(activity)

@@ -64,11 +64,11 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
         }
         void bind(Job job) {
             tvTitle.setText(job.getTitle());
-            tvBudget.setText(job.getFormattedBudget());
+            tvBudget.setText(job.getFormattedAmount());
             tvLocation.setText(job.getLocation());
             tvStatus.setText(job.getStatus());
-            if (job.getPostedByName() != null) {
-                tvPostedBy.setText("Posted by: " + job.getPostedByName());
+            if (job.getClientName() != null) {
+                tvPostedBy.setText("Posted by: " + job.getClientName());
             } else {
                 tvPostedBy.setVisibility(View.GONE);
             }
@@ -87,7 +87,8 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                     tvStatus.setBackgroundColor(0xFF9E9E9E);
             }
             // Configure buttons based on role
-            if ("CLIENT".equals(userRole) && job.isOwner(currentUserId)) {
+            boolean isOwner = job.getClientId() != null && job.getClientId().equals(currentUserId);
+            if ("CLIENT".equals(userRole) && isOwner) {
                 // Client viewing their own job
                 btnAction1.setText("Details");
                 btnAction1.setOnClickListener(v -> {
@@ -104,7 +105,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
                 btnAction1.setOnClickListener(v -> {
                     if (listener != null) listener.onViewDetails(job);
                 });
-                if (job.isOwner(currentUserId)) {
+                if (isOwner) {
                     btnAction2.setText("Applications");
                     btnAction2.setOnClickListener(v -> {
                         if (listener != null) listener.onViewApplications(job);

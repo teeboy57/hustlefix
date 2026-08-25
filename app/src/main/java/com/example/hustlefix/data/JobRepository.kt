@@ -15,11 +15,13 @@ class JobRepository {
     private val quotesRef = database.getReference("quotes")
     private val bookingsRef = database.getReference("bookings")
 
-    fun getAvailableJobs(): Flow<List<Job>> = callbackFlow {
-        val query = jobsRef.orderByChild("status").equalTo("open")
+    fun getAvailableJobs(limit: Int = 50): Flow<List<Job>> = callbackFlow {
+        val query = jobsRef.orderByChild("status").equalTo("open").limitToLast(limit)
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val jobs = snapshot.children.mapNotNull { it.getValue(Job::class.java)?.apply { jobId = it.key!! } }
+                val jobs = snapshot.children.mapNotNull { child ->
+                    child.getValue(Job::class.java)?.apply { jobId = child.key ?: "" }
+                }.sortedByDescending { it.getTimestamp() }
                 trySend(jobs)
             }
             override fun onCancelled(error: DatabaseError) {
@@ -34,7 +36,9 @@ class JobRepository {
         val query = jobsRef.orderByChild("clientId").equalTo(clientId)
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val jobs = snapshot.children.mapNotNull { it.getValue(Job::class.java)?.apply { jobId = it.key!! } }
+                val jobs = snapshot.children.mapNotNull { child ->
+                    child.getValue(Job::class.java)?.apply { jobId = child.key ?: "" }
+                }
                 trySend(jobs)
             }
             override fun onCancelled(error: DatabaseError) {
@@ -49,7 +53,9 @@ class JobRepository {
         val query = jobsRef.orderByChild("workerId").equalTo(workerId)
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val jobs = snapshot.children.mapNotNull { it.getValue(Job::class.java)?.apply { jobId = it.key!! } }
+                val jobs = snapshot.children.mapNotNull { child ->
+                    child.getValue(Job::class.java)?.apply { jobId = child.key ?: "" }
+                }
                 trySend(jobs)
             }
             override fun onCancelled(error: DatabaseError) {
@@ -75,6 +81,32 @@ class JobRepository {
     suspend fun updateJobStatus(jobId: String, status: String): Result<Unit> {
         return try {
             jobsRef.child(jobId).child("status").setValue(status).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateBookingStatus(booking: Booking, newStatus: String): Result<Unit> {
+        return try {
+            val bookingUpdates = mutableMapOf<String, Any?>("status" to newStatus)
+            
+            // Sync with Job if jobId exists
+            if (!booking.jobId.isNullOrEmpty()) {
+                val jobStatus = when (newStatus) {
+                    "confirmed" -> "in-progress"
+                    "completed" -> "completed"
+                    "cancelled" -> "cancelled"
+                    "failed" -> "cancelled"
+                    else -> null
+                }
+                
+                if (jobStatus != null) {
+                    jobsRef.child(booking.jobId).child("status").setValue(jobStatus).await()
+                }
+            }
+            
+            bookingsRef.child(booking.bookingId).updateChildren(bookingUpdates).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

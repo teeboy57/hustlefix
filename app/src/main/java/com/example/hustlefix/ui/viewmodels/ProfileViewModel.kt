@@ -14,15 +14,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import java.util.*
 
 data class ProfileUiState(
     val name: String = "",
     val email: String = "",
     val phone: String = "",
     val location: String = "",
+    val skill: String = "",
+    val category: String = "",
+    val about: String = "",
+    val experience: Int = 0,
     val photoUrl: String? = null,
     val selectedImageUri: Uri? = null,
     val walletBalance: String = "R0.00",
+    val role: String = "client",
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null
@@ -52,15 +58,26 @@ class ProfileViewModel : ViewModel() {
         userId?.let { uid ->
             database.getReference("users").child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val phone = snapshot.child("phone").getValue(String.class.java) ?: ""
-                    val loc = snapshot.child("location").getValue(String.class.java) ?: ""
+                    val phone = snapshot.child("phone").getValue(String::class.java) ?: ""
+                    val loc = snapshot.child("location").getValue(String::class.java) ?: ""
                     val balance = snapshot.child("walletBalance").getValue(Double::class.java) ?: 0.0
-                    val dbPhotoUrl = snapshot.child("profileImage").getValue(String.class.java)
+                    val dbPhotoUrl = snapshot.child("profileImage").getValue(String::class.java)
+                    val role = snapshot.child("role").getValue(String::class.java) ?: "client"
+                    
+                    val skill = snapshot.child("skill").getValue(String::class.java) ?: ""
+                    val category = snapshot.child("category").getValue(String::class.java) ?: ""
+                    val about = snapshot.child("about").getValue(String::class.java) ?: ""
+                    val exp = snapshot.child("experience").getValue(Int::class.java) ?: 0
 
                     _uiState.value = _uiState.value.copy(
                         phone = phone,
                         location = loc,
-                        walletBalance = String.format("R%.2f", balance),
+                        skill = skill,
+                        category = category,
+                        about = about,
+                        experience = exp,
+                        role = role,
+                        walletBalance = String.format(Locale.getDefault(), "R%.2f", balance),
                         photoUrl = dbPhotoUrl ?: _uiState.value.photoUrl,
                         isLoading = false
                     )
@@ -75,6 +92,10 @@ class ProfileViewModel : ViewModel() {
     fun onNameChange(name: String) { _uiState.value = _uiState.value.copy(name = name) }
     fun onPhoneChange(phone: String) { _uiState.value = _uiState.value.copy(phone = phone) }
     fun onLocationChange(loc: String) { _uiState.value = _uiState.value.copy(location = loc) }
+    fun onSkillChange(skill: String) { _uiState.value = _uiState.value.copy(skill = skill) }
+    fun onCategoryChange(cat: String) { _uiState.value = _uiState.value.copy(category = cat) }
+    fun onAboutChange(about: String) { _uiState.value = _uiState.value.copy(about = about) }
+    fun onExperienceChange(exp: Int) { _uiState.value = _uiState.value.copy(experience = exp) }
     fun onImageSelected(uri: Uri?) { _uiState.value = _uiState.value.copy(selectedImageUri = uri) }
 
     fun saveProfile() {
@@ -89,6 +110,13 @@ class ProfileViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
+                // Check suspension
+                val snapshot = database.getReference("users").child(uid).child("isSuspended").get().await()
+                if (snapshot.getValue(Boolean::class.java) == true) {
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Action denied. Your account is suspended.")
+                    return@launch
+                }
+
                 // Update Auth Profile
                 val profileUpdates = UserProfileChangeRequest.Builder()
                     .setDisplayName(currentState.name)
@@ -131,6 +159,13 @@ class ProfileViewModel : ViewModel() {
             "location" to currentState.location,
             "profileImage" to photoUrl
         )
+
+        if (currentState.role == "worker") {
+            updates["skill"] = currentState.skill
+            updates["category"] = currentState.category
+            updates["about"] = currentState.about
+            updates["experience"] = currentState.experience
+        }
 
         database.getReference("users").child(uid).updateChildren(updates)
             .addOnCompleteListener { task ->

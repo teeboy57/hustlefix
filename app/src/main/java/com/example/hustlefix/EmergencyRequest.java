@@ -8,15 +8,15 @@ public class EmergencyRequest {
     private String userPhone;
     private String emergencyType;
     private String description;
-    private double latitude;
-    private double longitude;
+    private Double latitude;
+    private Double longitude;
     private String address;
-    private long timestamp;
+    private Long timestamp;
     private String status; // pending, responded, resolved
     private String responderId;
     private String responderName;
     public EmergencyRequest() {}
-    public EmergencyRequest(String userId, String userName, String userPhone, String emergencyType, String description, double latitude, double longitude, String address) {
+    public EmergencyRequest(String userId, String userName, String userPhone, String emergencyType, String description, Double latitude, Double longitude, String address) {
         this.userId = userId;
         this.userName = userName;
         this.userPhone = userPhone;
@@ -41,14 +41,14 @@ public class EmergencyRequest {
     public void setEmergencyType(String emergencyType) { this.emergencyType = emergencyType; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
-    public double getLatitude() { return latitude; }
-    public void setLatitude(double latitude) { this.latitude = latitude; }
-    public double getLongitude() { return longitude; }
-    public void setLongitude(double longitude) { this.longitude = longitude; }
+    public Double getLatitude() { return latitude != null ? latitude : 0.0; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude != null ? longitude : 0.0; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
-    public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    public Long getTimestamp() { return timestamp != null ? timestamp : 0L; }
+    public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getResponderId() { return responderId; }

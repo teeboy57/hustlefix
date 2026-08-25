@@ -30,6 +30,12 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private val auth = FirebaseAuth.getInstance()
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
 
+    private var workersQuery: Query? = null
+    private var workersListener: ValueEventListener? = null
+    
+    private var trackedRef: DatabaseReference? = null
+    private var trackedListener: ValueEventListener? = null
+
     init {
         loadNearbyWorkers()
         updateCurrentUserLocation()
@@ -37,16 +43,20 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun loadNearbyWorkers() {
         _uiState.value = _uiState.value.copy(isLoading = true)
-        database.getReference("users").orderByChild("role").equalTo("worker")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val list = snapshot.children.mapNotNull { it.getValue(Worker::class.java) }
-                    _uiState.value = _uiState.value.copy(workers = list, isLoading = false)
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                }
-            })
+        
+        workersListener?.let { workersQuery?.removeEventListener(it) }
+        
+        workersQuery = database.getReference("users").orderByChild("role").equalTo("worker")
+        workersListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull { it.getValue(Worker::class.java) }
+                _uiState.value = _uiState.value.copy(workers = list, isLoading = false)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+        workersListener?.let { workersQuery?.addValueEventListener(it) }
     }
 
     private fun updateCurrentUserLocation() {
@@ -76,13 +86,24 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun startTrackingWorker(workerId: String) {
-        database.getReference("users").child(workerId)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val worker = snapshot.getValue(Worker::class.java)
-                    _uiState.value = _uiState.value.copy(trackedWorker = worker)
-                }
-                override fun onCancelled(error: DatabaseError) {}
-            })
+        if (workerId.isEmpty()) return
+        
+        trackedListener?.let { trackedRef?.removeEventListener(it) }
+        
+        trackedRef = database.getReference("users").child(workerId)
+        trackedListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val worker = snapshot.getValue(Worker::class.java)
+                _uiState.value = _uiState.value.copy(trackedWorker = worker)
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        trackedListener?.let { trackedRef?.addValueEventListener(it) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        workersListener?.let { workersQuery?.removeEventListener(it) }
+        trackedListener?.let { trackedRef?.removeEventListener(it) }
     }
 }

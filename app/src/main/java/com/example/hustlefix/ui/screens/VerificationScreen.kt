@@ -38,13 +38,13 @@ fun VerificationScreen(
     isSuccess: Boolean,
     error: String?,
     currentStatus: String,
+    rejectionReason: String?,
     onIdImageSelected: (Uri?) -> Unit,
     onCertImageSelected: (Uri?) -> Unit,
     onSubmit: () -> Unit,
     onBackClick: () -> Unit,
     onClearStatus: () -> Unit
 ) {
-    val context = LocalContext.current
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -96,6 +96,24 @@ fun VerificationScreen(
             // Status Header
             StatusBanner(status = currentStatus)
 
+            if (currentStatus == "rejected" && !rejectionReason.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Rejection Reason", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(rejectionReason, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(32.dp))
 
             Text(
@@ -112,6 +130,7 @@ fun VerificationScreen(
                 title = "Identity Document",
                 description = "Clear photo of your ID or Driver's License",
                 imageUri = idImageUri,
+                enabled = currentStatus == "unverified" || currentStatus == "rejected",
                 onClick = {
                     idLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
@@ -124,6 +143,7 @@ fun VerificationScreen(
                 title = "Trade Certificate",
                 description = "Certificates or proof of your professional skills",
                 imageUri = certImageUri,
+                enabled = currentStatus == "unverified" || currentStatus == "rejected",
                 onClick = {
                     certLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
@@ -131,18 +151,20 @@ fun VerificationScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
+            val canSubmit = (currentStatus == "unverified" || currentStatus == "rejected") && idImageUri != null
+
             Button(
                 onClick = onSubmit,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 shape = RoundedCornerShape(16.dp),
-                enabled = !isLoading && currentStatus == "unverified" && idImageUri != null
+                enabled = !isLoading && canSubmit
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("SUBMIT FOR REVIEW", fontWeight = FontWeight.ExtraBold)
+                    Text(if (currentStatus == "rejected") "RE-SUBMIT FOR REVIEW" else "SUBMIT FOR REVIEW", fontWeight = FontWeight.ExtraBold)
                 }
             }
 
@@ -162,7 +184,7 @@ fun StatusBanner(status: String) {
     val (color, icon, text) = when (status) {
         "verified" -> Triple(Color(0xFF4CAF50), Icons.Default.Verified, "Verified Expert")
         "pending" -> Triple(Color(0xFFFF9800), Icons.Default.HourglassBottom, "Review in Progress")
-        "rejected" -> Triple(MaterialTheme.colorScheme.error, Icons.Default.Error, "Verification Failed")
+        "rejected" -> Triple(MaterialTheme.colorScheme.error, Icons.Default.Cancel, "Verification Rejected")
         else -> Triple(MaterialTheme.colorScheme.primary, Icons.Default.Shield, "Not Verified")
     }
 
@@ -187,10 +209,11 @@ fun DocumentUploadCard(
     title: String,
     description: String,
     imageUri: Uri?,
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
     Card(
-        onClick = onClick,
+        onClick = if (enabled) onClick else ({}),
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
@@ -219,9 +242,9 @@ fun DocumentUploadCard(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Upload Document", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Text("Upload Document", fontWeight = FontWeight.Bold, color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
                 }
             }
         }

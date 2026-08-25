@@ -38,20 +38,21 @@ class PayfastViewModel(private val repository: PayfastRepository) : ViewModel() 
                 val userSnapshot = database.getReference("users").child(userId).get().await()
                 val user = userSnapshot.getValue(User::class.java) ?: throw Exception("User profile not found")
                 
-                // Construct the request. In a real production app, 
-                // Merchant ID/Key and Signature should be handled by the backend for security.
-                // We'll pass the necessary data to our backend endpoint.
+                val fullName = user.name ?: "User"
+                val firstName = fullName.split(" ").firstOrNull() ?: "User"
+                val lastName = if (fullName.contains(" ")) fullName.split(" ").last() else ""
+                
                 val request = PayfastRequest(
                     merchantId = "", // Handled by backend
                     merchantKey = "", // Handled by backend
                     returnUrl = "hustlefix://payment-success",
                     cancelUrl = "hustlefix://payment-cancel",
-                    notifyUrl = "https://your-backend.com/api/payments/payfast-itn",
-                    firstName = user.name.split(" ").firstOrNull() ?: "User",
-                    lastName = user.name.split(" ").lastOrNull() ?: "",
-                    email = user.email,
+                    notifyUrl = "https://hustlefix.onrender.com/api/payments/payfast-itn",
+                    firstName = firstName,
+                    lastName = lastName,
+                    email = user.email ?: "",
                     mPaymentId = booking.bookingId,
-                    amount = String.format("%.2f", booking.amount),
+                    amount = String.format(java.util.Locale.getDefault(), "%.2f", booking.amount),
                     itemName = "Payment for Job: ${booking.jobId}"
                 )
                 

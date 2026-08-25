@@ -1,0 +1,23 @@
+mutation SeedDatabase @transaction {
+  user_insertMany(data: [
+    {id: "00000000-0000-0000-0000-000000000001", email: "alice@example.com", fullName: "Alice Smith"},
+    {id: "00000000-0000-0000-0000-000000000002", email: "bob@example.com", fullName: "Bob Jones"}
+  ])
+  client_insertMany(data: [
+    {id: "00000000-0000-0000-0000-000000000011", name: "Acme Corp", email: "contact@acme.com", userId: "00000000-0000-0000-0000-000000000001"},
+    {id: "00000000-0000-0000-0000-000000000012", name: "Globex", email: "info@globex.com", userId: "00000000-0000-0000-0000-000000000002"}
+  ])
+  project_insertMany(data: [
+    {id: "00000000-0000-0000-0000-000000000021", title: "Website Redesign", status: "In Progress", dueDate: "2025-12-31T00:00:00Z", clientId: "00000000-0000-0000-0000-000000000011"},
+    {id: "00000000-0000-0000-0000-000000000022", title: "Mobile App", status: "Planning", dueDate: "2026-06-01T00:00:00Z", clientId: "00000000-0000-0000-0000-000000000012"}
+  ])
+  task_insertMany(data: [
+    {id: "00000000-0000-0000-0000-000000000031", title: "Wireframe UI", isCompleted: false, projectId: "00000000-0000-0000-0000-000000000021"},
+    {id: "00000000-0000-0000-0000-000000000032", title: "Database Schema", isCompleted: true, projectId: "00000000-0000-0000-0000-000000000021"},
+    {id: "00000000-0000-0000-0000-000000000033", title: "API Design", isCompleted: false, projectId: "00000000-0000-0000-0000-000000000022"}
+  ])
+  invoice_insertMany(data: [
+    {id: "00000000-0000-0000-0000-000000000041", amount: 5000.0, status: "Pending", issueDate: "2024-10-01", projectId: "00000000-0000-0000-0000-000000000021"},
+    {id: "00000000-0000-0000-0000-000000000042", amount: 1200.5, status: "Paid", issueDate: "2024-09-15", projectId: "00000000-0000-0000-0000-000000000021"}
+  ])
+}

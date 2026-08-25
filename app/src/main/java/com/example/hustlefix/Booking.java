@@ -2,82 +2,83 @@ package com.example.hustlefix;
 
 public class Booking {
     private String bookingId;
+    private String jobId;
     private String clientId;
-    private String serviceProviderId;
-    private String serviceId;
-    private String status;
-    private double price;
-    private double rating;
-    private String serviceName;
-    private String serviceTitle;
     private String clientName;
-    private String serviceProviderName;
-    private String providerProfileImageUrl;
-    private long timestamp;
-    private long bookingDate;
-    private String serviceType;
-    private String notes;
-    private String providerName;
-    private String paymentStatus; // UNPAID, ESCROW, RELEASED
+    private String workerId;
+    private String workerName;
+    private Double amount;
+    private String status;
+    private String paymentStatus; // PAID, UNPAID, PENDING
+    private Long createdAt;
 
-    public Booking() {}
+    public Booking() {
+        this.status = "pending";
+        this.paymentStatus = "UNPAID";
+        this.createdAt = System.currentTimeMillis();
+    }
 
-    // ===== GETTERS =====
+    public Booking(String jobId, String clientId, String clientName, String workerId, String workerName, Double amount) {
+        this.jobId = jobId;
+        this.clientId = clientId;
+        this.clientName = clientName;
+        this.workerId = workerId;
+        this.workerName = workerName;
+        this.amount = amount;
+        this.status = "pending";
+        this.paymentStatus = "UNPAID";
+        this.createdAt = System.currentTimeMillis();
+    }
+
+    // Getters and Setters
     public String getBookingId() { return bookingId; }
+    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
+
+    public String getJobId() { return jobId; }
+    public void setJobId(String jobId) { this.jobId = jobId; }
+
     public String getClientId() { return clientId; }
-    public String getServiceProviderId() { return serviceProviderId; }
-    public String getServiceId() { return serviceId; }
-    public String getStatus() { return status != null ? status : "pending"; }
-    public double getPrice() { return price; }
-    public double getRating() { return rating; }
-    public String getServiceName() { return serviceName != null ? serviceName : "Service"; }
-    public String getServiceTitle() { return serviceTitle != null ? serviceTitle : "Service"; }
-    public String getClientName() { return clientName != null ? clientName : "Client"; }
-    public String getServiceProviderName() { return serviceProviderName != null ? serviceProviderName : "Provider"; }
-    public String getProviderProfileImageUrl() { return providerProfileImageUrl; }
-    public long getTimestamp() { return timestamp; }
-    public long getBookingDate() { return bookingDate; }
-    public String getServiceType() { return serviceType != null ? serviceType : ""; }
-    public String getNotes() { return notes != null ? notes : ""; }
-    public String getProviderName() { return providerName != null ? providerName : "Provider"; }
-    
+    public void setClientId(String clientId) { this.clientId = clientId; }
+
+    public String getClientName() { return clientName; }
+    public void setClientName(String clientName) { this.clientName = clientName; }
+
+    public String getWorkerId() { return workerId; }
+    public void setWorkerId(String workerId) { this.workerId = workerId; }
+
+    public String getWorkerName() { return workerName; }
+    public void setWorkerName(String workerName) { this.workerName = workerName; }
+
+    public Double getAmount() { return amount != null ? amount : 0.0; }
+    public void setAmount(Double amount) { this.amount = amount; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
     public String getPaymentStatus() { return paymentStatus != null ? paymentStatus : "UNPAID"; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
-    
-    // Alias methods for compatibility
-    @com.google.firebase.database.Exclude
-    public String getserviceProviderId() { return getServiceProviderId(); }
-    @com.google.firebase.database.Exclude
-    public String getserviceProviderName() { return getServiceProviderName(); }
-    @com.google.firebase.database.Exclude
-    public String getEntrepreneurId() { return getServiceProviderId(); }
-    @com.google.firebase.database.Exclude
-    public String getEntrepreneurName() { return getServiceProviderName(); }
 
-    // ===== SETTERS =====
-    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
-    public void setClientId(String clientId) { this.clientId = clientId; }
-    public void setServiceProviderId(String serviceProviderId) { this.serviceProviderId = serviceProviderId; }
-    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
-    public void setStatus(String status) { this.status = status; }
-    public void setPrice(double price) { this.price = price; }
-    public void setRating(double rating) { this.rating = rating; }
-    public void setServiceName(String serviceName) { this.serviceName = serviceName; }
-    public void setServiceTitle(String serviceTitle) { this.serviceTitle = serviceTitle; }
-    public void setClientName(String clientName) { this.clientName = clientName; }
-    public void setServiceProviderName(String serviceProviderName) { this.serviceProviderName = serviceProviderName; }
-    public void setProviderProfileImageUrl(String providerProfileImageUrl) { this.providerProfileImageUrl = providerProfileImageUrl; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
-    public void setBookingDate(long bookingDate) { this.bookingDate = bookingDate; }
-    public void setServiceType(String serviceType) { this.serviceType = serviceType; }
-    public void setNotes(String notes) { this.notes = notes; }
-    public void setProviderName(String providerName) { this.providerName = providerName; }
+    public Long getCreatedAt() { return createdAt != null ? createdAt : 0L; }
+    public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
+
+    public String getFormattedAmount() { return String.format("R%.2f", getAmount()); }
     
-    // Alias setters for compatibility
-    @com.google.firebase.database.Exclude
-    public void setserviceProviderId(String serviceProviderId) { setServiceProviderId(serviceProviderId); }
-    @com.google.firebase.database.Exclude
-    public void setserviceProviderName(String serviceProviderName) { setServiceProviderName(serviceProviderName); }
-    public void setEntrepreneurId(String entrepreneurId) { setServiceProviderId(entrepreneurId); }
-    public void setEntrepreneurName(String entrepreneurName) { setServiceProviderName(entrepreneurName); }
+    // Compatibility helpers
+    public String getServiceProviderId() { return workerId; }
+    public String getServiceProviderName() { return workerName; }
+    public Double getPrice() { return getAmount(); }
+    public Double getRating() { return 0.0; }
+    public Long getTimestamp() { return getCreatedAt(); }
+
+    public String getServiceTitle() { return "Job #" + jobId; }
+    public String getServiceId() { return jobId; }
+    public long getBookingDate() { return createdAt; }
+    public String getServiceName() { return getServiceTitle(); }
+    public String getProviderProfileImageUrl() { return null; }
+    
+    // Lowercase aliases for legacy code if needed
+    public String getserviceProviderId() { return workerId; }
+    public String getserviceProviderName() { return workerName; }
+    public String getserviceTitle() { return getServiceTitle(); }
+    public String getserviceId() { return jobId; }
 }

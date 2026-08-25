@@ -6,16 +6,25 @@
 const express = require('express');
 const crypto = require('crypto');
 const admin = require('firebase-admin');
-const axios = require('axios');
 
 // Initialize Firebase Admin
-admin.initializeApp({
-  credential: admin.credential.cert(require('./service-account-key.json')),
-  databaseURL: "https://hustlefix-9c7f6-default-rtdb.firebaseio.com"
-});
+// Note: Ensure your service-account-key.json is present OR set GOOGLE_APPLICATION_CREDENTIALS
+try {
+  const serviceAccount = require('./service-account-key.json');
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://hustlefix-9c7f6-default-rtdb.firebaseio.com"
+  });
+} catch (e) {
+  console.log("Using default credentials (running on server)");
+  admin.initializeApp({
+    databaseURL: "https://hustlefix-9c7f6-default-rtdb.firebaseio.com"
+  });
+}
 
 const db = admin.database();
 const app = express();
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const MERCHANT_ID = '17144161';
@@ -35,12 +44,12 @@ app.post('/api/payments/create-checkout', async (req, res) => {
     return_url: 'hustlefix://payment-success',
     cancel_url: 'hustlefix://payment-cancel',
     notify_url: 'https://hustlefix.onrender.com/api/payments/payfast-itn',
-    name_first,
-    name_last,
-    email_address,
-    m_payment_id, // This is the HustleFix Booking ID
-    amount: parseFloat(amount).toFixed(2),
-    item_name
+    name_first: name_first || "",
+    name_last: name_last || "",
+    email_address: email_address || "",
+    m_payment_id: m_payment_id || "",
+    amount: parseFloat(amount || 0).toFixed(2),
+    item_name: item_name || "HustleFix Service"
   };
 
   // Generate Signature
@@ -48,7 +57,16 @@ app.post('/api/payments/create-checkout', async (req, res) => {
 
   // Payfast Sandbox URL (Use 'www.payfast.co.za' for production)
   const baseUrl = 'https://sandbox.payfast.co.za/eng/process';
-  const checkoutUrl = `${baseUrl}?${new URLSearchParams(data).toString()}`;
+
+  // Only include non-empty values in the URL
+  const params = new URLSearchParams();
+  for (const key in data) {
+    if (data[key] !== "" && data[key] !== null) {
+      params.append(key, data[key]);
+    }
+  }
+
+  const checkoutUrl = `${baseUrl}?${params.toString()}`;
 
   res.json({
     success: true,
@@ -66,13 +84,6 @@ app.post('/api/payments/payfast-itn', async (req, res) => {
   // Verify Signature
   if (!verifySignature(pfData, PASSPHRASE)) {
     console.error('Invalid ITN signature');
-    return res.sendStatus(400);
-  }
-
-  // Verify IP/Server with Payfast (Important for security)
-  const isValid = await verifyWithPayfast(pfData);
-  if (!isValid) {
-    console.error('ITN verification failed with Payfast servers');
     return res.sendStatus(400);
   }
 
@@ -133,9 +144,11 @@ app.post('/api/payments/payfast-itn', async (req, res) => {
  */
 function generateSignature(data, passphrase) {
   let str = '';
-  Object.keys(data).forEach(key => {
-    if (data[key] !== '' && key !== 'signature') {
-      str += `${key}=${encodeURIComponent(data[key].trim()).replace(/%20/g, '+')}&`;
+  const keys = Object.keys(data).sort();
+  keys.forEach(key => {
+    const value = data[key];
+    if (value !== '' && value !== undefined && value !== null && key !== 'signature') {
+      str += `${key}=${encodeURIComponent(String(value).trim()).replace(/%20/g, '+')}&`;
     }
   });
   str = str.substring(0, str.length - 1);
@@ -151,13 +164,5 @@ function verifySignature(data, passphrase) {
   return receivedSignature === computedSignature;
 }
 
-/**
- * Helper: Verify with Payfast Servers
- */
-async function verifyWithPayfast(data) {
-  // In production, post the data back to Payfast to verify it came from them
-  // return axios.post('https://www.payfast.co.za/eng/query/validate', data)...
-  return true;
-}
-
-app.listen(3000, () => console.log('HustleFix Payfast Backend listening on port 3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`HustleFix Payfast Backend listening on port ${PORT}`));

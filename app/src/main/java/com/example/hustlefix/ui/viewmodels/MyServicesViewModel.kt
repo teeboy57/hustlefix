@@ -20,6 +20,9 @@ class MyServicesViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
     private val userId = auth.currentUser?.uid
+    
+    private var servicesQuery: Query? = null
+    private var servicesListener: ValueEventListener? = null
 
     init {
         loadServices()
@@ -28,20 +31,28 @@ class MyServicesViewModel : ViewModel() {
     private fun loadServices() {
         val uid = userId ?: return
         _uiState.value = _uiState.value.copy(isLoading = true)
+        
+        servicesListener?.let { servicesQuery?.removeEventListener(it) }
 
-        database.getReference("services").orderByChild("serviceProviderId").equalTo(uid)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val list = snapshot.children.mapNotNull { it.getValue(Service::class.java) }
-                    _uiState.value = _uiState.value.copy(services = list, isLoading = false)
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                }
-            })
+        servicesQuery = database.getReference("services").orderByChild("serviceProviderId").equalTo(uid)
+        servicesListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull { it.getValue(Service::class.java) }
+                _uiState.value = _uiState.value.copy(services = list, isLoading = false)
+            }
+            override fun onCancelled(error: DatabaseError) {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+        servicesListener?.let { servicesQuery?.addValueEventListener(it) }
     }
 
     fun deleteService(serviceId: String) {
         database.getReference("services").child(serviceId).removeValue()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        servicesListener?.let { servicesQuery?.removeEventListener(it) }
     }
 }

@@ -206,7 +206,7 @@ public class FindWorkersActivity extends AppCompatActivity {
         }
         new MaterialAlertDialogBuilder(this)
                 .setTitle(job.getTitle())
-                .setMessage("Budget: " + job.getFormattedBudget() + "\n" +
+                .setMessage("Budget: " + job.getFormattedAmount() + "\n" +
                         "Location: " + job.getLocation() + "\n" +
                         "Category: " + job.getCategory() + "\n" +
                         "Deadline: " + job.getDeadline() + "\n\n" +
@@ -223,14 +223,14 @@ public class FindWorkersActivity extends AppCompatActivity {
                     intent.putExtra("job_id", job.getJobId());
                     intent.putExtra("job_title", job.getTitle());
                     intent.putExtra("job_description", job.getDescription());
-                    intent.putExtra("job_budget", job.getBudget());
-                    intent.putExtra("client_id", job.getPostedBy());
-                    intent.putExtra("client_name", job.getPostedByName());
+                    intent.putExtra("job_budget", job.getQuotedAmount());
+                    intent.putExtra("client_id", job.getClientId());
+                    intent.putExtra("client_name", job.getClientName());
                     startActivity(intent);
                 })
                 .setNegativeButton("Close", null)
                 .setNeutralButton("Chat", (dialog, which) ->
-                        ChatLauncher.openChat(FindWorkersActivity.this, job.getPostedBy(), job.getPostedByName()))
+                        ChatLauncher.openChat(FindWorkersActivity.this, job.getClientId(), job.getClientName()))
                 .show();
     }
     // Method to show available jobs for quoting
@@ -245,7 +245,7 @@ public class FindWorkersActivity extends AppCompatActivity {
                     if (job != null) {
                         job.setJobId(data.getKey());
                         // Don't show user's own jobs
-                        if (currentUser != null && !job.getPostedBy().equals(currentUser.getUid())) {
+                        if (currentUser != null && !data.child("clientId").getValue(String.class).equals(currentUser.getUid())) {
                             jobList.add(job);
                         }
                     }
@@ -269,7 +269,7 @@ public class FindWorkersActivity extends AppCompatActivity {
     private void showJobSelectionDialog() {
         String[] jobTitles = new String[jobList.size()];
         for (int i = 0; i < jobList.size(); i++) {
-            jobTitles[i] = jobList.get(i).getTitle() + " - " + jobList.get(i).getFormattedBudget();
+            jobTitles[i] = jobList.get(i).getTitle() + " - " + jobList.get(i).getFormattedAmount();
         }
         new AlertDialog.Builder(this)
                 .setTitle("Select Job to Quote")
@@ -349,9 +349,9 @@ public class FindWorkersActivity extends AppCompatActivity {
                 .show();
     }
     public void viewWorkerProfile(Worker worker) {
-        Intent intent = new Intent(FindWorkersActivity.this, WorkerProfileActivity.class);
-        intent.putExtra("worker_id", worker.getId());
-        intent.putExtra("worker_name", worker.getName());
+        Intent intent = new Intent(FindWorkersActivity.this, MainActivity.class);
+        intent.putExtra("NAV_DESTINATION", "worker_profile");
+        intent.putExtra("workerId", worker.getId());
         startActivity(intent);
     }
     public void chatWithWorker(Worker worker) {

@@ -21,9 +21,9 @@ data class PayfastRequest(
 )
 
 data class CheckoutResponse(
-    val checkoutUrl: String,
-    val success: Boolean,
-    val message: String?
+    val checkoutUrl: String? = null,
+    val success: Boolean = false,
+    val message: String? = null
 )
 
 interface PayfastApi {
@@ -35,10 +35,11 @@ class PayfastRepository(private val api: PayfastApi) {
     suspend fun getCheckoutUrl(request: PayfastRequest): Result<String> {
         return try {
             val response = api.createCheckout(request)
-            if (response.isSuccessful && response.body()?.success == true) {
-                Result.success(response.body()!!.checkoutUrl)
+            val body = response.body()
+            if (response.isSuccessful && body?.success == true) {
+                Result.success(body.checkoutUrl ?: "")
             } else {
-                Result.failure(Exception(response.body()?.message ?: "Failed to get checkout URL"))
+                Result.failure(Exception(body?.message ?: "Failed to get checkout URL"))
             }
         } catch (e: Exception) {
             Result.failure(e)

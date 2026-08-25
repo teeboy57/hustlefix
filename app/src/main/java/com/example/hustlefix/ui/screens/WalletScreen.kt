@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +31,7 @@ fun WalletScreen(
     transactions: List<Transaction>,
     isLoading: Boolean,
     onTopUpClick: (Double) -> Unit,
+    onStatementClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     var showTopUpDialog by remember { mutableStateOf(false) }
@@ -43,10 +45,16 @@ fun WalletScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 },
+                actions = {
+                    IconButton(onClick = onStatementClick) {
+                        Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Income Statement")
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -102,15 +110,15 @@ fun WalletScreen(
                                 }
                                 
                                 OutlinedButton(
-                                    onClick = { /* Withdraw */ },
+                                    onClick = onStatementClick,
                                     modifier = Modifier.weight(1f).height(56.dp),
                                     border = androidx.compose.foundation.BorderStroke(1.dp, Color.White),
                                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
-                                    Icon(Icons.Default.FileUpload, contentDescription = null)
+                                    Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Withdraw", fontWeight = FontWeight.Bold)
+                                    Text("Report", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -134,7 +142,7 @@ fun WalletScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(48.dp).fillMaxWidth()) {
-                            Icon(Icons.Default.ReceiptLong, contentDescription = null, modifier = Modifier.size(60.dp), tint = MaterialTheme.colorScheme.outline)
+                            Icon(Icons.Default.Receipt, contentDescription = null, modifier = Modifier.size(60.dp), tint = MaterialTheme.colorScheme.outline)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text("No transactions found", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }

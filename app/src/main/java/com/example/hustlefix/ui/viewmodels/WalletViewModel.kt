@@ -24,6 +24,11 @@ class WalletViewModel : ViewModel() {
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val userId: String? = auth.currentUser?.uid
 
+    private var balanceRef: DatabaseReference? = null
+    private var balanceListener: ValueEventListener? = null
+    private var transRef: DatabaseReference? = null
+    private var transListener: ValueEventListener? = null
+
     init {
         loadData()
     }
@@ -33,34 +38,38 @@ class WalletViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(isLoading = true)
 
         // Load Balance
-        database.getReference("users").child(uid).child("walletBalance")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val balance = snapshot.getValue(Double::class.java) ?: 0.0
-                    _uiState.value = _uiState.value.copy(
-                        balance = String.format(Locale.getDefault(), "R%.2f", balance)
-                    )
-                }
-                override fun onCancelled(error: DatabaseError) {}
-            })
+        balanceListener?.let { balanceRef?.removeEventListener(it) }
+        balanceRef = database.getReference("users").child(uid).child("walletBalance")
+        balanceListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val balance = snapshot.getValue(Double::class.java) ?: 0.0
+                _uiState.value = _uiState.value.copy(
+                    balance = String.format(Locale.getDefault(), "R%.2f", balance)
+                )
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        balanceListener?.let { balanceRef?.addValueEventListener(it) }
 
         // Load Transactions
-        database.getReference("transactions").child(uid)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val list = mutableListOf<Transaction>()
-                    for (ds in snapshot.children) {
-                        ds.getValue(Transaction::class.java)?.let { list.add(it) }
-                    }
-                    _uiState.value = _uiState.value.copy(
-                        transactions = list.sortedByDescending { it.timestamp },
-                        isLoading = false
-                    )
+        transListener?.let { transRef?.removeEventListener(it) }
+        transRef = database.getReference("transactions").child(uid)
+        transListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = mutableListOf<Transaction>()
+                for (ds in snapshot.children) {
+                    ds.getValue(Transaction::class.java)?.let { list.add(it) }
                 }
-                override fun onCancelled(error: DatabaseError) {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                }
-            })
+                _uiState.value = _uiState.value.copy(
+                    transactions = list.sortedByDescending { it.getTimestamp() ?: 0L },
+                    isLoading = false
+                )
+            }
+            override fun onCancelled(error: DatabaseError) {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
+        }
+        transListener?.let { transRef?.addValueEventListener(it) }
     }
 
     fun topUp(amount: Double) {
@@ -79,8 +88,8 @@ class WalletViewModel : ViewModel() {
 
     private fun recordTransaction(type: String, amount: Double) {
         val uid = userId ?: return
-        val transRef = database.getReference("transactions").child(uid)
-        val id = transRef.push().key ?: return
+        val tRef = database.getReference("transactions").child(uid)
+        val id = tRef.push().key ?: return
 
         val trans = mapOf(
             "id" to id,
@@ -88,6 +97,12 @@ class WalletViewModel : ViewModel() {
             "amount" to amount,
             "timestamp" to System.currentTimeMillis()
         )
-        transRef.child(id).setValue(trans)
+        tRef.child(id).setValue(trans)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        balanceListener?.let { balanceRef?.removeEventListener(it) }
+        transListener?.let { transRef?.removeEventListener(it) }
     }
 }

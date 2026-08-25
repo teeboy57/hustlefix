@@ -1,0 +1,147 @@
+mutation CreateUser @auth(level: USER) {
+  user_insert(data: {
+    id_expr: "auth.uid",
+    email: "user@example.com",
+    fullName: "John Doe"
+  })
+}
+
+mutation UpdateUser @auth(level: USER) {
+  user_update(key: {id_expr: "auth.uid"}, data: {fullName: "Jane Doe"})
+}
+
+mutation DeleteUser @auth(level: USER) {
+  user_delete(key: {id_expr: "auth.uid"})
+}
+
+query GetUser @auth(level: USER) {
+  user(key: {id_expr: "auth.uid"}) {
+    email
+    fullName
+  }
+}
+
+query ListUsers @auth(level: PUBLIC, insecureReason: "Publicly accessible user list") {
+  users {
+    fullName
+  }
+}
+
+mutation CreateClient @auth(level: USER) {
+  client_insert(data: {
+    name: "Acme Corp",
+    email: "contact@acme.com",
+    userId_expr: "auth.uid"
+  })
+}
+
+mutation UpdateClient($id: UUID!, $name: String!) @auth(level: USER) {
+  client_update(key: {id: $id}, data: {name: $name})
+}
+
+mutation DeleteClient($id: UUID!) @auth(level: USER) {
+  client_delete(key: {id: $id})
+}
+
+query GetClient($id: UUID!) @auth(level: USER) {
+  client(id: $id) {
+    name
+    email
+  }
+}
+
+query ListClients @auth(level: USER) {
+  clients(where: {userId: {eq_expr: "auth.uid"}}) {
+    name
+  }
+}
+
+mutation CreateProject($clientId: UUID!, $title: String!) @auth(level: USER) {
+  project_insert(data: {
+    clientId: $clientId,
+    title: $title,
+    status: "Active",
+    dueDate: "2025-12-31T23:59:59Z"
+  })
+}
+
+mutation UpdateProject($id: UUID!, $status: String!) @auth(level: USER) {
+  project_update(key: {id: $id}, data: {status: $status})
+}
+
+mutation DeleteProject($id: UUID!) @auth(level: USER) {
+  project_delete(key: {id: $id})
+}
+
+query GetProject($id: UUID!) @auth(level: USER) {
+  project(id: $id) {
+    title
+    status
+  }
+}
+
+query ListProjects @auth(level: USER) {
+  projects(where: {client: {userId: {eq_expr: "auth.uid"}}}) {
+    title
+  }
+}
+
+mutation CreateTask($projectId: UUID!, $title: String!) @auth(level: USER) {
+  task_insert(data: {
+    projectId: $projectId,
+    title: $title,
+    isCompleted: false
+  })
+}
+
+mutation UpdateTask($id: UUID!, $isCompleted: Boolean!) @auth(level: USER) {
+  task_update(key: {id: $id}, data: {isCompleted: $isCompleted})
+}
+
+mutation DeleteTask($id: UUID!) @auth(level: USER) {
+  task_delete(key: {id: $id})
+}
+
+query GetTask($id: UUID!) @auth(level: USER) {
+  task(id: $id) {
+    title
+    isCompleted
+  }
+}
+
+query ListTasks @auth(level: USER) {
+  tasks(where: {project: {client: {userId: {eq_expr: "auth.uid"}}}}) {
+    title
+  }
+}
+
+mutation CreateInvoice($projectId: UUID!, $amount: Float!) @auth(level: USER) {
+  invoice_insert(data: {
+    projectId: $projectId,
+    amount: $amount,
+    status: "Pending",
+    issueDate: "2024-05-20"
+  })
+}
+
+mutation UpdateInvoice($id: UUID!, $status: String!) @auth(level: USER) {
+  invoice_update(key: {id: $id}, data: {status: $status})
+}
+
+mutation DeleteInvoice($id: UUID!) @auth(level: USER) {
+  invoice_delete(key: {id: $id})
+}
+
+query GetInvoice($id: UUID!) @auth(level: USER) {
+  invoice(id: $id) {
+    amount
+    status
+  }
+}
+
+query ListInvoices @auth(level: USER) {
+  invoices(where: {project: {client: {userId: {eq_expr: "auth.uid"}}}}) {
+    amount
+    status
+  }
+}

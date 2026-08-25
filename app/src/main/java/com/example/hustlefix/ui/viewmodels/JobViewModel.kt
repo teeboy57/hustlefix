@@ -8,6 +8,7 @@ import com.example.hustlefix.data.JobRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 data class JobUiState(
     val availableJobs: List<Job> = emptyList(),
@@ -69,12 +70,27 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
         
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val job = Job(title, category, uid, name, location, description, amount)
-            val result = repository.createJob(job)
-            if (result.isSuccess) {
-                _uiState.update { it.copy(isLoading = false, successMessage = "Job posted successfully") }
-            } else {
-                _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }
+            
+            try {
+                // Check suspension
+                val isSuspended = com.google.firebase.database.FirebaseDatabase.getInstance()
+                    .getReference("users").child(uid).child("isSuspended").get().await()
+                    .getValue(Boolean::class.java) ?: false
+                
+                if (isSuspended) {
+                    _uiState.update { it.copy(isLoading = false, error = "Action denied. Your account is suspended.") }
+                    return@launch
+                }
+
+                val job = Job(title, category, uid, name, location, description, amount)
+                val result = repository.createJob(job)
+                if (result.isSuccess) {
+                    _uiState.update { it.copy(isLoading = false, successMessage = "Job posted successfully") }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Error checking status: ${e.message}") }
             }
         }
     }
@@ -85,12 +101,27 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
         
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val quote = Quote(jobId, "", uid, name, "", "", message, amount, "")
-            val result = repository.submitQuote(quote)
-            if (result.isSuccess) {
-                _uiState.update { it.copy(isLoading = false, successMessage = "Quote submitted successfully") }
-            } else {
-                _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }
+            
+            try {
+                // Check suspension
+                val isSuspended = com.google.firebase.database.FirebaseDatabase.getInstance()
+                    .getReference("users").child(uid).child("isSuspended").get().await()
+                    .getValue(Boolean::class.java) ?: false
+                
+                if (isSuspended) {
+                    _uiState.update { it.copy(isLoading = false, error = "Action denied. Your account is suspended.") }
+                    return@launch
+                }
+
+                val quote = Quote(jobId, "", uid, name, "", "", message, amount, "")
+                val result = repository.submitQuote(quote)
+                if (result.isSuccess) {
+                    _uiState.update { it.copy(isLoading = false, successMessage = "Quote submitted successfully") }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = "Error checking status: ${e.message}") }
             }
         }
     }
@@ -107,12 +138,18 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
         }
     }
 
-    fun updateJobStatus(jobId: String, status: String) {
+    fun updateJobStatus(jobId: String, currentStatus: String, newStatus: String) {
+        // Validation logic
+        if (!Job.isValidTransition(currentStatus, newStatus)) {
+            _uiState.update { it.copy(error = "Invalid status transition from $currentStatus to $newStatus") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            val result = repository.updateJobStatus(jobId, status)
+            val result = repository.updateJobStatus(jobId, newStatus)
             if (result.isSuccess) {
-                _uiState.update { it.copy(isLoading = false, successMessage = "Job status updated to $status") }
+                _uiState.update { it.copy(isLoading = false, successMessage = "Job status updated to $newStatus") }
             } else {
                 _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }
             }

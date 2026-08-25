@@ -1,7 +1,12 @@
 package com.example.hustlefix.ui.screens
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import com.example.hustlefix.ui.components.LocationPermissionDeniedState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,11 +42,36 @@ fun EmergencyRequestScreen(
 ) {
     val context = LocalContext.current
     val scrollState = rememberScrollState()
-    var selectedType by remember { mutableStateOf("Security") }
+    var selectedUrgency by remember { mutableStateOf("ASAP") }
     var description by remember { mutableStateOf("") }
     var confirmed by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Permission state
+    var locationPermissionGranted by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        locationPermissionGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+    }
+
+    LaunchedEffect(Unit) {
+        if (!locationPermissionGranted) {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                )
+            )
+        }
+    }
 
     LaunchedEffect(error) {
         error?.let {
@@ -52,7 +84,7 @@ fun EmergencyRequestScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("EMERGENCY HELP", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.error) },
+                title = { Text("URGENT REQUEST", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -62,7 +94,14 @@ fun EmergencyRequestScreen(
         }
     ) { padding ->
         if (isSuccess) {
-            EmergencySuccessState(onBackClick)
+            UrgentSuccessState(onBackClick)
+        } else if (!locationPermissionGranted) {
+            LocationPermissionDeniedState {
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", context.packageName, null)
+                }
+                context.startActivity(intent)
+            }
         } else {
             Column(
                 modifier = Modifier
@@ -72,31 +111,31 @@ fun EmergencyRequestScreen(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Header Warning
+                // Header Info
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        Icon(Icons.Default.FlashOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            "Immediate assistance for urgent situations. Response times vary by location.",
+                            "Need a pro right now? Urgent requests alert nearby experts for immediate service.",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text("What is the nature of your emergency?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text("How fast do you need the work done?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    EmergencyTypeChip("Security", Icons.Default.Security, selectedType == "Security", Modifier.weight(1f)) { selectedType = "Security" }
-                    EmergencyTypeChip("Medical", Icons.Default.MedicalServices, selectedType == "Medical", Modifier.weight(1f)) { selectedType = "Medical" }
-                    EmergencyTypeChip("Other", Icons.Default.Help, selectedType == "Other", Modifier.weight(1f)) { selectedType = "Other" }
+                    UrgencyTypeChip("ASAP", Icons.Default.Timer, selectedUrgency == "ASAP", Modifier.weight(1f)) { selectedUrgency = "ASAP" }
+                    UrgencyTypeChip("Today", Icons.Default.Today, selectedUrgency == "Today", Modifier.weight(1f)) { selectedUrgency = "Today" }
+                    UrgencyTypeChip("Flexible", Icons.Default.Schedule, selectedUrgency == "Flexible", Modifier.weight(1f)) { selectedUrgency = "Flexible" }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -104,8 +143,8 @@ fun EmergencyRequestScreen(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Details (Optional)") },
-                    placeholder = { Text("e.g. Broken pipe flooding kitchen, intruder outside...") },
+                    label = { Text("What work needs to be done?") },
+                    placeholder = { Text("e.g. My sink just burst, need a plumber to fix the leak immediately...") },
                     modifier = Modifier.fillMaxWidth().height(120.dp),
                     shape = RoundedCornerShape(16.dp)
                 )
@@ -122,7 +161,7 @@ fun EmergencyRequestScreen(
                         Icon(Icons.Default.MyLocation, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text("Current Location", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text("Service Location", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                             Text(currentAddress, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                         }
                     }
@@ -132,46 +171,38 @@ fun EmergencyRequestScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = confirmed, onCheckedChange = { confirmed = it })
-                    Text("I confirm this is a genuine emergency", style = MaterialTheme.typography.bodySmall)
+                    Text("I confirm this is an urgent request", style = MaterialTheme.typography.bodySmall)
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { onSendEmergency(selectedType, description) },
+                    onClick = { onSendEmergency(selectedUrgency, description) },
                     modifier = Modifier.fillMaxWidth().height(64.dp),
                     shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    enabled = !isLoading && confirmed
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    enabled = !isLoading && confirmed && description.isNotEmpty()
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("SEND SOS REQUEST", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                        Text("POST URGENT REQUEST", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
                     }
                 }
 
                 Spacer(modifier = Modifier.height(48.dp))
-
-                Text("Direct Emergency Calls", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    DirectCallButton("Police", "10111", Modifier.weight(1f))
-                    DirectCallButton("Ambulance", "10177", Modifier.weight(1f))
-                }
             }
         }
     }
 }
 
 @Composable
-fun EmergencyTypeChip(label: String, icon: ImageVector, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
+fun UrgencyTypeChip(label: String, icon: ImageVector, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        color = if (selected) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
     ) {
         Column(
@@ -186,33 +217,15 @@ fun EmergencyTypeChip(label: String, icon: ImageVector, selected: Boolean, modif
 }
 
 @Composable
-fun DirectCallButton(label: String, number: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    OutlinedButton(
-        onClick = {
-            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$number"))
-            context.startActivity(intent)
-        },
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(label, fontWeight = FontWeight.Bold)
-            Text(number, style = MaterialTheme.typography.labelSmall)
-        }
-    }
-}
-
-@Composable
-fun EmergencySuccessState(onBackClick: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.error), contentAlignment = Alignment.Center) {
+fun UrgentSuccessState(onBackClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(40.dp)) {
-            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(100.dp))
+            Icon(Icons.Default.FlashOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(100.dp))
             Spacer(modifier = Modifier.height(24.dp))
-            Text("SOS SENT", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White)
+            Text("POSTED SUCCESSFULLY", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Nearby responders have been alerted of your location. Stay calm and keep your phone close.",
+                "Nearby professionals have been notified. Keep your phone close for incoming responses!",
                 textAlign = TextAlign.Center,
                 color = Color.White.copy(alpha = 0.9f),
                 style = MaterialTheme.typography.bodyLarge
@@ -220,7 +233,7 @@ fun EmergencySuccessState(onBackClick: () -> Unit) {
             Spacer(modifier = Modifier.height(48.dp))
             Button(
                 onClick = onBackClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = MaterialTheme.colorScheme.error),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = MaterialTheme.colorScheme.primary),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text("GOT IT", fontWeight = FontWeight.Bold)

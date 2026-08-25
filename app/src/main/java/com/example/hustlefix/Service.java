@@ -4,7 +4,7 @@ public class Service {
     private String serviceId;
     private String title;
     private String description;
-    private double price;
+    private Double price;
     private String category;
     private String deliveryTime;
     private String location;
@@ -12,19 +12,19 @@ public class Service {
     private String serviceProviderName;
     private String serviceProviderEmail;
     private String serviceProviderProfileImageUrl;
-    private boolean providerVerified;
+    private Boolean providerVerified;
     private java.util.List<String> serviceImageUrls; // List of work photos
     private String status;
     private String availability;
-    private long createdAt;
-    private int bookingsCount;
-    private double averageRating;
+    private Long createdAt;
+    private Integer bookingsCount;
+    private Double averageRating;
 
     public Service() {
         // Default constructor required for Firebase
     }
 
-    public Service(String serviceId, String title, String description, double price,
+    public Service(String serviceId, String title, String description, Double price,
                    String category, String deliveryTime, String location, String serviceProviderId, String serviceProviderName, String serviceProviderEmail) {
         this.serviceId = serviceId;
         this.title = title;
@@ -40,7 +40,7 @@ public class Service {
         this.availability = "Available";
         this.createdAt = System.currentTimeMillis();
         this.bookingsCount = 0;
-        this.averageRating = 0;
+        this.averageRating = 0.0;
     }
 
     // Getters and Setters
@@ -53,8 +53,8 @@ public class Service {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public double getPrice() { return price; }
-    public void setPrice(double price) { this.price = price; }
+    public Double getPrice() { return price != null ? price : 0.0; }
+    public void setPrice(Double price) { this.price = price; }
 
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
@@ -77,8 +77,8 @@ public class Service {
     public String getServiceProviderProfileImageUrl() { return serviceProviderProfileImageUrl; }
     public void setServiceProviderProfileImageUrl(String serviceProviderProfileImageUrl) { this.serviceProviderProfileImageUrl = serviceProviderProfileImageUrl; }
 
-    public boolean isProviderVerified() { return providerVerified; }
-    public void setProviderVerified(boolean providerVerified) { this.providerVerified = providerVerified; }
+    public Boolean isProviderVerified() { return providerVerified != null ? providerVerified : false; }
+    public void setProviderVerified(Boolean providerVerified) { this.providerVerified = providerVerified; }
 
     public java.util.List<String> getServiceImageUrls() { return serviceImageUrls; }
     public void setServiceImageUrls(java.util.List<String> serviceImageUrls) { this.serviceImageUrls = serviceImageUrls; }
@@ -96,12 +96,12 @@ public class Service {
     public String getAvailability() { return availability; }
     public void setAvailability(String availability) { this.availability = availability; }
 
-    public long getCreatedAt() { return createdAt; }
-    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+    public Long getCreatedAt() { return createdAt != null ? createdAt : 0L; }
+    public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
 
-    public int getBookingsCount() { return bookingsCount; }
-    public void setBookingsCount(int bookingsCount) { this.bookingsCount = bookingsCount; }
+    public Integer getBookingsCount() { return bookingsCount != null ? bookingsCount : 0; }
+    public void setBookingsCount(Integer bookingsCount) { this.bookingsCount = bookingsCount; }
 
-    public double getAverageRating() { return averageRating; }
-    public void setAverageRating(double averageRating) { this.averageRating = averageRating; }
+    public Double getAverageRating() { return averageRating != null ? averageRating : 0.0; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
 }

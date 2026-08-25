@@ -1,0 +1,40 @@
+type User @table {
+  email: String!
+  fullName: String!
+  profilePictureUrl: String
+  currencyPreference: String
+}
+
+type Client @table {
+  name: String!
+  email: String!
+  companyName: String
+  website: String
+  user: User!
+}
+
+type Project @table {
+  title: String!
+  status: String!
+  dueDate: Timestamp!
+  description: String
+  budget: Float
+  client: Client!
+}
+
+type Task @table {
+  title: String!
+  isCompleted: Boolean!
+  dueDate: Timestamp
+  priorityLevel: String
+  project: Project!
+}
+
+type Invoice @table {
+  amount: Float!
+  status: String!
+  issueDate: Date!
+  paymentLink: String
+  notes: String
+  project: Project!
+}

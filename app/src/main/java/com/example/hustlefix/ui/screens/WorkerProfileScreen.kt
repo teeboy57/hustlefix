@@ -174,7 +174,7 @@ fun ProfileStatItem(label: String, value: String, icon: androidx.compose.ui.grap
 }
 
 @Composable
-fun ReviewItem(rating: com.example.hustlefix.Rating) {
+fun ReviewItem(rating: Rating) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -182,7 +182,7 @@ fun ReviewItem(rating: com.example.hustlefix.Rating) {
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(rating.clientName ?: "User", fontWeight = FontWeight.Bold)
+                Text(rating.displayName ?: "User", fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.weight(1f))
                 Text("${rating.rating}★", color = Color(0xFFFFC107), fontWeight = FontWeight.Bold)
             }

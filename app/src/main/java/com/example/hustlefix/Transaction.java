@@ -3,8 +3,8 @@ package com.example.hustlefix;
 public class Transaction {
     private String id;
     private String type;
-    private double amount;
-    private long timestamp;
+    private Double amount;
+    private Long timestamp;
     private String serviceTitle;
 
     public Transaction() {}
@@ -13,10 +13,10 @@ public class Transaction {
     public void setId(String id) { this.id = id; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
-    public double getAmount() { return amount; }
-    public void setAmount(double amount) { this.amount = amount; }
-    public long getTimestamp() { return timestamp; }
-    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+    public Double getAmount() { return amount != null ? amount : 0.0; }
+    public void setAmount(Double amount) { this.amount = amount; }
+    public Long getTimestamp() { return timestamp != null ? timestamp : 0L; }
+    public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
     public String getServiceTitle() { return serviceTitle; }
     public void setServiceTitle(String serviceTitle) { this.serviceTitle = serviceTitle; }
 }

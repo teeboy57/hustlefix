@@ -2,7 +2,6 @@ package com.example.hustlefix.ui.viewmodels
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
@@ -11,7 +10,6 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 data class VerificationUiState(
     val idImageUri: Uri? = null,
@@ -19,7 +17,8 @@ data class VerificationUiState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null,
-    val currentStatus: String = "unverified" // unverified, pending, verified, rejected
+    val currentStatus: String = "unverified", // unverified, pending, verified, rejected
+    val rejectionReason: String? = null
 )
 
 class VerificationViewModel : ViewModel() {
@@ -36,10 +35,11 @@ class VerificationViewModel : ViewModel() {
 
     private fun loadVerificationStatus() {
         val uid = userId ?: return
-        database.getReference("users").child(uid).child("verificationStatus").get()
+        database.getReference("users").child(uid).get()
             .addOnSuccessListener { snapshot ->
-                val status = snapshot.getValue(String::class.java) ?: "unverified"
-                _uiState.value = _uiState.value.copy(currentStatus = status)
+                val status = snapshot.child("verificationStatus").getValue(String::class.java) ?: "unverified"
+                val reason = snapshot.child("rejectionReason").getValue(String::class.java)
+                _uiState.value = _uiState.value.copy(currentStatus = status, rejectionReason = reason)
             }
     }
 
@@ -61,12 +61,10 @@ class VerificationViewModel : ViewModel() {
 
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
-        // Upload ID first
         uploadToCloudinary(uid, idUri, "id_document") { idUrl ->
             if (idUrl != null) {
                 val certUri = _uiState.value.certImageUri
                 if (certUri != null) {
-                    // Upload Cert too
                     uploadToCloudinary(uid, certUri, "cert_document") { certUrl ->
                         updateUserStatus(uid, idUrl, certUrl)
                     }
@@ -102,7 +100,8 @@ class VerificationViewModel : ViewModel() {
             "verificationStatus" to "pending",
             "idDocumentUrl" to idUrl,
             "certificateUrl" to certUrl,
-            "verificationSubmittedAt" to System.currentTimeMillis()
+            "verificationSubmittedAt" to System.currentTimeMillis(),
+            "rejectionReason" to null
         )
 
         database.getReference("users").child(uid).updateChildren(updates)

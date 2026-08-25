@@ -37,4 +37,12 @@ class UserRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun updateFcmToken(uid: String, token: String) {
+        try {
+            usersRef.child(uid).child("fcmToken").setValue(token).await()
+        } catch (e: Exception) {
+            // Log or handle error
+        }
+    }
 }

@@ -10,6 +10,15 @@ import java.util.Map;
 import androidx.appcompat.app.AppCompatDelegate;
 
 public class MyApplication extends Application {
+    private static MyApplication instance;
+
+    public static MyApplication getInstance() {
+        if (instance == null) {
+            // This case should be rare but helps debugging
+            return null;
+        }
+        return instance;
+    }
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -20,6 +29,7 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         
         // Initialize Cloudinary

@@ -5,11 +5,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -24,6 +24,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -37,20 +38,30 @@ fun ProfileScreen(
     email: String,
     phone: String,
     location: String,
+    skill: String = "",
+    category: String = "",
+    about: String = "",
+    experience: Int = 0,
     photoUrl: String?,
     selectedImageUri: Uri?,
     walletBalance: String,
+    role: String = "client",
     isLoading: Boolean,
     isSuccess: Boolean,
     error: String?,
     onNameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit,
     onLocationChange: (String) -> Unit,
+    onSkillChange: (String) -> Unit = {},
+    onCategoryChange: (String) -> Unit = {},
+    onAboutChange: (String) -> Unit = {},
+    onExperienceChange: (Int) -> Unit = {},
     onImageSelected: (Uri?) -> Unit,
     onSaveClick: () -> Unit,
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onClearStatus: () -> Unit
+    onClearStatus: () -> Unit,
+    onVerificationClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -118,7 +129,8 @@ fun ProfileScreen(
                     Surface(
                         modifier = Modifier.size(120.dp),
                         shape = CircleShape,
-                        elevation = TonalElevation(8.dp),
+                        tonalElevation = 8.dp,
+                        shadowElevation = 8.dp,
                         border = androidx.compose.foundation.BorderStroke(4.dp, Color.White)
                     ) {
                         AsyncImage(
@@ -187,6 +199,30 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                Text("Trust & Security", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                OutlinedCard(
+                    onClick = onVerificationClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Get Verified", fontWeight = FontWeight.Bold)
+                            Text("Submit documents to earn your badge", style = MaterialTheme.typography.labelSmall)
+                        }
+                        Icon(Icons.Default.ChevronRight, contentDescription = null)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
                 Text("Account Information", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -236,6 +272,53 @@ fun ProfileScreen(
                     leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null) },
                     singleLine = true
                 )
+
+                if (role == "worker") {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = skill,
+                        onValueChange = onSkillChange,
+                        label = { Text("Your Main Skill") },
+                        placeholder = { Text("e.g. Master Plumber") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        leadingIcon = { Icon(Icons.Default.Engineering, contentDescription = null) },
+                        singleLine = true
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = onCategoryChange,
+                        label = { Text("Service Category") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        leadingIcon = { Icon(Icons.Default.Category, contentDescription = null) },
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = experience.toString(),
+                        onValueChange = { val exp = it.toIntOrNull() ?: 0; onExperienceChange(exp) },
+                        label = { Text("Years of Experience") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        leadingIcon = { Icon(Icons.Default.Timeline, contentDescription = null) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = about,
+                        onValueChange = onAboutChange,
+                        label = { Text("About Me / Bio") },
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        maxLines = 5
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(40.dp))
 

@@ -30,13 +30,13 @@ class PostServiceViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
         if (imageUri != null) {
-            uploadImageAndSave(user.uid, user.displayName ?: "Pro", title, desc, category, price, imageUri)
+            uploadImageAndSave(user.uid, user.displayName ?: "Pro", user.email ?: "", title, desc, category, price, imageUri)
         } else {
-            saveToDatabase(user.uid, user.displayName ?: "Pro", title, desc, category, price, null)
+            saveToDatabase(user.uid, user.displayName ?: "Pro", user.email ?: "", title, desc, category, price, null)
         }
     }
 
-    private fun uploadImageAndSave(uid: String, userName: String, title: String, desc: String, category: String, price: Double, uri: Uri) {
+    private fun uploadImageAndSave(uid: String, userName: String, email: String, title: String, desc: String, category: String, price: Double, uri: Uri) {
         MediaManager.get().upload(uri)
             .unsigned("hustle_fix")
             .callback(object : UploadCallback {
@@ -44,7 +44,7 @@ class PostServiceViewModel : ViewModel() {
                 override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
                 override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
                     val url = resultData?.get("secure_url") as? String
-                    saveToDatabase(uid, userName, title, desc, category, price, url)
+                    saveToDatabase(uid, userName, email, title, desc, category, price, url)
                 }
                 override fun onError(requestId: String?, error: ErrorInfo?) {
                     _uiState.value = _uiState.value.copy(isLoading = false, error = error?.description)
@@ -53,20 +53,25 @@ class PostServiceViewModel : ViewModel() {
             }).dispatch()
     }
 
-    private fun saveToDatabase(uid: String, userName: String, title: String, desc: String, category: String, price: Double, imageUrl: String?) {
+    private fun saveToDatabase(uid: String, userName: String, email: String, title: String, desc: String, category: String, price: Double, imageUrl: String?) {
         val ref = database.getReference("services")
         val serviceId = ref.push().key ?: return
         
         val service = Service().apply {
-            this.serviceId = serviceId
-            this.serviceProviderId = uid
-            this.serviceProviderName = userName
-            this.title = title
-            this.description = desc
-            this.category = category
-            this.price = price
-            this.serviceImageUrl = imageUrl
-            this.timestamp = System.currentTimeMillis()
+            setServiceId(serviceId)
+            setserviceProviderId(uid)
+            setserviceProviderName(userName)
+            setserviceProviderEmail(email)
+            setTitle(title)
+            setDescription(desc)
+            setCategory(category)
+            setPrice(price)
+            if (imageUrl != null) {
+                setServiceImageUrls(listOf(imageUrl))
+            }
+            setCreatedAt(System.currentTimeMillis())
+            setStatus("active")
+            setAvailability("Available")
         }
 
         ref.child(serviceId).setValue(service).addOnCompleteListener { task ->

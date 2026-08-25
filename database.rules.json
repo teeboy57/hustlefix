@@ -17,21 +17,12 @@
       ".indexOn": ["status", "workerId", "clientId"],
       ".read": "auth != null && root.child('users').child(auth.uid).child('isSuspended').val() != true",
       "$jobId": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('isSuspended').val() != true && (
-          (!data.exists() && newData.child('clientId').val() == auth.uid) ||
-          (data.exists() && data.child('clientId').val() == auth.uid) ||
-          (data.exists() && data.child('workerId').val() == auth.uid) ||
-          (root.child('users').child(auth.uid).child('role').val() == 'admin')
-        )",
+        ".write": "auth != null && root.child('users').child(auth.uid).child('isSuspended').val() != true && ((!data.exists() && newData.child('clientId').val() == auth.uid) || (data.exists() && data.child('clientId').val() == auth.uid) || (data.exists() && data.child('workerId').val() == auth.uid) || (root.child('users').child(auth.uid).child('role').val() == 'admin'))",
         "quotedAmount": {
            ".write": "auth != null && (data.parent().child('clientId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
         },
         "status": {
-           ".write": "auth != null && (
-             (data.parent().child('clientId').val() == auth.uid) ||
-             (data.parent().child('workerId').val() == auth.uid) ||
-             (root.child('users').child(auth.uid).child('role').val() == 'admin')
-           )"
+           ".write": "auth != null && ((data.parent().child('clientId').val() == auth.uid) || (data.parent().child('workerId').val() == auth.uid) || (root.child('users').child(auth.uid).child('role').val() == 'admin'))"
         }
       }
     },

@@ -75,67 +75,17 @@ public final class NavigationHelper {
     }
 
     public static boolean handleNavigationItem(Activity activity, int itemId) {
-        // Home
+        // Redirect everything to MainActivity for Compose Navigation
+        Intent intent = new Intent(activity, MainActivity.class);
+        
         if (itemId == R.id.nav_home) {
             openHome(activity);
             return true;
         }
 
-        // Post Service
-        if (itemId == R.id.nav_post_job) {
-            activity.startActivity(new Intent(activity, PostServiceActivity.class));
-            return true;
-        }
-
-        // Find Services
-        if (itemId == R.id.nav_find_workers) {
-            activity.startActivity(new Intent(activity, FindServicesActivity.class));
-            return true;
-        }
-
-        // My Services
-        if (itemId == R.id.nav_my_services) {
-            activity.startActivity(new Intent(activity, MyServicesActivity.class));
-            return true;
-        }
-
-        // My Bookings
-        if (itemId == R.id.nav_my_bookings) {
-            activity.startActivity(new Intent(activity, MyBookingsActivity.class));
-            return true;
-        }
-
-        // Wallet
-        if (itemId == R.id.nav_wallet) {
-            activity.startActivity(new Intent(activity, WalletActivity.class));
-            return true;
-        }
-
-        // Inbox
-        if (itemId == R.id.nav_messages) {
-            activity.startActivity(new Intent(activity, ChatListActivity.class));
-            return true;
-        }
-
-        // Analytics
-        if (itemId == R.id.nav_analytics) {
-            activity.startActivity(new Intent(activity, AnalyticsActivity.class));
-            return true;
-        }
-
-        // Settings
-        if (itemId == R.id.nav_settings) {
-            activity.startActivity(new Intent(activity, SettingsActivity.class));
-            return true;
-        }
-
-        // Logout
-        if (itemId == R.id.nav_logout) {
-            confirmLogout(activity);
-            return true;
-        }
-
-        return false;
+        // For now, we just go to MainActivity. In the future, we can add extras to navigate to specific screens.
+        activity.startActivity(intent);
+        return true;
     }
 
     public static void openHome(Activity activity) {
@@ -143,10 +93,10 @@ public final class NavigationHelper {
         if (SessionHelper.isLoggedIn(activity)) {
             SessionHelper.openDashboard(activity, role);
         } else {
-            activity.startActivity(new Intent(activity, WelcomeActivity.class));
+            activity.startActivity(new Intent(activity, MainActivity.class));
         }
-        if (!(activity instanceof ClientDashboardActivity)
-                && !(activity instanceof ServiceProviderDashboardActivity)) {
+        
+        if (!(activity instanceof MainActivity)) {
             activity.finish();
         }
     }
@@ -185,28 +135,7 @@ public final class NavigationHelper {
     }
 
     private static void navigateByIndex(Activity activity, int index, String role) {
-        boolean isProvider = "service_provider".equals(role);
-        if (isProvider) {
-            switch (index) {
-                case 0: openHome(activity); break;
-                case 1: activity.startActivity(new Intent(activity, PostServiceActivity.class)); break;
-                case 2: activity.startActivity(new Intent(activity, MyServicesActivity.class)); break;
-                case 3: activity.startActivity(new Intent(activity, MyBookingsActivity.class)); break;
-                case 4: activity.startActivity(new Intent(activity, WalletActivity.class)); break;
-                case 5: activity.startActivity(new Intent(activity, AnalyticsActivity.class)); break;
-                case 6: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
-                case 7: confirmLogout(activity); break;
-            }
-        } else {
-            switch (index) {
-                case 0: openHome(activity); break;
-                case 1: activity.startActivity(new Intent(activity, FindServicesActivity.class)); break;
-                case 2: activity.startActivity(new Intent(activity, MyBookingsActivity.class)); break;
-                case 3: activity.startActivity(new Intent(activity, WalletActivity.class)); break;
-                case 4: activity.startActivity(new Intent(activity, SettingsActivity.class)); break;
-                case 5: confirmLogout(activity); break;
-            }
-        }
+        openHome(activity);
     }
 
     public static boolean onOptionsItemSelected(AppCompatActivity activity, @NonNull MenuItem item) {

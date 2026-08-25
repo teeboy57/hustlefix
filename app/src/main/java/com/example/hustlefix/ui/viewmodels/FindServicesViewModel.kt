@@ -1,17 +1,22 @@
 package com.example.hustlefix.ui.viewmodels
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.hustlefix.Service
 import com.google.firebase.database.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class FindServicesUiState(
     val services: List<Service> = emptyList(),
     val filteredServices: List<Service> = emptyList(),
     val isLoading: Boolean = false,
-    val searchQuery: String = ""
+    val isRefreshing: Boolean = false,
+    val searchQuery: String = "",
+    val activeCategory: String = "All"
 )
 
 class FindServicesViewModel : ViewModel() {
@@ -19,6 +24,8 @@ class FindServicesViewModel : ViewModel() {
     val uiState: StateFlow<FindServicesUiState> = _uiState.asStateFlow()
 
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private var servicesRef: DatabaseReference? = null
+    private var servicesListener: ValueEventListener? = null
 
     init {
         loadServices()
@@ -26,7 +33,11 @@ class FindServicesViewModel : ViewModel() {
 
     private fun loadServices() {
         _uiState.value = _uiState.value.copy(isLoading = true)
-        database.getReference("services").addValueEventListener(object : ValueEventListener {
+        
+        servicesListener?.let { servicesRef?.removeEventListener(it) }
+        
+        servicesRef = database.getReference("services")
+        servicesListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = mutableListOf<Service>()
                 for (serviceSnapshot in snapshot.children) {
@@ -37,21 +48,55 @@ class FindServicesViewModel : ViewModel() {
                 }
                 _uiState.value = _uiState.value.copy(
                     services = list,
-                    filteredServices = list,
-                    isLoading = false
+                    isLoading = false,
+                    isRefreshing = false
                 )
+                applyFilters()
             }
             override fun onCancelled(error: DatabaseError) {
-                _uiState.value = _uiState.value.copy(isLoading = false)
+                _uiState.value = _uiState.value.copy(isLoading = false, isRefreshing = false)
             }
-        })
+        }
+        servicesListener?.let { servicesRef?.addValueEventListener(it) }
     }
 
     fun onSearchQueryChange(query: String) {
-        val filtered = _uiState.value.services.filter {
-            (it.title ?: "").contains(query, ignoreCase = true) ||
-            (it.category ?: "").contains(query, ignoreCase = true)
+        _uiState.value = _uiState.value.copy(searchQuery = query)
+        applyFilters()
+    }
+
+    fun onCategoryChange(category: String) {
+        _uiState.value = _uiState.value.copy(activeCategory = category)
+        applyFilters()
+    }
+
+    fun refresh() {
+        _uiState.value = _uiState.value.copy(isRefreshing = true)
+        loadServices()
+        viewModelScope.launch {
+            delay(3000)
+            if (_uiState.value.isRefreshing) {
+                _uiState.value = _uiState.value.copy(isRefreshing = false)
+            }
         }
-        _uiState.value = _uiState.value.copy(searchQuery = query, filteredServices = filtered)
+    }
+
+    private fun applyFilters() {
+        val query = _uiState.value.searchQuery
+        val category = _uiState.value.activeCategory
+        
+        val filtered = _uiState.value.services.filter { service ->
+            val matchesQuery = (service.title ?: "").contains(query, ignoreCase = true) ||
+                             (service.category ?: "").contains(query, ignoreCase = true)
+            val matchesCategory = if (category == "All") true else (service.category ?: "") == category
+            
+            matchesQuery && matchesCategory
+        }
+        _uiState.value = _uiState.value.copy(filteredServices = filtered)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        servicesListener?.let { servicesRef?.removeEventListener(it) }
     }
 }
