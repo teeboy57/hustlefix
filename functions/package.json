@@ -1,0 +1,14 @@
+{
+  "name": "hustlefix-functions",
+  "description": "Cloud Functions for HustleFix Payfast Integration",
+  "dependencies": {
+    "firebase-admin": "^11.11.1",
+    "firebase-functions": "^4.9.0",
+    "crypto": "^1.0.1",
+    "axios": "^1.6.0"
+  },
+  "engines": {
+    "node": "18"
+  },
+  "private": true
+}

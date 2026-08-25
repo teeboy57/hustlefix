@@ -1,0 +1,15 @@
+{
+  "name": "hustlefix-payfast-backend",
+  "version": "1.0.0",
+  "description": "Payfast ITN Handler for HustleFix",
+  "main": "payfast-itn-handler.js",
+  "scripts": {
+    "start": "node payfast-itn-handler.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "firebase-admin": "^11.11.1",
+    "crypto": "^1.0.1",
+    "axios": "^1.6.0"
+  }
+}
