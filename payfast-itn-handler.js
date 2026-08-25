@@ -34,7 +34,7 @@ app.post('/api/payments/create-checkout', async (req, res) => {
     merchant_key: MERCHANT_KEY,
     return_url: 'hustlefix://payment-success',
     cancel_url: 'hustlefix://payment-cancel',
-    notify_url: 'https://your-server.com/api/payments/payfast-itn',
+    notify_url: 'https://hustlefix.onrender.com/api/payments/payfast-itn',
     name_first,
     name_last,
     email_address,
