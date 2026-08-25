@@ -105,6 +105,36 @@ class JobRepository {
                     jobsRef.child(booking.jobId).child("status").setValue(jobStatus).await()
                 }
             }
+
+            // PAYOUT LOGIC: Release funds to worker only if client confirms completion
+            if (newStatus == "completed" && booking.paymentStatus == "PAID" && !booking.workerId.isNullOrEmpty()) {
+                val workerId = booking.workerId
+                val amount = booking.amount
+
+                // 1. Credit worker wallet balance
+                database.getReference("users").child(workerId).child("walletBalance")
+                    .runTransaction(object : Transaction.Handler {
+                        override fun doTransaction(currentData: MutableData): Transaction.Result {
+                            val current = currentData.getValue(Double::class.java) ?: 0.0
+                            currentData.value = current + amount
+                            return Transaction.success(currentData)
+                        }
+                        override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {}
+                    })
+
+                // 2. Log Transaction for worker
+                val transRef = database.getReference("transactions").child(workerId).push()
+                val trans = com.example.hustlefix.Transaction().apply {
+                    id = transRef.key
+                    type = "Job Payout"
+                    this.amount = amount
+                    timestamp = System.currentTimeMillis()
+                }
+                transRef.setValue(trans)
+                
+                bookingUpdates["payoutReleased"] = true
+                bookingUpdates["payoutAt"] = System.currentTimeMillis()
+            }
             
             bookingsRef.child(booking.bookingId).updateChildren(bookingUpdates).await()
             Result.success(Unit)
@@ -161,8 +191,15 @@ class JobRepository {
             // 2. Create Booking
             val bookingRef = bookingsRef.push()
             val bookingId = bookingRef.key ?: throw Exception("Failed to get booking key")
+            
+            // Try to get service image if it exists
+            val serviceSnapshot = database.getReference("services").child(job.jobId).get().await()
+            val service = serviceSnapshot.getValue(com.example.hustlefix.Service::class.java)
+            val imageUrl = service?.getServiceImageUrl()
+
             val booking = Booking(job.jobId, job.clientId, job.clientName, quote.workerId, quote.workerName, quote.amount).apply {
                 this.bookingId = bookingId
+                this.setServiceImageUrl(imageUrl)
             }
             bookingRef.setValue(booking).await()
 

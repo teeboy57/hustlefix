@@ -15,11 +15,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.hustlefix.Booking
+import com.example.hustlefix.R
 
 @Composable
 fun LocationPermissionDeniedState(onOpenSettings: () -> Unit) {
@@ -183,6 +189,25 @@ fun UrgentRequestButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun BookingItem(booking: Booking, onClick: (Booking) -> Unit) {
     ListItem(
+        leadingContent = {
+            Surface(
+                modifier = Modifier.size(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(booking.getServiceImageUrl())
+                        .crossfade(true)
+                        .build(),
+                    placeholder = painterResource(R.drawable.ic_image_placeholder),
+                    error = painterResource(R.drawable.ic_image_placeholder),
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        },
         headlineContent = { Text(booking.getServiceTitle() ?: "Service", fontWeight = FontWeight.Bold) },
         supportingContent = { Text(booking.getServiceProviderName() ?: "Provider") },
         trailingContent = { 

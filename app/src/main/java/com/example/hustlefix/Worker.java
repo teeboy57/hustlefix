@@ -1,6 +1,9 @@
 package com.example.hustlefix;
+
+import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
+
 public class Worker {
     private String id;
     private String name;
@@ -75,7 +78,6 @@ public class Worker {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
     public Double getRating() { return rating != null ? rating : 0.0; }
-    public float getRatingFloat() { return getRating().floatValue(); }
     public void setRating(Double rating) { this.rating = rating; }
     public Integer getExperience() { return experience != null ? experience : 0; }
     public void setExperience(Integer experience) { this.experience = experience; }
@@ -89,26 +91,24 @@ public class Worker {
     public void setHourlyRate(Double hourlyRate) { this.hourlyRate = hourlyRate; }
     public String getAvailability() { return availability; }
     public void setAvailability(String availability) { this.availability = availability; }
-    
     public Boolean isVerified() { return verified != null ? verified : false; }
     public void setVerified(Boolean verified) { this.verified = verified; }
-
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
-
     public Double getLatitude() { return latitude != null ? latitude : 0.0; }
     public void setLatitude(Double latitude) { this.latitude = latitude; }
-
     public Double getLongitude() { return longitude != null ? longitude : 0.0; }
     public void setLongitude(Double longitude) { this.longitude = longitude; }
-
     public Long getLastLocationUpdate() { return lastLocationUpdate != null ? lastLocationUpdate : 0L; }
     public void setLastLocationUpdate(Long lastLocationUpdate) { this.lastLocationUpdate = lastLocationUpdate; }
-
     public Map<String, Boolean> getSkills() { return skills; }
     public void setSkills(Map<String, Boolean> skills) { this.skills = skills; }
     public Map<String, Integer> getRatings() { return ratings; }
     public void setRatings(Map<String, Integer> ratings) { this.ratings = ratings; }
+
+    @Exclude
+    public float getRatingFloat() { return getRating().floatValue(); }
+    @Exclude
     public String getInitials() {
         if (name != null && !name.isEmpty()) {
             String[] parts = name.split(" ");
@@ -119,10 +119,12 @@ public class Worker {
         }
         return "W";
     }
+    @Exclude
     public String getFormattedRating() {
-        return String.format("%.1f", rating);
+        return String.format("%.1f", getRating());
     }
+    @Exclude
     public String getFormattedHourlyRate() {
-        return String.format("R%.2f", hourlyRate);
+        return String.format("R%.2f", getHourlyRate());
     }
 }

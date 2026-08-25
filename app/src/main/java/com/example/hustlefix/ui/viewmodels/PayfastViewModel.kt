@@ -35,27 +35,7 @@ class PayfastViewModel(private val repository: PayfastRepository) : ViewModel() 
         
         viewModelScope.launch {
             try {
-                val userSnapshot = database.getReference("users").child(userId).get().await()
-                val user = userSnapshot.getValue(User::class.java) ?: throw Exception("User profile not found")
-                
-                val fullName = user.name ?: "User"
-                val firstName = fullName.split(" ").firstOrNull() ?: "User"
-                val lastName = if (fullName.contains(" ")) fullName.split(" ").last() else ""
-                
-                val request = PayfastRequest(
-                    merchantId = "", // Handled by backend
-                    merchantKey = "", // Handled by backend
-                    returnUrl = "hustlefix://payment-success",
-                    cancelUrl = "hustlefix://payment-cancel",
-                    notifyUrl = "https://hustlefix.onrender.com/api/payments/payfast-itn",
-                    firstName = firstName,
-                    lastName = lastName,
-                    email = user.email ?: "",
-                    mPaymentId = booking.bookingId,
-                    amount = String.format(java.util.Locale.getDefault(), "%.2f", booking.amount),
-                    itemName = "Payment for Job: ${booking.jobId}"
-                )
-                
+                val request = createPayfastRequest(booking, userId)
                 val result = repository.getCheckoutUrl(request)
                 if (result.isSuccess) {
                     _uiState.value = _uiState.value.copy(checkoutUrl = result.getOrNull(), isLoading = false)
@@ -66,6 +46,45 @@ class PayfastViewModel(private val repository: PayfastRepository) : ViewModel() 
                 _uiState.value = _uiState.value.copy(error = e.message, isLoading = false)
             }
         }
+    }
+
+    fun getShareableLink(booking: Booking, onLinkReady: (String) -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
+        _uiState.value = _uiState.value.copy(isLoading = true)
+        
+        viewModelScope.launch {
+            try {
+                val request = createPayfastRequest(booking, userId)
+                val result = repository.getCheckoutUrl(request)
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                result.getOrNull()?.let { onLinkReady(it) }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
+
+    private suspend fun createPayfastRequest(booking: Booking, userId: String): PayfastRequest {
+        val userSnapshot = database.getReference("users").child(userId).get().await()
+        val user = userSnapshot.getValue(User::class.java) ?: throw Exception("User profile not found")
+        
+        val fullName = user.name ?: "User"
+        val firstName = fullName.split(" ").firstOrNull() ?: "User"
+        val lastName = if (fullName.contains(" ")) fullName.split(" ").last() else ""
+        
+        return PayfastRequest(
+            merchantId = "", // Handled by backend
+            merchantKey = "", // Handled by backend
+            returnUrl = "hustlefix://payment-success",
+            cancelUrl = "hustlefix://payment-cancel",
+            notifyUrl = "https://hustlefix.onrender.com/api/payments/payfast-itn",
+            firstName = firstName,
+            lastName = lastName,
+            email = user.email ?: "",
+            mPaymentId = booking.bookingId,
+            amount = String.format(java.util.Locale.getDefault(), "%.2f", booking.amount),
+            itemName = "Payment for Job: ${booking.jobId}"
+        )
     }
 
     fun onPaymentSuccess() {

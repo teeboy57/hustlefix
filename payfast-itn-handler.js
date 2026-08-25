@@ -92,7 +92,7 @@ app.post('/api/payments/payfast-itn', async (req, res) => {
     const amountPaid = parseFloat(pfData.amount_gross);
 
     try {
-      // 3. Update Booking Status
+      // 3. Update Booking Status to PAID (Funds held by platform)
       const bookingRef = db.ref(`bookings/${bookingId}`);
       const bookingSnapshot = await bookingRef.get();
       const booking = bookingSnapshot.val();
@@ -103,34 +103,14 @@ app.post('/api/payments/payfast-itn', async (req, res) => {
       }
 
       await bookingRef.update({
-        status: 'paid',
         paymentStatus: 'PAID',
         payfastTid: pfData.pf_payment_id,
-        paidAt: Date.now()
+        paidAt: Date.now(),
+        // Note: We do NOT update booking status to 'completed' here.
+        // We also do NOT credit the worker wallet yet.
       });
 
-      // 4. Payout Release Workflow: Credit the Worker
-      if (booking.workerId) {
-        const workerId = booking.workerId;
-
-        // Atomic update of worker balance
-        await db.ref(`users/${workerId}/walletBalance`).transaction((currentBalance) => {
-          return (currentBalance || 0) + amountPaid;
-        });
-
-        // Record Transaction for the Worker
-        const transRef = db.ref(`transactions/${workerId}`).push();
-        await transRef.set({
-          id: transRef.key,
-          type: 'Job Payout',
-          amount: amountPaid,
-          timestamp: Date.now(),
-          serviceTitle: booking.serviceTitle || 'HustleFix Job',
-          bookingId: bookingId
-        });
-      }
-
-      console.log(`Payment confirmed and payout released for booking ${bookingId}`);
+      console.log(`Payment SECURED for booking ${bookingId}. Awaiting job completion.`);
     } catch (error) {
       console.error('Error processing ITN:', error);
     }

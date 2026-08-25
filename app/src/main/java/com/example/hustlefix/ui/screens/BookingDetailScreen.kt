@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -42,6 +44,7 @@ fun BookingDetailScreen(
     onTrackClick: (String) -> Unit,
     onRatingSubmit: (Float, String, Boolean) -> Unit = { _, _, _ -> },
     onPayClick: () -> Unit = {},
+    onSharePayLink: (String) -> Unit = {},
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -124,7 +127,7 @@ fun BookingDetailScreen(
                 title = { Text("Booking Summary", fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -145,10 +148,11 @@ fun BookingDetailScreen(
                 Box(modifier = Modifier.height(200.dp).fillMaxWidth()) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(service?.serviceImageUrl ?: service?.serviceImageUrls?.firstOrNull())
+                            .data(service?.serviceImageUrl ?: service?.serviceImageUrls?.firstOrNull() ?: booking.serviceImageUrl)
                             .crossfade(true)
                             .build(),
                         placeholder = painterResource(R.drawable.ic_image_placeholder),
+                        error = painterResource(R.drawable.ic_image_placeholder),
                         contentDescription = null,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
@@ -233,29 +237,52 @@ fun BookingDetailScreen(
                                     }
                                 }
                             } else if (booking.status == "confirmed" || booking.status == "paid" || booking.status == "completed") {
+                                if (isServiceProvider && booking.paymentStatus == "UNPAID") {
+                                    Button(
+                                        onClick = { onSharePayLink("Payment link for ${booking.getServiceTitle()}: ") },
+                                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)) // WhatsApp Green
+                                    ) {
+                                        Icon(Icons.Default.Share, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text("SEND PAY LINK", fontWeight = FontWeight.Bold)
+                                    }
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                }
+
                                 Button(
                                     onClick = onChatClick,
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
-                                    Icon(Icons.Default.Chat, contentDescription = null)
+                                    Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null)
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Text("OPEN CHAT", fontWeight = FontWeight.Bold)
                                 }
                                 
                                 if (isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
                                     Spacer(modifier = Modifier.height(12.dp))
-                                    OutlinedButton(
-                                        onClick = { onStatusUpdate("completed") },
-                                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                                        shape = RoundedCornerShape(16.dp)
-                                    ) {
-                                        Text("MARK AS COMPLETED", fontWeight = FontWeight.Bold)
+                                    if (booking.paymentStatus == "PAID") {
+                                        OutlinedButton(
+                                            onClick = { onStatusUpdate("completed") },
+                                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                                            shape = RoundedCornerShape(16.dp)
+                                        ) {
+                                            Text("MARK AS COMPLETED", fontWeight = FontWeight.Bold)
+                                        }
+                                    } else {
+                                        Text(
+                                            "Awaiting Client Payment...",
+                                            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
                                     }
                                 }
 
                                 if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
-                                    if (booking.status == "confirmed") {
+                                    if (booking.status == "confirmed" && booking.paymentStatus == "UNPAID") {
                                         Button(
                                             onClick = onPayClick,
                                             modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -269,16 +296,18 @@ fun BookingDetailScreen(
                                         Spacer(modifier = Modifier.height(12.dp))
                                     }
                                     
-                                    Button(
-                                        onClick = { onStatusUpdate("completed") },
-                                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                                        shape = RoundedCornerShape(16.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-                                    ) {
-                                        Text("CONFIRM COMPLETION", fontWeight = FontWeight.Bold)
+                                    if (booking.paymentStatus == "PAID") {
+                                        Button(
+                                            onClick = { onStatusUpdate("completed") },
+                                            modifier = Modifier.fillMaxWidth().height(56.dp),
+                                            shape = RoundedCornerShape(16.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                                        ) {
+                                            Text("CONFIRM COMPLETION", fontWeight = FontWeight.Bold)
+                                        }
+                                        Spacer(modifier = Modifier.height(12.dp))
                                     }
                                     
-                                    Spacer(modifier = Modifier.height(12.dp))
                                     Button(
                                         onClick = { onTrackClick(booking.getWorkerId() ?: "") },
                                         modifier = Modifier.fillMaxWidth().height(56.dp),

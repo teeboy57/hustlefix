@@ -1,10 +1,12 @@
-// Rating.java - Complete implementation
 package com.example.hustlefix;
+
+import com.google.firebase.database.Exclude;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
 public class Rating {
     private String id;
     private String jobId;
@@ -18,7 +20,9 @@ public class Rating {
     private long timestamp;
     private boolean isAnonymous;
     private String status;
+
     public Rating() {}
+
     public Rating(String jobId, String jobTitle, String raterId, String raterName,
                   String ratedId, String ratedName, float rating, String review, boolean isAnonymous) {
         this.jobId = jobId;
@@ -33,6 +37,7 @@ public class Rating {
         this.timestamp = System.currentTimeMillis();
         this.status = "completed";
     }
+
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -58,15 +63,20 @@ public class Rating {
     public void setAnonymous(boolean anonymous) { isAnonymous = anonymous; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    @Exclude
     public String getFormattedRating() { return String.format("%.1f", rating); }
+    @Exclude
     public String getFormattedDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
         return sdf.format(new Date(timestamp));
     }
+    @Exclude
     public String getDisplayName() {
         if (isAnonymous) return "Anonymous User";
         return raterName != null ? raterName : "User";
     }
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("jobId", jobId);

@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -75,7 +76,7 @@ fun WorkerProfileScreen(
                             modifier = Modifier.weight(2f).height(56.dp),
                             shape = RoundedCornerShape(16.dp)
                         ) {
-                            Icon(Icons.Default.Chat, contentDescription = null)
+                            Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("START CHAT", fontWeight = FontWeight.ExtraBold)
                         }

@@ -1,5 +1,7 @@
 package com.example.hustlefix;
 
+import com.google.firebase.database.Exclude;
+
 public class Booking {
     private String bookingId;
     private String jobId;
@@ -11,6 +13,7 @@ public class Booking {
     private String status;
     private String paymentStatus; // PAID, UNPAID, PENDING
     private Long createdAt;
+    private String serviceImageUrl;
 
     public Booking() {
         this.status = "pending";
@@ -61,24 +64,46 @@ public class Booking {
     public Long getCreatedAt() { return createdAt != null ? createdAt : 0L; }
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
 
+    public String getServiceImageUrl() { return serviceImageUrl; }
+    public void setServiceImageUrl(String serviceImageUrl) { this.serviceImageUrl = serviceImageUrl; }
+
+    @Exclude
     public String getFormattedAmount() { return String.format("R%.2f", getAmount()); }
     
-    // Compatibility helpers
+    // Compatibility helpers (Excluded from Firebase serialization)
+    @Exclude
     public String getServiceProviderId() { return workerId; }
+    @Exclude
     public String getServiceProviderName() { return workerName; }
+    @Exclude
     public Double getPrice() { return getAmount(); }
+    @Exclude
     public Double getRating() { return 0.0; }
+    @Exclude
     public Long getTimestamp() { return getCreatedAt(); }
-
-    public String getServiceTitle() { return "Job #" + jobId; }
+    @Exclude
+    public String getServiceTitle() { 
+        if (jobId != null && !jobId.isEmpty()) {
+            return "Job #" + jobId.substring(Math.max(0, jobId.length() - 5));
+        }
+        return "New Request";
+    }
+    @Exclude
     public String getServiceId() { return jobId; }
+    @Exclude
     public long getBookingDate() { return createdAt; }
+    @Exclude
     public String getServiceName() { return getServiceTitle(); }
+    @Exclude
     public String getProviderProfileImageUrl() { return null; }
     
-    // Lowercase aliases for legacy code if needed
+    // Lowercase aliases (Excluded from Firebase serialization)
+    @Exclude
     public String getserviceProviderId() { return workerId; }
+    @Exclude
     public String getserviceProviderName() { return workerName; }
+    @Exclude
     public String getserviceTitle() { return getServiceTitle(); }
+    @Exclude
     public String getserviceId() { return jobId; }
 }

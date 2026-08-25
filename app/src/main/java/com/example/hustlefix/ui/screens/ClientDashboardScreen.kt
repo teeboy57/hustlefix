@@ -9,6 +9,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -196,7 +197,7 @@ fun ClientDashboardScreen(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         QuickActionCard("Post a Job", Icons.Default.AddCircle, MaterialTheme.colorScheme.primary, { onQuickActionClick("post_job") }, Modifier.weight(1f))
                         Spacer(modifier = Modifier.width(16.dp))
-                        QuickActionCard("Find Workers", Icons.Default.PersonSearch, MaterialTheme.colorScheme.secondary, { onQuickActionClick("find") }, Modifier.weight(1f))
+                        QuickActionCard("Find Workers", Icons.Default.Groups, MaterialTheme.colorScheme.secondary, { onQuickActionClick("find") }, Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -210,7 +211,7 @@ fun ClientDashboardScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        QuickActionCard("Messages", Icons.Default.Chat, MaterialTheme.colorScheme.secondary, { onQuickActionClick("messages") }, Modifier.weight(1f))
+                        QuickActionCard("Messages", Icons.AutoMirrored.Filled.Chat, MaterialTheme.colorScheme.secondary, { onQuickActionClick("messages") }, Modifier.weight(1f))
                         Spacer(modifier = Modifier.weight(1f)) // Empty space to balance the row
                     }
 

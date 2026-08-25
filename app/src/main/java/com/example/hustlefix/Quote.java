@@ -1,9 +1,12 @@
 package com.example.hustlefix;
+
+import com.google.firebase.database.Exclude;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
 public class Quote {
     private String id;
     private String jobId;
@@ -18,7 +21,9 @@ public class Quote {
     private String status;
     private long timestamp;
     private long updatedAt;
+
     public Quote() {}
+
     public Quote(String jobId, String jobTitle, String workerId, String workerName,
                  String clientId, String clientName, String message, double amount, String timeline) {
         this.jobId = jobId;
@@ -34,6 +39,7 @@ public class Quote {
         this.timestamp = System.currentTimeMillis();
         this.updatedAt = System.currentTimeMillis();
     }
+
     // Getters and Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -61,9 +67,12 @@ public class Quote {
     public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
     public long getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(long updatedAt) { this.updatedAt = updatedAt; }
+
+    @Exclude
     public String getFormattedAmount() {
         return String.format("R%.2f", amount);
     }
+    @Exclude
     public String getTimeAgo() {
         long now = System.currentTimeMillis();
         long diff = now - timestamp;
@@ -83,6 +92,7 @@ public class Quote {
             return sdf.format(new Date(timestamp));
         }
     }
+
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
         map.put("id", id);

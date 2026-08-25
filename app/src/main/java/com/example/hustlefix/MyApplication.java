@@ -33,7 +33,7 @@ public class MyApplication extends Application {
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         
         // Initialize Cloudinary
-        Map config = new HashMap();
+        Map<String, Object> config = new HashMap<>();
         config.put("cloud_name", "tbst3u90");
         MediaManager.init(this, config);
     }

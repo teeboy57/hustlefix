@@ -1,7 +1,9 @@
 package com.example.hustlefix.ui.viewmodels
 
 import android.app.Application
+import android.location.Address
 import android.location.Geocoder
+import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hustlefix.EmergencyRequest
@@ -13,8 +15,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.tasks.await
 import java.util.*
+import kotlin.coroutines.resume
 
 data class EmergencyUiState(
     val isLoading: Boolean = false,
@@ -55,13 +59,28 @@ class EmergencyRequestViewModel(application: Application) : AndroidViewModel(app
         }
     }
 
-    private fun getAddress(lat: Double, lng: Double): String {
+    private suspend fun getAddress(lat: Double, lng: Double): String {
         val geocoder = Geocoder(getApplication(), Locale.getDefault())
-        return try {
-            val addresses = geocoder.getFromLocation(lat, lng, 1)
-            addresses?.get(0)?.getAddressLine(0) ?: "Unknown Location"
-        } catch (e: Exception) {
-            "Lat: $lat, Lng: $lng"
+        
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            suspendCancellableCoroutine { continuation ->
+                geocoder.getFromLocation(lat, lng, 1, object : Geocoder.GeocodeListener {
+                    override fun onGeocode(addresses: MutableList<Address>) {
+                        continuation.resume(addresses.firstOrNull()?.getAddressLine(0) ?: "Unknown Location")
+                    }
+                    override fun onError(errorMessage: String?) {
+                        continuation.resume("Lat: $lat, Lng: $lng")
+                    }
+                })
+            }
+        } else {
+            try {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(lat, lng, 1)
+                addresses?.get(0)?.getAddressLine(0) ?: "Unknown Location"
+            } catch (e: Exception) {
+                "Lat: $lat, Lng: $lng"
+            }
         }
     }
 

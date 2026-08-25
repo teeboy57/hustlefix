@@ -39,10 +39,15 @@ class SplashActivity : ComponentActivity() {
                     )
                     delay(1500L)
                     try {
-                        startActivity(Intent(this@SplashActivity, MainActivity::class.java))
+                        val intent = Intent(this@SplashActivity, MainActivity::class.java)
+                        startActivity(intent)
                         finish()
                     } catch (e: Exception) {
-                        // Log or handle
+                        // Safe transition
+                        val intent = Intent(this@SplashActivity, MainActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                        startActivity(intent)
+                        finish()
                     }
                 }
 

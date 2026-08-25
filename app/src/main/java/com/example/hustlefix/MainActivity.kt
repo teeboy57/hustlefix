@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -88,14 +89,78 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    HustleFixNavGraph(
-                        navController = navController,
-                        startDestination = startDestination,
-                        onMenuClick = {
-                            scope.launch { drawerState.open() }
+                ModalNavigationDrawer(
+                    drawerState = drawerState,
+                    drawerContent = {
+                        ModalDrawerSheet {
+                            Spacer(Modifier.height(12.dp))
+                            NavigationDrawerItem(
+                                icon = { Icon(Icons.Default.Person, contentDescription = null) },
+                                label = { Text("My Profile") },
+                                selected = false,
+                                onClick = {
+                                    scope.launch { drawerState.close() }
+                                    navController.navigate(Screen.Profile.route)
+                                }
+                            )
+                            NavigationDrawerItem(
+                                icon = { Icon(Icons.Default.History, contentDescription = null) },
+                                label = { Text("My Bookings") },
+                                selected = false,
+                                onClick = {
+                                    scope.launch { drawerState.close() }
+                                    navController.navigate(Screen.MyBookings.route)
+                                }
+                            )
+                            NavigationDrawerItem(
+                                icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null) },
+                                label = { Text("Messages") },
+                                selected = false,
+                                onClick = {
+                                    scope.launch { drawerState.close() }
+                                    navController.navigate(Screen.ChatList.route)
+                                }
+                            )
+                            NavigationDrawerItem(
+                                icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = null) },
+                                label = { Text("My Wallet") },
+                                selected = false,
+                                onClick = {
+                                    scope.launch { drawerState.close() }
+                                    navController.navigate(Screen.Wallet.route)
+                                }
+                            )
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 24.dp))
+                            NavigationDrawerItem(
+                                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                                label = { Text("Settings") },
+                                selected = false,
+                                onClick = {
+                                    scope.launch { drawerState.close() }
+                                    navController.navigate(Screen.Settings.route)
+                                }
+                            )
+                            NavigationDrawerItem(
+                                icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null) },
+                                label = { Text("Logout") },
+                                selected = false,
+                                onClick = {
+                                    scope.launch { drawerState.close() }
+                                    SessionHelper.logout(this@MainActivity)
+                                }
+                            )
                         }
-                    )
+                    }
+                ) {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        HustleFixNavGraph(
+                            navController = navController,
+                            startDestination = startDestination,
+                            onMenuClick = {
+                                scope.launch { drawerState.open() }
+                            }
+                        )
+                    }
                 }
             }
         }

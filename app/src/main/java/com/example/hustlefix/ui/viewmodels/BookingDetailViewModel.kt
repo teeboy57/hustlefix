@@ -48,7 +48,7 @@ class BookingDetailViewModel(
                 }
                 if (booking != null) {
                     _uiState.value = _uiState.value.copy(booking = booking)
-                    val sid = booking.getserviceId()
+                    val sid = booking.getJobId()
                     if (!sid.isNullOrEmpty() && booking.jobId.isNullOrEmpty()) {
                         fetchServiceDetails(sid)
                     } else {

@@ -7,6 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
@@ -175,7 +176,7 @@ fun ServiceProviderDashboardScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 IconButton(onClick = { onQuickActionClick("work") }) {
-                                    Icon(Icons.Default.TrendingUp, contentDescription = null, tint = Color(0xFF4CAF50))
+                                    Icon(Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null, tint = Color(0xFF4CAF50))
                                 }
                             }
                             Text(

@@ -1,7 +1,9 @@
 package com.example.hustlefix;
-import java.util.Date;
+
+import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
+
 public class Job {
     private String jobId;
     private String title;
@@ -81,14 +83,21 @@ public class Job {
     public Integer getApplicationsCount() { return applicationsCount != null ? applicationsCount : 0; }
     public void setApplicationsCount(Integer applicationsCount) { this.applicationsCount = applicationsCount; }
 
+    @Exclude
     public String getFormattedAmount() { return String.format("R%.2f", getQuotedAmount()); }
 
     // Compatibility helpers
+    @Exclude
     public String getPostedBy() { return clientId; }
+    @Exclude
     public String getPostedByName() { return clientName; }
+    @Exclude
     public String getFormattedBudget() { return getFormattedAmount(); }
+    @Exclude
     public Double getBudget() { return getQuotedAmount(); }
+    @Exclude
     public boolean isOwner(String userId) { return clientId != null && clientId.equals(userId); }
+    @Exclude
     public Long getTimestamp() { return getCreatedAt(); }
 
     public static boolean isValidTransition(String currentStatus, String newStatus) {

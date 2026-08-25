@@ -44,7 +44,7 @@ sealed class Screen(val route: String) {
     }
     object ChatList : Screen("chat_list")
     object Chat : Screen("chat/{partnerId}/{partnerName}") {
-        fun createRoute(partnerId: String, partnerName: String) = "chat/$partnerId/$partnerName"
+        fun createRoute(partnerId: String, partnerName: String) = "chat/$partnerId/${java.net.URLEncoder.encode(partnerName, "UTF-8")}"
     }
     object SavedServices : Screen("saved_services")
     object PaymentMethods : Screen("payment_methods")
@@ -570,7 +570,7 @@ fun HustleFixNavGraph(
             val viewModel: MapViewModel = viewModel()
             val uiState by viewModel.uiState.collectAsState()
             
-            MapScreen(
+            FindWorkersScreen(
                 workers = uiState.workers,
                 userLat = uiState.userLatitude,
                 userLng = uiState.userLongitude,
@@ -642,7 +642,11 @@ fun HustleFixNavGraph(
             )
         ) { backStackEntry ->
             val partnerId = backStackEntry.arguments?.getString("partnerId") ?: ""
-            val partnerName = backStackEntry.arguments?.getString("partnerName") ?: "Chat"
+            val partnerName = try {
+                java.net.URLDecoder.decode(backStackEntry.arguments?.getString("partnerName") ?: "Chat", "UTF-8")
+            } catch (e: Exception) {
+                backStackEntry.arguments?.getString("partnerName") ?: "Chat"
+            }
             val viewModel: ChatViewModel = viewModel()
             val uiState by viewModel.chatUiState.collectAsState()
             
@@ -764,6 +768,17 @@ fun HustleFixNavGraph(
                 onPayClick = {
                     uiState.booking?.let { booking ->
                         payfastViewModel.initiatePayment(booking)
+                    }
+                },
+                onSharePayLink = { message ->
+                    uiState.booking?.let { booking ->
+                        payfastViewModel.getShareableLink(booking) { link ->
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "$message $link")
+                            }
+                            context.startActivity(Intent.createChooser(intent, "Send Invoice"))
+                        }
                     }
                 },
                 onBackClick = { navController.popBackStack() }
