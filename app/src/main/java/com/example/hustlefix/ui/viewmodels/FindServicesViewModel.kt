@@ -16,7 +16,11 @@ data class FindServicesUiState(
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val searchQuery: String = "",
-    val activeCategory: String = "All"
+    val activeCategory: String = "All",
+    val sortMode: String = "Latest", // "Latest", "Price Low", "Price High"
+    val minPrice: Double? = null,
+    val maxPrice: Double? = null,
+    val onlyVerified: Boolean = false
 )
 
 class FindServicesViewModel : ViewModel() {
@@ -70,6 +74,21 @@ class FindServicesViewModel : ViewModel() {
         applyFilters()
     }
 
+    fun onSortToggle() {
+        val nextMode = when (_uiState.value.sortMode) {
+            "Latest" -> "Price Low"
+            "Price Low" -> "Price High"
+            else -> "Latest"
+        }
+        _uiState.value = _uiState.value.copy(sortMode = nextMode)
+        applyFilters()
+    }
+
+    fun onFilterChange(min: Double?, max: Double?, verified: Boolean) {
+        _uiState.value = _uiState.value.copy(minPrice = min, maxPrice = max, onlyVerified = verified)
+        applyFilters()
+    }
+
     fun refresh() {
         _uiState.value = _uiState.value.copy(isRefreshing = true)
         loadServices()
@@ -84,14 +103,28 @@ class FindServicesViewModel : ViewModel() {
     private fun applyFilters() {
         val query = _uiState.value.searchQuery
         val category = _uiState.value.activeCategory
+        val sortMode = _uiState.value.sortMode
+        val min = _uiState.value.minPrice
+        val max = _uiState.value.maxPrice
+        val verified = _uiState.value.onlyVerified
         
-        val filtered = _uiState.value.services.filter { service ->
+        var filtered = _uiState.value.services.filter { service ->
             val matchesQuery = (service.title ?: "").contains(query, ignoreCase = true) ||
                              (service.category ?: "").contains(query, ignoreCase = true)
             val matchesCategory = if (category == "All") true else (service.category ?: "") == category
+            val matchesMin = min == null || service.price >= min
+            val matchesMax = max == null || service.price <= max
+            val matchesVerified = !verified || service.isProviderVerified
             
-            matchesQuery && matchesCategory
+            matchesQuery && matchesCategory && matchesMin && matchesMax && matchesVerified
         }
+
+        filtered = when (sortMode) {
+            "Price Low" -> filtered.sortedBy { it.price }
+            "Price High" -> filtered.sortedByDescending { it.price }
+            else -> filtered.sortedByDescending { it.createdAt }
+        }
+
         _uiState.value = _uiState.value.copy(filteredServices = filtered)
     }
 

@@ -27,8 +27,8 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const MERCHANT_ID = '17144161';
-const MERCHANT_KEY = 'cxfxu4iwaewmg';
+const MERCHANT_ID = '10053500';
+const MERCHANT_KEY = 's7dtvpr5uallq';
 const PASSPHRASE = 'Treasure071152'; // Set this in Payfast Dashboard -> Settings -> Integration
 
 /**

@@ -9,9 +9,9 @@ const crypto = require("crypto");
 admin.initializeApp();
 const db = admin.database();
 
-const MERCHANT_ID = "17144161";
-const MERCHANT_KEY = "cxfxu4iwaewmg";
-const PASSPHRASE = ""; // Set this in Payfast Dashboard -> Settings -> Integration
+const MERCHANT_ID = "10053500";
+const MERCHANT_KEY = "s7dtvpr5uallq";
+const PASSPHRASE = "Treasure071152"; // Set this in Payfast Dashboard -> Settings -> Integration
 
 /**
  * 1. createCheckout

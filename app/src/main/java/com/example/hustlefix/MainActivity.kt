@@ -73,6 +73,15 @@ class MainActivity : ComponentActivity() {
 
                 // Handle navigation from legacy components or deep links
                 LaunchedEffect(intent) {
+                    val data = intent.data
+                    if (data != null && data.scheme == "hustlefix") {
+                        if (data.toString().contains("payment-success")) {
+                            navController.navigate(Screen.MyBookings.route) {
+                                popUpTo(Screen.ClientDashboard.route)
+                            }
+                        }
+                    }
+                    
                     intent.getStringExtra("NAV_DESTINATION")?.let { destination ->
                         when (destination) {
                             "profile" -> navController.navigate(Screen.Profile.route)

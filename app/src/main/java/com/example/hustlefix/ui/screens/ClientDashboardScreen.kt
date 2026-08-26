@@ -195,24 +195,17 @@ fun ClientDashboardScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        QuickActionCard("Post a Job", Icons.Default.AddCircle, MaterialTheme.colorScheme.primary, { onQuickActionClick("post_job") }, Modifier.weight(1f))
-                        Spacer(modifier = Modifier.width(16.dp))
                         QuickActionCard("Find Workers", Icons.Default.Groups, MaterialTheme.colorScheme.secondary, { onQuickActionClick("find") }, Modifier.weight(1f))
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        QuickActionCard("My Bookings", Icons.Default.EventNote, Color(0xFFFF4081), { onQuickActionClick("bookings") }, Modifier.weight(1f))
                         Spacer(modifier = Modifier.width(16.dp))
-                        UrgentRequestButton({ onQuickActionClick("emergency") }, Modifier.weight(1f))
+                        QuickActionCard("My Bookings", Icons.Default.EventNote, Color(0xFFFF4081), { onQuickActionClick("bookings") }, Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
+                        UrgentRequestButton({ onQuickActionClick("emergency") }, Modifier.weight(1f))
+                        Spacer(modifier = Modifier.width(16.dp))
                         QuickActionCard("Messages", Icons.AutoMirrored.Filled.Chat, MaterialTheme.colorScheme.secondary, { onQuickActionClick("messages") }, Modifier.weight(1f))
-                        Spacer(modifier = Modifier.weight(1f)) // Empty space to balance the row
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))

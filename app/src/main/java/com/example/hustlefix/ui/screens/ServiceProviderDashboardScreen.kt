@@ -228,17 +228,16 @@ fun ServiceProviderDashboardScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        QuickActionCard("Find Jobs", Icons.Default.Work, MaterialTheme.colorScheme.primary, { onQuickActionClick("find_jobs") }, Modifier.weight(1f))
-                        Spacer(modifier = Modifier.width(16.dp))
                         QuickActionCard("My Services", Icons.Default.Engineering, MaterialTheme.colorScheme.secondary, { onQuickActionClick("my_services") }, Modifier.weight(1f))
+                        Spacer(modifier = Modifier.width(16.dp))
+                        QuickActionCard("Post Service", Icons.Default.AddCircle, MaterialTheme.colorScheme.tertiary, { onQuickActionClick("new") }, Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        QuickActionCard("Post Service", Icons.Default.AddCircle, MaterialTheme.colorScheme.tertiary, { onQuickActionClick("new") }, Modifier.weight(1f))
-                        Spacer(modifier = Modifier.width(16.dp))
                         QuickActionCard("Performance", Icons.Default.Assessment, MaterialTheme.colorScheme.outline, { onQuickActionClick("work") }, Modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))

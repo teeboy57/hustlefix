@@ -70,20 +70,20 @@ class PayfastViewModel(private val repository: PayfastRepository) : ViewModel() 
         
         val fullName = user.name ?: "User"
         val firstName = fullName.split(" ").firstOrNull() ?: "User"
-        val lastName = if (fullName.contains(" ")) fullName.split(" ").last() else ""
+        val lastName = if (fullName.contains(" ")) fullName.split(" ").last() else "HustleFix"
         
         return PayfastRequest(
-            merchantId = "", // Handled by backend
-            merchantKey = "", // Handled by backend
-            returnUrl = "hustlefix://payment-success",
-            cancelUrl = "hustlefix://payment-cancel",
+            merchantId = "10053500",
+            merchantKey = "s7dtvpr5uallq",
+            returnUrl = "https://hustlefix.onrender.com/api/payments/success",
+            cancelUrl = "https://hustlefix.onrender.com/api/payments/cancel",
             notifyUrl = "https://hustlefix.onrender.com/api/payments/payfast-itn",
             firstName = firstName,
             lastName = lastName,
             email = user.email ?: "",
             mPaymentId = booking.bookingId,
             amount = String.format(java.util.Locale.getDefault(), "%.2f", booking.amount),
-            itemName = "Payment for Job: ${booking.jobId}"
+            itemName = "Job: ${booking.serviceTitle}"
         )
     }
 

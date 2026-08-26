@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.hustlefix.Transaction
 import java.text.SimpleDateFormat
 import java.util.*
@@ -32,6 +31,7 @@ fun WalletScreen(
     transactions: List<Transaction>,
     isLoading: Boolean,
     onTopUpClick: (Double) -> Unit,
+    onWithdrawClick: () -> Unit,
     onStatementClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
@@ -110,17 +110,31 @@ fun WalletScreen(
                                     Text("Top Up", fontWeight = FontWeight.Bold)
                                 }
                                 
-                                OutlinedButton(
-                                    onClick = onStatementClick,
+                                Button(
+                                    onClick = onWithdrawClick,
                                     modifier = Modifier.weight(1f).height(56.dp),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White),
-                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                                    shape = RoundedCornerShape(16.dp)
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f), contentColor = Color.White),
+                                    shape = RoundedCornerShape(16.dp),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White)
                                 ) {
-                                    Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null)
+                                    Icon(Icons.Default.AccountBalance, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Report", fontWeight = FontWeight.Bold)
+                                    Text("Withdraw", fontWeight = FontWeight.Bold)
                                 }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            OutlinedButton(
+                                onClick = onStatementClick,
+                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.5f)),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("View Full Report", fontWeight = FontWeight.Bold)
                             }
                         }
                     }

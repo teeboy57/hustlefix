@@ -17,6 +17,10 @@ public class User {
     private Double latitude;
     private Double longitude;
     private Long lastLocationUpdate;
+    private String bankName;
+    private String accountHolder;
+    private String accountNumber;
+    private String branchCode;
 
     public User() {
         // Default constructor required for Firebase/Gson
@@ -78,4 +82,16 @@ public class User {
 
     public Long getLastLocationUpdate() { return lastLocationUpdate != null ? lastLocationUpdate : 0L; }
     public void setLastLocationUpdate(Long lastLocationUpdate) { this.lastLocationUpdate = lastLocationUpdate; }
+
+    public String getBankName() { return bankName; }
+    public void setBankName(String bankName) { this.bankName = bankName; }
+
+    public String getAccountHolder() { return accountHolder; }
+    public void setAccountHolder(String accountHolder) { this.accountHolder = accountHolder; }
+
+    public String getAccountNumber() { return accountNumber; }
+    public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
+
+    public String getBranchCode() { return branchCode; }
+    public void setBranchCode(String branchCode) { this.branchCode = branchCode; }
 }

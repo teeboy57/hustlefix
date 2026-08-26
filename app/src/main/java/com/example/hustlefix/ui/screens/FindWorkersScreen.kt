@@ -4,8 +4,9 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,12 +23,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.hustlefix.R
+import com.example.hustlefix.Service
 import com.example.hustlefix.Worker
+import com.example.hustlefix.util.LocationUtils
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -36,20 +40,15 @@ import com.google.maps.android.compose.*
 @Composable
 fun FindWorkersScreen(
     workers: List<Worker>,
+    services: List<Service>,
     userLat: Double,
     userLng: Double,
     isLoading: Boolean,
     onWorkerClick: (Worker) -> Unit,
+    onServiceClick: (Service) -> Unit,
     onBackClick: () -> Unit
 ) {
     var viewMode by remember { mutableStateOf("list") } // "list" or "map"
-    val context = LocalContext.current
-    
-    val locationPermissionGranted = remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -79,20 +78,31 @@ fun FindWorkersScreen(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (viewMode == "list") {
-                if (isLoading && workers.isEmpty()) {
+                if (isLoading && services.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
-                } else if (workers.isEmpty()) {
+                } else if (services.isEmpty()) {
                     EmptyWorkersState()
                 } else {
-                    LazyColumn(
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        items(workers) { worker ->
-                            WorkerListItem(worker = worker, onClick = { onWorkerClick(worker) })
+                        items(services) { service ->
+                            val provider = workers.find { it.id == service.getserviceProviderId() }
+                            val distance = if (provider != null && userLat != 0.0) {
+                                LocationUtils.calculateDistance(userLat, userLng, provider.latitude, provider.longitude)
+                            } else null
+                            
+                            ServiceGridItem(
+                                service = service, 
+                                distance = distance,
+                                onClick = { onServiceClick(service) }
+                            )
                         }
                     }
                 }
@@ -110,80 +120,107 @@ fun FindWorkersScreen(
 }
 
 @Composable
-fun WorkerListItem(worker: Worker, onClick: () -> Unit) {
+fun ServiceGridItem(
+    service: Service,
+    distance: Double? = null,
+    onClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(70.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant
-            ) {
+        Column {
+            Box(modifier = Modifier.height(120.dp)) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(worker.profileImage)
+                        .data(service.serviceImageUrl ?: service.serviceImageUrls?.firstOrNull())
                         .crossfade(true)
                         .build(),
-                    placeholder = painterResource(R.drawable.ic_profile_default),
-                    error = painterResource(R.drawable.ic_profile_default),
+                    placeholder = painterResource(R.drawable.ic_image_placeholder),
+                    error = painterResource(R.drawable.ic_image_placeholder),
                     contentDescription = null,
-                    modifier = Modifier.fillMaxSize().clip(CircleShape),
+                    modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
                 )
-            }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
                     Text(
-                        text = worker.name ?: "Unknown Pro",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        text = "R${String.format(java.util.Locale.getDefault(), "%.0f", service.price)}",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.onTertiary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Black
                     )
-                    if (worker.isVerified) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(Icons.Default.CheckCircle, contentDescription = "Verified", tint = Color(0xFF4CAF50), modifier = Modifier.size(16.dp))
+                }
+
+                if (distance != null) {
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp),
+                        color = Color.Black.copy(alpha = 0.6f),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = LocationUtils.formatDistance(distance),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
                 }
+            }
+
+            Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = worker.skill ?: "General Professional",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = service.title ?: "No Title",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                
+                Text(
+                    text = service.category ?: "General",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+
+                Spacer(modifier = Modifier.height(8.dp))
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(14.dp))
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(service.serviceProviderProfileImageUrl)
+                            .crossfade(true)
+                            .build(),
+                        placeholder = painterResource(R.drawable.ic_profile_default),
+                        error = painterResource(R.drawable.ic_profile_default),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = " ${worker.formattedRating} • ${worker.completedJobs} jobs",
+                        text = service.getserviceProviderName() ?: "Pro",
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-            }
-            
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = worker.formattedHourlyRate,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Black,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Text(
-                    text = "/hr",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline
-                )
             }
         }
     }

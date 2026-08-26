@@ -14,6 +14,8 @@ public class Booking {
     private String paymentStatus; // PAID, UNPAID, PENDING
     private Long createdAt;
     private String serviceImageUrl;
+    private String preferredDate;
+    private String instructions;
 
     public Booking() {
         this.status = "pending";
@@ -66,6 +68,12 @@ public class Booking {
 
     public String getServiceImageUrl() { return serviceImageUrl; }
     public void setServiceImageUrl(String serviceImageUrl) { this.serviceImageUrl = serviceImageUrl; }
+
+    public String getPreferredDate() { return preferredDate; }
+    public void setPreferredDate(String preferredDate) { this.preferredDate = preferredDate; }
+
+    public String getInstructions() { return instructions; }
+    public void setInstructions(String instructions) { this.instructions = instructions; }
 
     @Exclude
     public String getFormattedAmount() { return String.format("R%.2f", getAmount()); }

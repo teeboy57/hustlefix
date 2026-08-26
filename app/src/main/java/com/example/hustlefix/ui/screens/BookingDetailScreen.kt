@@ -45,6 +45,8 @@ fun BookingDetailScreen(
     onRatingSubmit: (Float, String, Boolean) -> Unit = { _, _, _ -> },
     onPayClick: () -> Unit = {},
     onSharePayLink: (String) -> Unit = {},
+    onReportClick: (String, String) -> Unit = { _, _ -> },
+    isVerifyingPayment: Boolean = false,
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -128,6 +130,15 @@ fun BookingDetailScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    if (isVerifyingPayment) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp).padding(end = 16.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             )
@@ -216,6 +227,25 @@ fun BookingDetailScreen(
                             Text("Manage Booking", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(16.dp))
                             
+                            if (isVerifyingPayment) {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = RoundedCornerShape(12.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Text("Verifying Payment...", style = MaterialTheme.typography.labelLarge)
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+
                             if (isServiceProvider && booking.status == "pending") {
                                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                     Button(
@@ -331,6 +361,21 @@ fun BookingDetailScreen(
                                         Spacer(modifier = Modifier.width(12.dp))
                                         Text("LEAVE A REVIEW", fontWeight = FontWeight.Bold)
                                     }
+                                }
+
+                                Spacer(modifier = Modifier.height(24.dp))
+                                TextButton(
+                                    onClick = {
+                                        val pid = if (isServiceProvider) booking.getClientId() else booking.getWorkerId()
+                                        val pname = if (isServiceProvider) booking.getClientName() else booking.getServiceProviderName()
+                                        onReportClick(pid ?: "", pname ?: "User")
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Icon(Icons.Default.Report, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Report ${if (isServiceProvider) "Client" else "Provider"}")
                                 }
                             } else {
                                 Text("No actions available for this status.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)

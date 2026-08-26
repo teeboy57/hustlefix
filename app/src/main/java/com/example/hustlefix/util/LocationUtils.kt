@@ -1,5 +1,6 @@
 package com.example.hustlefix.util
 
+import java.util.Locale
 import kotlin.math.*
 
 object LocationUtils {
@@ -21,7 +22,7 @@ object LocationUtils {
         return if (distance < 1) {
             "${(distance * 1000).toInt()}m away"
         } else {
-            "${String.format("%.1f", distance)}km away"
+            "${String.format(Locale.getDefault(), "%.1f", distance)}km away"
         }
     }
 }

@@ -17,6 +17,7 @@ data class BookingDetailUiState(
     val booking: Booking? = null,
     val service: Service? = null,
     val isLoading: Boolean = false,
+    val isVerifyingPayment: Boolean = false,
     val error: String? = null,
     val isUpdateSuccess: Boolean = false
 )
@@ -47,9 +48,15 @@ class BookingDetailViewModel(
                     setBookingId(snapshot.key ?: "")
                 }
                 if (booking != null) {
-                    _uiState.value = _uiState.value.copy(booking = booking)
+                    val isNowPaid = booking.paymentStatus == "PAID"
+                    
+                    _uiState.value = _uiState.value.copy(
+                        booking = booking,
+                        isVerifyingPayment = _uiState.value.isVerifyingPayment && !isNowPaid
+                    )
+                    
                     val sid = booking.getJobId()
-                    if (!sid.isNullOrEmpty() && booking.jobId.isNullOrEmpty()) {
+                    if (!sid.isNullOrEmpty() && (booking.jobId.isNullOrEmpty() || _uiState.value.service == null)) {
                         fetchServiceDetails(sid)
                     } else {
                         _uiState.value = _uiState.value.copy(isLoading = false)
@@ -65,13 +72,17 @@ class BookingDetailViewModel(
         bookingListener?.let { bookingRef?.addValueEventListener(it) }
     }
 
-    private fun fetchServiceDetails(serviceId: String) {
+    fun fetchServiceDetails(serviceId: String) {
         database.getReference("services").child(serviceId).get().addOnSuccessListener { snapshot ->
             val service = snapshot.getValue(Service::class.java)
             _uiState.value = _uiState.value.copy(service = service, isLoading = false)
         }.addOnFailureListener {
             _uiState.value = _uiState.value.copy(isLoading = false)
         }
+    }
+
+    fun startPaymentVerification() {
+        _uiState.value = _uiState.value.copy(isVerifyingPayment = true)
     }
 
     fun updateStatus(status: String) {

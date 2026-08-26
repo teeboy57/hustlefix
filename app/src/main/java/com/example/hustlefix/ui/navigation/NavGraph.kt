@@ -28,14 +28,21 @@ sealed class Screen(val route: String) {
     }
     object Profile : Screen("profile")
     object Wallet : Screen("wallet")
+    object WithdrawalRequest : Screen("withdrawal_request")
     object Settings : Screen("settings")
     object PostService : Screen("post_service")
+    object EditService : Screen("edit_service/{serviceId}") {
+        fun createRoute(serviceId: String) = "edit_service/$serviceId"
+    }
     object MyServices : Screen("my_services")
     object Analytics : Screen("analytics")
     object Notifications : Screen("notifications")
     object Emergency : Screen("emergency")
     object Map : Screen("map")
     object Verification : Screen("verification")
+    object ReportUser : Screen("report_user/{userId}/{userName}") {
+        fun createRoute(userId: String, userName: String) = "report_user/$userId/${java.net.URLEncoder.encode(userName, "UTF-8")}"
+    }
     object UrgentJobs : Screen("urgent_jobs")
     object Insights : Screen("insights")
     object IncomeStatement : Screen("income_statement")
@@ -126,11 +133,12 @@ fun HustleFixNavGraph(
                 onRegisterClick = { 
                     navController.navigate(Screen.Register.route) 
                 },
-                onForgotPasswordClick = { /* Handle */ },
+                onResetPassword = { authViewModel.resetPassword(it) },
                 onGoogleLoginClick = { /* Handle */ },
                 onAppleLoginClick = { /* Handle */ },
                 isLoading = authState.isLoading,
                 error = authState.error,
+                isResetSent = authState.isResetSent,
                 onClearError = { authViewModel.clearError() }
             )
         }
@@ -279,7 +287,7 @@ fun HustleFixNavGraph(
                         navController.navigate(Screen.ServiceDetail.createRoute(sid))
                     }
                 },
-                onSortClick = { /* Sort */ },
+                onSortClick = { viewModel.onSortToggle() },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -300,14 +308,29 @@ fun HustleFixNavGraph(
             
             ServiceDetailScreen(
                 service = uiState.service,
+                reviews = uiState.reviews,
+                isSaved = uiState.isSaved,
                 isLoading = uiState.isLoading,
                 onBackClick = { navController.popBackStack() },
-                onBookNowClick = { /* Book */ },
-                onSaveClick = { /* Save */ },
+                onBookNowClick = { date, notes ->
+                    viewModel.bookService(date, notes) {
+                        navController.navigate(Screen.MyBookings.route) {
+                            popUpTo(Screen.ServiceDetail.route) { inclusive = true }
+                        }
+                    }
+                },
+                onSaveClick = { viewModel.toggleSaveService() },
                 onProviderClick = { 
                     val pid = uiState.service?.getserviceProviderId() ?: ""
                     if (pid.isNotEmpty()) {
                         navController.navigate(Screen.WorkerProfile.createRoute(pid))
+                    }
+                },
+                onChatClick = {
+                    val pid = uiState.service?.getserviceProviderId() ?: ""
+                    val pname = uiState.service?.getserviceProviderName() ?: "Pro"
+                    if (pid.isNotEmpty()) {
+                        navController.navigate(Screen.Chat.createRoute(pid, pname))
                     }
                 }
             )
@@ -378,12 +401,40 @@ fun HustleFixNavGraph(
             val viewModel: WalletViewModel = viewModel()
             val uiState by viewModel.uiState.collectAsState()
             
+            LaunchedEffect(uiState.topUpCheckoutUrl) {
+                uiState.topUpCheckoutUrl?.let { url ->
+                    navController.navigate(Screen.PayfastCheckout.createRoute(url))
+                    viewModel.clearTopUpUrl()
+                }
+            }
+
             WalletScreen(
                 balance = uiState.balance,
                 transactions = uiState.transactions,
                 isLoading = uiState.isLoading,
                 onTopUpClick = { viewModel.topUp(it) },
+                onWithdrawClick = { navController.navigate(Screen.WithdrawalRequest.route) },
                 onStatementClick = { navController.navigate(Screen.IncomeStatement.route) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.WithdrawalRequest.route) {
+            val viewModel: WalletViewModel = viewModel()
+            val uiState by viewModel.uiState.collectAsState()
+
+            LaunchedEffect(uiState.isWithdrawalSuccess) {
+                if (uiState.isWithdrawalSuccess) {
+                    navController.popBackStack()
+                }
+            }
+
+            WithdrawalRequestScreen(
+                availableBalance = uiState.balance,
+                isLoading = uiState.isLoading,
+                onWithdrawClick = { a, b, h, n, br -> 
+                    viewModel.requestWithdrawal(a, b, h, n, br)
+                },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -409,6 +460,27 @@ fun HustleFixNavGraph(
             InsightsScreen(
                 stats = uiState.stats,
                 isLoading = uiState.isLoading,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.ReportUser.route,
+            arguments = listOf(
+                navArgument("userId") { defaultValue = "" },
+                navArgument("userName") { defaultValue = "User" }
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            val userName = try {
+                java.net.URLDecoder.decode(backStackEntry.arguments?.getString("userName") ?: "User", "UTF-8")
+            } catch (e: Exception) {
+                backStackEntry.arguments?.getString("userName") ?: "User"
+            }
+
+            ReportUserScreen(
+                userId = userId,
+                userName = userName,
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -493,8 +565,38 @@ fun HustleFixNavGraph(
             MyServicesScreen(
                 services = uiState.services,
                 isLoading = uiState.isLoading,
-                onServiceClick = { /* Edit? */ },
+                onServiceClick = { service ->
+                    navController.navigate(Screen.EditService.createRoute(service.serviceId))
+                },
                 onDeleteClick = { viewModel.deleteService(it) },
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.EditService.route,
+            arguments = listOf(navArgument("serviceId") { defaultValue = "" })
+        ) { backStackEntry ->
+            val serviceId = backStackEntry.arguments?.getString("serviceId") ?: ""
+            val viewModel: PostServiceViewModel = viewModel()
+            val uiState by viewModel.uiState.collectAsState()
+
+            LaunchedEffect(serviceId) {
+                viewModel.loadService(serviceId)
+            }
+
+            LaunchedEffect(uiState.isSuccess) {
+                if (uiState.isSuccess) {
+                    navController.popBackStack()
+                }
+            }
+
+            EditServiceScreen(
+                service = uiState.service,
+                isLoading = uiState.isLoading,
+                onSaveClick = { t, d, c, p, i -> 
+                    viewModel.updateService(serviceId, t, d, c, p, i)
+                },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -572,6 +674,7 @@ fun HustleFixNavGraph(
             
             FindWorkersScreen(
                 workers = uiState.workers,
+                services = uiState.services,
                 userLat = uiState.userLatitude,
                 userLng = uiState.userLongitude,
                 isLoading = uiState.isLoading,
@@ -579,6 +682,12 @@ fun HustleFixNavGraph(
                     val wid = worker.id ?: ""
                     if (wid.isNotEmpty()) {
                         navController.navigate(Screen.WorkerProfile.createRoute(wid))
+                    }
+                },
+                onServiceClick = { service ->
+                    val sid = service.serviceId ?: ""
+                    if (sid.isNotEmpty()) {
+                        navController.navigate(Screen.ServiceDetail.createRoute(sid))
                     }
                 },
                 onBackClick = { navController.popBackStack() }
@@ -751,6 +860,7 @@ fun HustleFixNavGraph(
                 service = uiState.service,
                 isServiceProvider = isServiceProvider,
                 isLoading = uiState.isLoading,
+                isVerifyingPayment = uiState.isVerifyingPayment,
                 onStatusUpdate = { viewModel.updateStatus(it) },
                 onRatingSubmit = { s, c, a -> viewModel.submitRating(s, c, a) },
                 onChatClick = {
@@ -767,6 +877,7 @@ fun HustleFixNavGraph(
                 },
                 onPayClick = {
                     uiState.booking?.let { booking ->
+                        viewModel.startPaymentVerification()
                         payfastViewModel.initiatePayment(booking)
                     }
                 },
@@ -780,6 +891,9 @@ fun HustleFixNavGraph(
                             context.startActivity(Intent.createChooser(intent, "Send Invoice"))
                         }
                     }
+                },
+                onReportClick = { id, name ->
+                    navController.navigate(Screen.ReportUser.createRoute(id, name))
                 },
                 onBackClick = { navController.popBackStack() }
             )
@@ -876,6 +990,9 @@ fun HustleFixNavGraph(
                 url = java.net.URLDecoder.decode(url, "UTF-8"),
                 onSuccess = {
                     viewModel.onPaymentSuccess()
+                    // Get the booking detail viewmodel if possible, or use a shared state.
+                    // Since it's a new screen, we'll rely on the ITN to update the status.
+                    // But we can trigger the "Verifying" state in the background.
                     navController.popBackStack()
                 },
                 onCancel = { navController.popBackStack() },

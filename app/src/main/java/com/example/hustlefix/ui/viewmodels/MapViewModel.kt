@@ -3,6 +3,7 @@ package com.example.hustlefix.ui.viewmodels
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.hustlefix.Service
 import com.example.hustlefix.Worker
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -16,6 +17,7 @@ import kotlinx.coroutines.tasks.await
 
 data class MapUiState(
     val workers: List<Worker> = emptyList(),
+    val services: List<Service> = emptyList(),
     val isLoading: Boolean = false,
     val userLatitude: Double = 0.0,
     val userLongitude: Double = 0.0,
@@ -33,12 +35,29 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     private var workersQuery: Query? = null
     private var workersListener: ValueEventListener? = null
     
+    private var servicesRef: DatabaseReference? = null
+    private var servicesListener: ValueEventListener? = null
+    
     private var trackedRef: DatabaseReference? = null
     private var trackedListener: ValueEventListener? = null
 
     init {
         loadNearbyWorkers()
+        loadServices()
         updateCurrentUserLocation()
+    }
+
+    private fun loadServices() {
+        servicesListener?.let { servicesRef?.removeEventListener(it) }
+        servicesRef = database.getReference("services")
+        servicesListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val list = snapshot.children.mapNotNull { it.getValue(Service::class.java) }
+                _uiState.value = _uiState.value.copy(services = list)
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        servicesListener?.let { servicesRef?.addValueEventListener(it) }
     }
 
     private fun loadNearbyWorkers() {
@@ -104,6 +123,7 @@ class MapViewModel(application: Application) : AndroidViewModel(application) {
     override fun onCleared() {
         super.onCleared()
         workersListener?.let { workersQuery?.removeEventListener(it) }
+        servicesListener?.let { servicesRef?.removeEventListener(it) }
         trackedListener?.let { trackedRef?.removeEventListener(it) }
     }
 }

@@ -34,16 +34,19 @@ import com.example.hustlefix.R
 fun LoginScreen(
     onLoginClick: (String, String) -> Unit,
     onRegisterClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit,
     onGoogleLoginClick: () -> Unit,
     onAppleLoginClick: () -> Unit,
+    onResetPassword: (String) -> Unit = {},
     isLoading: Boolean = false,
     error: String? = null,
+    isResetSent: Boolean = false,
     onClearError: () -> Unit = {}
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var showResetDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
 
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -53,6 +56,44 @@ fun LoginScreen(
             snackbarHostState.showSnackbar(error)
             onClearError()
         }
+    }
+
+    LaunchedEffect(isResetSent) {
+        if (isResetSent) {
+            snackbarHostState.showSnackbar("Password reset email sent!")
+            onClearError()
+        }
+    }
+    
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showResetDialog = false },
+            title = { Text("Reset Password") },
+            text = {
+                Column {
+                    Text("Enter your email address to receive a password reset link.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = resetEmail,
+                        onValueChange = { resetEmail = it },
+                        label = { Text("Email") },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(onClick = { 
+                    onResetPassword(resetEmail)
+                    showResetDialog = false 
+                }) {
+                    Text("SEND")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetDialog = false }) { Text("CANCEL") }
+            }
+        )
     }
 
     Scaffold(
@@ -135,7 +176,7 @@ fun LoginScreen(
                 )
 
                 TextButton(
-                    onClick = onForgotPasswordClick,
+                    onClick = { showResetDialog = true },
                     modifier = Modifier.align(Alignment.End)
                 ) {
                     Text(

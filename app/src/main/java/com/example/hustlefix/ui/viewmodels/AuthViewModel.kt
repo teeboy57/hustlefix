@@ -17,7 +17,8 @@ data class AuthUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val isLoginSuccessful: Boolean = false,
-    val isRegisterSuccessful: Boolean = false
+    val isRegisterSuccessful: Boolean = false,
+    val isResetSent: Boolean = false
 )
 
 class AuthViewModel(
@@ -135,6 +136,21 @@ class AuthViewModel(
     }
 
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.value = _uiState.value.copy(error = null, isResetSent = false)
+    }
+
+    fun resetPassword(email: String) {
+        if (email.isEmpty()) {
+            _uiState.value = _uiState.value.copy(error = "Please enter your email")
+            return
+        }
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        auth.sendPasswordResetEmail(email).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                _uiState.value = _uiState.value.copy(isLoading = false, isResetSent = true)
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = task.exception?.message ?: "Failed to send reset email")
+            }
+        }
     }
 }
