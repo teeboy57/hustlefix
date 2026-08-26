@@ -220,7 +220,6 @@ fun HustleFixNavGraph(
                             "notifications" -> navController.navigate(Screen.Notifications.route)
                             "emergency" -> navController.navigate(Screen.Emergency.route)
                             "wallet" -> navController.navigate(Screen.Wallet.route)
-                            "urgent_jobs" -> navController.navigate(Screen.UrgentJobs.route)
                         }
                     }
                 },

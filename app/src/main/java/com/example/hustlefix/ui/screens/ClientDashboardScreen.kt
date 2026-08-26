@@ -277,26 +277,6 @@ fun ClientDashboardScreen(
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
-                    
-                    // Featured Banner Card (New Feature)
-                    StandardCard(
-                        modifier = Modifier.fillMaxWidth().height(160.dp),
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        onClick = { onQuickActionClick("urgent_jobs") }
-                    ) {
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            Column(modifier = Modifier.padding(24.dp).align(Alignment.CenterStart)) {
-                                Text("Urgent Tasks?", fontWeight = FontWeight.Black, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                                Text("Find pros ready to help now", color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f))
-                                Spacer(modifier = Modifier.height(12.dp))
-                                Button(onClick = { onQuickActionClick("urgent_jobs") }, shape = RoundedCornerShape(12.dp)) {
-                                    Text("VIEW URGENT")
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         QuickActionCard("Find Workers", Icons.Default.Groups, MaterialTheme.colorScheme.secondary, { onQuickActionClick("find") }, Modifier.weight(1f))
