@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const MERCHANT_ID = '17144161';
 const MERCHANT_KEY = 'cxfxu4iwaewmg';
-const PASSPHRASE = ''; // Set this in Payfast Dashboard -> Settings -> Integration
+const PASSPHRASE = 'Treasure071152'; // Set this in Payfast Dashboard -> Settings -> Integration
 
 /**
  * 1. Create Checkout Request
@@ -38,35 +38,49 @@ const PASSPHRASE = ''; // Set this in Payfast Dashboard -> Settings -> Integrati
 app.post('/api/payments/create-checkout', async (req, res) => {
   const { amount, item_name, m_payment_id, name_first, name_last, email_address } = req.body;
 
+  // Use values from request or defaults
+  const mId = req.body.merchant_id || MERCHANT_ID;
+  const mKey = req.body.merchant_key || MERCHANT_KEY;
+
   const data = {
-    merchant_id: MERCHANT_ID,
-    merchant_key: MERCHANT_KEY,
-    return_url: 'hustlefix://payment-success',
-    cancel_url: 'hustlefix://payment-cancel',
+    merchant_id: mId,
+    merchant_key: mKey,
+    return_url: 'https://hustlefix.onrender.com/api/payments/success',
+    cancel_url: 'https://hustlefix.onrender.com/api/payments/cancel',
     notify_url: 'https://hustlefix.onrender.com/api/payments/payfast-itn',
-    name_first: name_first || "",
-    name_last: name_last || "",
-    email_address: email_address || "",
-    m_payment_id: m_payment_id || "",
+    name_first: name_first || "Customer",
+    name_last: name_last || "User",
+    email_address: (email_address || "customer@example.com").trim(),
+    m_payment_id: m_payment_id || String(Date.now()),
     amount: parseFloat(amount || 0).toFixed(2),
     item_name: item_name || "HustleFix Service"
   };
 
-  // Generate Signature
-  data.signature = generateSignature(data, PASSPHRASE);
-
-  // Payfast Sandbox URL (Use 'www.payfast.co.za' for production)
-  const baseUrl = 'https://sandbox.payfast.co.za/eng/process';
-
-  // Only include non-empty values in the URL
-  const params = new URLSearchParams();
-  for (const key in data) {
+  // 2. Generate Signature
+  let signatureString = '';
+  Object.keys(data).sort().forEach(key => {
     if (data[key] !== "" && data[key] !== null) {
-      params.append(key, data[key]);
+      signatureString += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`;
     }
-  }
+  });
 
-  const checkoutUrl = `${baseUrl}?${params.toString()}`;
+  signatureString = signatureString.substring(0, signatureString.length - 1);
+  if (PASSPHRASE) {
+    signatureString += `&passphrase=${encodeURIComponent(PASSPHRASE.trim()).replace(/%20/g, '+')}`;
+  }
+  const signature = crypto.createHash('md5').update(signatureString).digest('hex');
+
+  // 3. Determine Base URL
+  // LIVE: www.payfast.co.za | SANDBOX: sandbox.payfast.co.za
+  const isSandbox = mId.startsWith('10');
+  const baseUrl = isSandbox
+    ? 'https://sandbox.payfast.co.za/eng/process'
+    : 'https://www.payfast.co.za/eng/process';
+
+  const finalQueryString = signatureString.split('&passphrase=')[0] + `&signature=${signature}`;
+  const checkoutUrl = `${baseUrl}?${finalQueryString}`;
+
+  console.log(`Checkout URL Generated for ${isSandbox ? 'SANDBOX' : 'LIVE'}`);
 
   res.json({
     success: true,
@@ -92,6 +106,37 @@ app.post('/api/payments/payfast-itn', async (req, res) => {
     const amountPaid = parseFloat(pfData.amount_gross);
 
     try {
+      // Check if it's a Wallet Top Up
+      if (bookingId.startsWith('TOPUP_')) {
+        const parts = bookingId.split('_');
+        const userId = parts[1]; // Extract userId from TOPUP_userId_timestamp
+
+        if (userId) {
+          const userRef = db.ref(`users/${userId}`);
+          const userSnapshot = await userRef.get();
+          const user = userSnapshot.val();
+
+          if (user) {
+            const currentBalance = user.walletBalance || 0;
+            const newBalance = currentBalance + amountPaid;
+
+            await userRef.update({ walletBalance: newBalance });
+
+            // Log Transaction
+            const transRef = db.ref(`transactions/${userId}`).push();
+            await transRef.set({
+              id: transRef.key,
+              type: 'Top Up',
+              amount: amountPaid,
+              timestamp: Date.now()
+            });
+
+            console.log(`WALLET TOPUP SUCCESS: ${amountPaid} added to user ${userId}`);
+          }
+        }
+        return res.sendStatus(200);
+      }
+
       // 3. Update Booking Status to PAID (Funds held by platform)
       const bookingRef = db.ref(`bookings/${bookingId}`);
       const bookingSnapshot = await bookingRef.get();
@@ -146,3 +191,15 @@ function verifySignature(data, passphrase) {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`HustleFix Payfast Backend listening on port ${PORT}`));
+
+/**
+ * 3. Simple Success/Cancel Redirects
+ * These ensure Payfast validation passes and give the app a target to intercept.
+ */
+app.get('/api/payments/success', (req, res) => {
+  res.send('<html><body><h1>Payment Successful!</h1><p>Returning to app...</p></body></html>');
+});
+
+app.get('/api/payments/cancel', (req, res) => {
+  res.send('<html><body><h1>Payment Cancelled</h1><p>Returning to app...</p></body></html>');
+});
