@@ -12,10 +12,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 data class BookingDetailUiState(
     val booking: Booking? = null,
     val service: Service? = null,
+    val walletBalance: Double = 0.0,
     val isLoading: Boolean = false,
     val isVerifyingPayment: Boolean = false,
     val error: String? = null,
@@ -37,6 +39,14 @@ class BookingDetailViewModel(
     fun loadBooking(bookingId: String) {
         if (bookingId.isEmpty()) return
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+        // Load Wallet Balance
+        val uid = auth.currentUser?.uid
+        if (uid != null) {
+            database.getReference("users").child(uid).child("walletBalance").get().addOnSuccessListener {
+                _uiState.value = _uiState.value.copy(walletBalance = it.getValue(Double::class.java) ?: 0.0)
+            }
+        }
 
         // Clear existing listener
         bookingRef?.let { ref -> bookingListener?.let { ref.removeEventListener(it) } }
@@ -83,6 +93,52 @@ class BookingDetailViewModel(
 
     fun startPaymentVerification() {
         _uiState.value = _uiState.value.copy(isVerifyingPayment = true)
+    }
+
+    fun payWithWallet() {
+        val booking = _uiState.value.booking ?: return
+        val uid = auth.currentUser?.uid ?: return
+        val amount = booking.amount ?: 0.0
+        
+        if (_uiState.value.walletBalance < amount) {
+            _uiState.value = _uiState.value.copy(error = "Insufficient wallet balance")
+            return
+        }
+
+        _uiState.value = _uiState.value.copy(isLoading = true)
+        
+        viewModelScope.launch {
+            try {
+                // 1. Deduct from client wallet
+                val userRef = database.getReference("users").child(uid)
+                val newBalance = _uiState.value.walletBalance - amount
+                userRef.child("walletBalance").setValue(newBalance).await()
+
+                // 2. Log Transaction for client
+                val tRef = database.getReference("transactions").child(uid).push()
+                tRef.setValue(mapOf(
+                    "id" to tRef.key,
+                    "type" to "Booking Payment",
+                    "amount" to -amount,
+                    "timestamp" to System.currentTimeMillis()
+                )).await()
+
+                // 3. Update Booking
+                database.getReference("bookings").child(booking.bookingId).updateChildren(mapOf(
+                    "paymentStatus" to "PAID",
+                    "paidAt" to System.currentTimeMillis(),
+                    "paymentMethod" to "wallet"
+                )).await()
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    walletBalance = newBalance,
+                    isUpdateSuccess = true
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
+        }
     }
 
     fun updateStatus(status: String) {

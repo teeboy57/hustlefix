@@ -128,6 +128,166 @@ exports.payfastITN = functions.https.onRequest(async (req, res) => {
 });
 
 /**
+ * 3. onMessageSent
+ * Triggered when a new message is written to a chat.
+ */
+exports.onMessageSent = functions.database.ref("/messages/{chatId}/{messageId}")
+    .onCreate(async (snapshot, context) => {
+      const message = snapshot.val();
+      const receiverId = message.receiverId;
+
+      // Get receiver's FCM token
+      const userSnapshot = await db.ref(`users/${receiverId}`).get();
+      const userData = userSnapshot.val();
+      const fcmToken = userData?.fcmToken;
+
+      if (!fcmToken) return null;
+
+      const payload = {
+        notification: {
+          title: `New message from ${message.senderName}`,
+          body: message.messageText,
+        },
+        data: {
+          screen: "chat",
+          senderId: message.senderId,
+          senderName: message.senderName,
+        },
+      };
+
+      return admin.messaging().sendToDevice(fcmToken, payload);
+    });
+
+/**
+ * 4. onBookingStatusChanged
+ * Notifies the relevant party (client or worker) when a booking status changes.
+ */
+exports.onBookingStatusChanged = functions.database.ref("/bookings/{bookingId}")
+    .onUpdate(async (change, context) => {
+      const before = change.before.val();
+      const after = change.after.val();
+
+      if (before.status === after.status) return null;
+
+      let targetUserId = null;
+      let title = "Booking Update";
+      let body = `Your booking for ${after.serviceTitle || "a service"} is now ${after.status}.`;
+
+      if (after.status === "confirmed") {
+        // Notify Client that Worker accepted
+        targetUserId = after.clientId;
+        title = "Booking Confirmed! ✅";
+        body = `${after.workerName || "The provider"} has accepted your booking for ${after.serviceTitle}.`;
+      } else if (after.status === "paid") {
+        // Notify Worker that Client paid
+        targetUserId = after.workerId;
+        title = "Payment Received! 💰";
+        body = `${after.clientName || "The client"} has paid for ${after.serviceTitle}. You can now start the work.`;
+      } else if (after.status === "completed") {
+        // Notify Client that Worker finished
+        targetUserId = after.clientId;
+        title = "Job Completed! ✨";
+        body = `${after.workerName || "The provider"} has marked your booking as completed. Please rate the service!`;
+      }
+
+      if (!targetUserId) return null;
+
+      const userSnapshot = await db.ref(`users/${targetUserId}`).get();
+      const fcmToken = userSnapshot.val()?.fcmToken;
+
+      if (!fcmToken) return null;
+
+      const payload = {
+        notification: {
+          title: title,
+          body: body,
+        },
+        data: {
+          screen: "bookings",
+          bookingId: context.params.bookingId,
+        },
+      };
+
+      return admin.messaging().sendToDevice(fcmToken, payload);
+    });
+
+/**
+ * 5. onEmergencyRequest
+ * Notifies all admins when a new emergency is posted.
+ */
+exports.onEmergencyRequest = functions.database.ref("/emergency_requests/{requestId}")
+    .onCreate(async (snapshot, context) => {
+      const request = snapshot.val();
+
+      // Find all admins
+      const usersSnapshot = await db.ref("users").orderByChild("role").equalTo("admin").get();
+      const tokens = [];
+
+      usersSnapshot.forEach((child) => {
+        const token = child.val().fcmToken;
+        if (token) tokens.push(token);
+      });
+
+      if (tokens.length === 0) return null;
+
+      const payload = {
+        notification: {
+          title: "🚨 URGENT EMERGENCY ALERT",
+          body: `${request.userName} needs help: ${request.description}`,
+        },
+        data: {
+          screen: "emergency",
+          requestId: request.id,
+        },
+      };
+
+      return admin.messaging().sendToDevice(tokens, payload);
+    });
+
+/**
+ * 5. onBookingCompleted
+ * Securely handles the payout to the worker when a booking is marked completed.
+ */
+exports.onBookingCompleted = functions.database.ref("/bookings/{bookingId}")
+    .onUpdate(async (change, context) => {
+      const before = change.before.val();
+      const after = change.after.val();
+
+      // Only trigger if status changed to 'completed' and was PAID
+      if (after.status === "completed" && before.status !== "completed" && after.paymentStatus === "PAID") {
+        const workerId = after.workerId;
+        const amount = parseFloat(after.amount || 0);
+
+        if (!workerId || amount <= 0 || after.payoutReleased) return null;
+
+        try {
+          // 1. Credit worker
+          await db.ref(`users/${workerId}/walletBalance`).transaction((current) => (current || 0) + amount);
+
+          // 2. Log Transaction
+          const transRef = db.ref(`transactions/${workerId}`).push();
+          await transRef.set({
+            id: transRef.key,
+            type: "Job Payout",
+            amount: amount,
+            timestamp: Date.now(),
+            serviceTitle: after.serviceTitle || "Completed Job",
+            bookingId: context.params.bookingId,
+          });
+
+          // 3. Flag as released to prevent re-runs
+          return change.after.ref.update({
+            payoutReleased: true,
+            payoutAt: Date.now(),
+          });
+        } catch (error) {
+          console.error("Payout Error:", error);
+        }
+      }
+      return null;
+    });
+
+/**
  * Signature Generation Helper
  */
 function generateSignature(data, passphrase) {

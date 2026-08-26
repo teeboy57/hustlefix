@@ -29,6 +29,8 @@ data class ProfileUiState(
     val selectedImageUri: Uri? = null,
     val walletBalance: String = "R0.00",
     val role: String = "client",
+    val isFlagged: Boolean = false,
+    val adminNotes: String? = null,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null
@@ -42,12 +44,17 @@ class ProfileViewModel : ViewModel() {
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val userId: String? = auth.currentUser?.uid
 
+    private var profileRef: DatabaseReference? = null
+    private var profileListener: ValueEventListener? = null
+
     init {
         loadProfile()
     }
 
     private fun loadProfile() {
         val user = auth.currentUser ?: return
+        val uid = userId ?: return
+
         _uiState.value = _uiState.value.copy(
             name = user.displayName ?: "",
             email = user.email ?: "",
@@ -55,38 +62,49 @@ class ProfileViewModel : ViewModel() {
             isLoading = true
         )
 
-        userId?.let { uid ->
-            database.getReference("users").child(uid).addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val phone = snapshot.child("phone").getValue(String::class.java) ?: ""
-                    val loc = snapshot.child("location").getValue(String::class.java) ?: ""
-                    val balance = snapshot.child("walletBalance").getValue(Double::class.java) ?: 0.0
-                    val dbPhotoUrl = snapshot.child("profileImage").getValue(String::class.java)
-                    val role = snapshot.child("role").getValue(String::class.java) ?: "client"
+        profileListener?.let { profileRef?.removeEventListener(it) }
+        profileRef = database.getReference("users").child(uid)
+        
+        profileListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val phone = snapshot.child("phone").getValue(String::class.java) ?: ""
+                val loc = snapshot.child("location").getValue(String::class.java) ?: ""
+                val balance = snapshot.child("walletBalance").getValue(Double::class.java) ?: 0.0
+                val dbPhotoUrl = snapshot.child("profileImage").getValue(String::class.java)
+                val role = snapshot.child("role").getValue(String::class.java) ?: "client"
+                
+                // Be flexible with naming: check "isFlagged" or "flagged"
+                val flagged = snapshot.child("isFlagged").getValue(Boolean::class.java) 
+                    ?: snapshot.child("flagged").getValue(Boolean::class.java) 
+                    ?: false
                     
-                    val skill = snapshot.child("skill").getValue(String::class.java) ?: ""
-                    val category = snapshot.child("category").getValue(String::class.java) ?: ""
-                    val about = snapshot.child("about").getValue(String::class.java) ?: ""
-                    val exp = snapshot.child("experience").getValue(Int::class.java) ?: 0
+                val notes = snapshot.child("adminNotes").getValue(String::class.java)
+                
+                val skill = snapshot.child("skill").getValue(String::class.java) ?: ""
+                val category = snapshot.child("category").getValue(String::class.java) ?: ""
+                val about = snapshot.child("about").getValue(String::class.java) ?: ""
+                val exp = snapshot.child("experience").getValue(Int::class.java) ?: 0
 
-                    _uiState.value = _uiState.value.copy(
-                        phone = phone,
-                        location = loc,
-                        skill = skill,
-                        category = category,
-                        about = about,
-                        experience = exp,
-                        role = role,
-                        walletBalance = String.format(Locale.getDefault(), "R%.2f", balance),
-                        photoUrl = dbPhotoUrl ?: _uiState.value.photoUrl,
-                        isLoading = false
-                    )
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    _uiState.value = _uiState.value.copy(isLoading = false)
-                }
-            })
+                _uiState.value = _uiState.value.copy(
+                    phone = phone,
+                    location = loc,
+                    skill = skill,
+                    category = category,
+                    about = about,
+                    experience = exp,
+                    role = role,
+                    isFlagged = flagged,
+                    adminNotes = notes,
+                    walletBalance = String.format(Locale.getDefault(), "R%.2f", balance),
+                    photoUrl = dbPhotoUrl ?: _uiState.value.photoUrl,
+                    isLoading = false
+                )
+            }
+            override fun onCancelled(error: DatabaseError) {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
         }
+        profileRef?.addValueEventListener(profileListener!!)
     }
 
     fun onNameChange(name: String) { _uiState.value = _uiState.value.copy(name = name) }
@@ -176,8 +194,35 @@ class ProfileViewModel : ViewModel() {
                 }
             }
     }
+
+    fun submitDispute(reason: String) {
+        val uid = userId ?: return
+        _uiState.value = _uiState.value.copy(isLoading = true)
+
+        val disputeRef = database.getReference("disputes").child(uid)
+        val dispute = mapOf(
+            "userId" to uid,
+            "userName" to _uiState.value.name,
+            "reason" to reason,
+            "timestamp" to System.currentTimeMillis(),
+            "status" to "pending"
+        )
+
+        disputeRef.setValue(dispute).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
+            } else {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = "Failed to submit dispute")
+            }
+        }
+    }
     
     fun clearStatus() {
         _uiState.value = _uiState.value.copy(isSuccess = false, error = null)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        profileListener?.let { profileRef?.removeEventListener(it) }
     }
 }

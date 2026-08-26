@@ -40,9 +40,13 @@ class ServiceProviderDashboardViewModel : ViewModel() {
     }
 
     private fun loadData() {
-        val user = auth.currentUser ?: return
-        val name = user.displayName ?: user.email?.split("@")?.get(0) ?: "Provider"
-        _uiState.value = _uiState.value.copy(businessName = name)
+        val uid = currentUserId ?: return
+        
+        // Load business name from database
+        database.getReference("users").child(uid).child("name").get().addOnSuccessListener { snapshot ->
+            val name = snapshot.getValue(String::class.java) ?: auth.currentUser?.displayName ?: "Provider"
+            _uiState.value = _uiState.value.copy(businessName = name)
+        }
 
         loadStats()
         loadBookings()
@@ -68,7 +72,7 @@ class ServiceProviderDashboardViewModel : ViewModel() {
         
         bookingsListener?.let { bookingsQuery?.removeEventListener(it) }
         
-        bookingsQuery = database.getReference("bookings").orderByChild("serviceProviderId").equalTo(userId)
+        bookingsQuery = database.getReference("bookings").orderByChild("workerId").equalTo(userId)
         bookingsListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var totalJobs = 0

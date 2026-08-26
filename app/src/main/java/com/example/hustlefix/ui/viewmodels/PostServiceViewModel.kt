@@ -44,7 +44,7 @@ class PostServiceViewModel : ViewModel() {
         if (imageUri != null) {
             uploadImageAndUpdate(serviceId, user.uid, title, desc, category, price, imageUri)
         } else {
-            updateDatabase(serviceId, user.uid, title, desc, category, price, _uiState.value.service?.getServiceImageUrl())
+            updateDatabase(serviceId, user.uid, title, desc, category, price, null)
         }
     }
 

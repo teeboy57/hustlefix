@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.hustlefix.ui.components.HustleFixTopBar
+import com.example.hustlefix.ui.components.StandardCard
+import com.example.hustlefix.ui.components.AnimatedEntrance
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +53,8 @@ fun SettingsScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var selectedLanguage by remember { mutableStateOf("English") }
 
     LaunchedEffect(error) {
         error?.let {
@@ -61,13 +66,9 @@ fun SettingsScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Settings", fontWeight = FontWeight.ExtraBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
+            HustleFixTopBar(
+                title = "Settings",
+                onNavigationClick = onBackClick
             )
         }
     ) { padding ->
@@ -79,54 +80,75 @@ fun SettingsScreen(
                 .padding(24.dp)
         ) {
             // User Summary Section
-            Card(
-                onClick = onProfileClick,
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            AnimatedEntrance {
+                StandardCard(
+                    onClick = onProfileClick,
+                    modifier = Modifier.fillMaxWidth(),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                 ) {
-                    Surface(
-                        modifier = Modifier.size(56.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.primary
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(userName.take(1).uppercase(), color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        Surface(
+                            modifier = Modifier.size(56.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(userName.take(1).uppercase(), color = Color.White, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            }
                         }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(userName, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
+                            Text(userEmail, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                        }
+                        Icon(Icons.Default.ChevronRight, contentDescription = null)
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(userName, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyLarge)
-                        Text(userEmail, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
-                    }
-                    Icon(Icons.Default.ChevronRight, contentDescription = null)
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text("Preferences", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.height(16.dp))
+            AnimatedEntrance(delay = 100) {
+                Column {
+                    Text("Preferences", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            SettingsToggleItem(
-                title = "Push Notifications",
-                icon = Icons.Default.Notifications,
-                checked = isNotificationsEnabled,
-                onCheckedChange = onToggleNotifications
-            )
-            
-            SettingsToggleItem(
-                title = "Dark Mode",
-                icon = Icons.Default.DarkMode,
-                checked = isDarkModeEnabled,
-                onCheckedChange = onToggleDarkMode
-            )
+                    SettingsToggleItem(
+                        title = "Push Notifications",
+                        icon = Icons.Default.Notifications,
+                        checked = isNotificationsEnabled,
+                        onCheckedChange = onToggleNotifications
+                    )
+                    
+                    SettingsToggleItem(
+                        title = "Dark Mode",
+                        icon = Icons.Default.DarkMode,
+                        checked = isDarkModeEnabled,
+                        onCheckedChange = onToggleDarkMode
+                    )
+                    
+                    SettingsClickItem(
+                        title = "Language",
+                        icon = Icons.Default.Language,
+                        onClick = { showLanguageDialog = true }
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(32.dp))
+
+            AnimatedEntrance(delay = 200) {
+                Column {
+                    Text("Account & Security", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingsClickItem(title = "Payment Methods", icon = Icons.Default.Payment, onClick = onPaymentMethodsClick)
+                    SettingsClickItem(title = "Privacy Policy", icon = Icons.Default.Security, onClick = { showPrivacyDialog = true })
+                }
+            }
 
             Text("Account & Security", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.height(16.dp))
@@ -236,6 +258,40 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
                     Text("CANCEL")
+                }
+            },
+            shape = RoundedCornerShape(28.dp)
+        )
+    }
+
+    if (showLanguageDialog) {
+        val languages = listOf("English", "Afrikaans", "Zulu", "Xhosa", "Sotho")
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text("Select Language", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    languages.forEach { lang ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selectedLanguage = lang
+                                    showLanguageDialog = false
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = (selectedLanguage == lang), onClick = null)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(lang)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text("CLOSE")
                 }
             },
             shape = RoundedCornerShape(28.dp)

@@ -27,7 +27,8 @@ data class EmergencyUiState(
     val currentAddress: String = "Locating...",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
-    val locationReceived: Boolean = false
+    val locationReceived: Boolean = false,
+    val activeRequest: EmergencyRequest? = null
 )
 
 class EmergencyRequestViewModel(application: Application) : AndroidViewModel(application) {
@@ -37,6 +38,9 @@ class EmergencyRequestViewModel(application: Application) : AndroidViewModel(app
     private val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(application)
+    
+    private var requestRef: com.google.firebase.database.DatabaseReference? = null
+    private var requestListener: com.google.firebase.database.ValueEventListener? = null
 
     fun fetchCurrentLocation() {
         viewModelScope.launch {
@@ -110,11 +114,33 @@ class EmergencyRequestViewModel(application: Application) : AndroidViewModel(app
 
         ref.child(id).setValue(request).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
+                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, activeRequest = request)
+                listenToRequest(id)
             } else {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Database error")
             }
         }
+    }
+
+    private fun listenToRequest(requestId: String) {
+        requestListener?.let { requestRef?.removeEventListener(it) }
+        
+        requestRef = database.getReference("emergency_requests").child(requestId)
+        requestListener = object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                val updated = snapshot.getValue(EmergencyRequest::class.java)
+                if (updated != null) {
+                    _uiState.value = _uiState.value.copy(activeRequest = updated)
+                }
+            }
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+        }
+        requestListener?.let { requestRef?.addValueEventListener(it) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        requestListener?.let { requestRef?.removeEventListener(it) }
     }
 
     fun clearError() {

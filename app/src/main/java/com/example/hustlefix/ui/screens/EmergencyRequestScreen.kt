@@ -36,6 +36,7 @@ fun EmergencyRequestScreen(
     isLoading: Boolean,
     isSuccess: Boolean,
     error: String?,
+    activeRequest: com.example.hustlefix.EmergencyRequest? = null,
     onSendEmergency: (String, String) -> Unit,
     onBackClick: () -> Unit,
     onClearError: () -> Unit
@@ -84,7 +85,7 @@ fun EmergencyRequestScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("URGENT REQUEST", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary) },
+                title = { Text(if (activeRequest != null) "ACTIVE URGENT ALERT" else "URGENT REQUEST", fontWeight = FontWeight.Black, color = if (activeRequest != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -93,8 +94,8 @@ fun EmergencyRequestScreen(
             )
         }
     ) { padding ->
-        if (isSuccess) {
-            UrgentSuccessState(onBackClick)
+        if (activeRequest != null) {
+            UrgentActiveState(activeRequest, onBackClick)
         } else if (!locationPermissionGranted) {
             LocationPermissionDeniedState {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -217,26 +218,38 @@ fun UrgencyTypeChip(label: String, icon: ImageVector, selected: Boolean, modifie
 }
 
 @Composable
-fun UrgentSuccessState(onBackClick: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.primary), contentAlignment = Alignment.Center) {
+fun UrgentActiveState(request: com.example.hustlefix.EmergencyRequest, onBackClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize().background(if (request.status == "responded") Color(0xFF4CAF50) else MaterialTheme.colorScheme.error), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(40.dp)) {
-            Icon(Icons.Default.FlashOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(100.dp))
+            val icon = if (request.status == "responded") Icons.Default.VerifiedUser else Icons.Default.FlashOn
+            val title = if (request.status == "responded") "HELP IS ON THE WAY" else "URGENT ALERT ACTIVE"
+            val subText = if (request.status == "responded") 
+                "Admin ${request.responderName} has acknowledged your request and is coordinating assistance." 
+                else "Nearby professionals and admins have been notified. Keep your phone close!"
+
+            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(100.dp))
             Spacer(modifier = Modifier.height(24.dp))
-            Text("POSTED SUCCESSFULLY", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White)
+            Text(title, style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Black, color = Color.White, textAlign = TextAlign.Center)
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Nearby professionals have been notified. Keep your phone close for incoming responses!",
+                subText,
                 textAlign = TextAlign.Center,
                 color = Color.White.copy(alpha = 0.9f),
                 style = MaterialTheme.typography.bodyLarge
             )
+            
+            if (request.status == "resolved") {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text("THIS REQUEST HAS BEEN MARKED AS RESOLVED.", fontWeight = FontWeight.Bold, color = Color.White)
+            }
+
             Spacer(modifier = Modifier.height(48.dp))
             Button(
                 onClick = onBackClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = MaterialTheme.colorScheme.primary),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = MaterialTheme.colorScheme.error),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("GOT IT", fontWeight = FontWeight.Bold)
+                Text("DISMISS", fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun PostJobScreen(
     isLoading: Boolean,
-    onPostClick: (String, String, String, Double, String) -> Unit,
+    onPostClick: (String, String, String, Double, String, String?) -> Unit,
     onBackClick: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
@@ -29,6 +29,8 @@ fun PostJobScreen(
     var category by remember { mutableStateOf("Plumbing") }
     var amount by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
+    var deadline by remember { mutableStateOf("") }
+    var showDatePicker by remember { mutableStateOf(false) }
     
     val scrollState = rememberScrollState()
     val categories = listOf("Plumbing", "Electrical", "Cleaning", "Painting", "Carpentry", "Gardening", "Moving", "Other")
@@ -120,6 +122,45 @@ fun PostJobScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            if (showDatePicker) {
+                com.example.hustlefix.ui.components.HustleFixDatePicker(
+                    onDateSelected = { millis ->
+                        millis?.let {
+                            deadline = com.example.hustlefix.ui.components.formatMillisToDate(it)
+                        }
+                    },
+                    onDismiss = { showDatePicker = false }
+                )
+            }
+
+            OutlinedTextField(
+                value = deadline,
+                onValueChange = { },
+                readOnly = true,
+                label = { Text("Deadline (Optional)") },
+                placeholder = { Text("Select a deadline date") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                leadingIcon = { Icon(Icons.Default.Event, contentDescription = null) },
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.CalendarToday, contentDescription = "Select Date")
+                    }
+                },
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    .also { interactionSource ->
+                        LaunchedEffect(interactionSource) {
+                            interactionSource.interactions.collect {
+                                if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
+                                    showDatePicker = true
+                                }
+                            }
+                        }
+                    }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
@@ -133,7 +174,7 @@ fun PostJobScreen(
 
             Button(
                 onClick = { 
-                    onPostClick(title, category, description, amount.toDoubleOrNull() ?: 0.0, location) 
+                    onPostClick(title, category, description, amount.toDoubleOrNull() ?: 0.0, location, deadline.ifEmpty { null }) 
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),

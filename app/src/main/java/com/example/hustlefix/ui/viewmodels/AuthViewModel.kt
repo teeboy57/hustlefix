@@ -12,6 +12,8 @@ import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.tasks.await
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 data class AuthUiState(
     val isLoading: Boolean = false,
@@ -57,26 +59,43 @@ class AuthViewModel(
                                 }
                                 
                                 if (profile.isSuspended) {
-                                    auth.signOut()
-                                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Your account has been suspended.")
-                                } else {
-                                    val appRole = if (profile.role == "worker") "service_provider" else "client"
-                                    SessionHelper.saveRole(context, appRole)
-                                    SessionHelper.setLoggedIn(context, true)
-                                    
-                                    // Update FCM Token
-                                    try {
-                                        com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
-                                            viewModelScope.launch {
-                                                userRepository.updateFcmToken(user.uid, token)
-                                            }
-                                        }
-                                    } catch (e: Exception) {
-                                        // FCM not available, ignore for now
+                                    val suspensionUntil = profile.suspensionUntil
+                                    if (suspensionUntil != null && suspensionUntil > System.currentTimeMillis()) {
+                                        val sdf = SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault())
+                                        val dateStr = sdf.format(Date(suspensionUntil))
+                                        auth.signOut()
+                                        _uiState.value = _uiState.value.copy(
+                                            isLoading = false, 
+                                            error = "Your account is suspended until $dateStr. Reason: ${profile.suspensionReason ?: "Violation of terms"}"
+                                        )
+                                        return@launch
+                                    } else if (suspensionUntil != null) {
+                                        // Auto-unsuspend if time has passed
+                                        userRepository.saveUserProfile(user.uid, mapOf("isSuspended" to false))
+                                    } else {
+                                        // Permanent suspension if no timestamp
+                                        auth.signOut()
+                                        _uiState.value = _uiState.value.copy(isLoading = false, error = "Your account has been permanently suspended.")
+                                        return@launch
                                     }
-                                    
-                                    _uiState.value = _uiState.value.copy(isLoading = false, isLoginSuccessful = true)
                                 }
+
+                                val appRole = if (profile.role == "worker") "service_provider" else "client"
+                                SessionHelper.saveRole(context, appRole)
+                                SessionHelper.setLoggedIn(context, true)
+                                
+                                // Update FCM Token
+                                try {
+                                    com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                                        viewModelScope.launch {
+                                            userRepository.updateFcmToken(user.uid, token)
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    // FCM not available, ignore for now
+                                }
+                                
+                                _uiState.value = _uiState.value.copy(isLoading = false, isLoginSuccessful = true)
                             } catch (e: Exception) {
                                 auth.signOut()
                                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Login failed: ${e.message}")

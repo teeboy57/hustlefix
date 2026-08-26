@@ -33,6 +33,8 @@ import java.util.*
 fun MyBookingsScreen(
     bookings: List<Booking>,
     isLoading: Boolean,
+    isServiceProvider: Boolean = false,
+    currentStatus: String = "all",
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
     onBookingClick: (Booking) -> Unit,
@@ -57,7 +59,17 @@ fun MyBookingsScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Booking History", fontWeight = FontWeight.ExtraBold) },
+                title = { 
+                    val title = when(currentStatus.lowercase()) {
+                        "all" -> "Booking History"
+                        "active" -> "Active Bookings"
+                        "pending" -> "Pending Bookings"
+                        "completed" -> "Completed Bookings"
+                        "cancelled" -> "Cancelled Bookings"
+                        else -> "${currentStatus.replaceFirstChar { it.uppercase() }} Bookings"
+                    }
+                    Text(title, fontWeight = FontWeight.ExtraBold) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -89,7 +101,11 @@ fun MyBookingsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(bookings) { booking ->
-                        BookingCard(booking = booking, onClick = { onBookingClick(booking) })
+                        BookingCard(
+                            booking = booking, 
+                            isServiceProvider = isServiceProvider,
+                            onClick = { onBookingClick(booking) }
+                        )
                     }
                 }
             }
@@ -107,6 +123,7 @@ fun MyBookingsScreen(
 @Composable
 fun BookingCard(
     booking: Booking,
+    isServiceProvider: Boolean = false,
     onClick: () -> Unit
 ) {
     Card(
@@ -143,13 +160,14 @@ fun BookingCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = booking.getServiceTitle() ?: "Service",
+                    text = booking.getServiceTitleCompatibility() ?: "Service",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1
                 )
+                val name = if (isServiceProvider) booking.getClientName() else booking.getServiceProviderName()
                 Text(
-                    text = booking.getServiceProviderName() ?: "Provider",
+                    text = name ?: "User",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

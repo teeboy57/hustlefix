@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 
 data class MyBookingsUiState(
     val bookings: List<Booking> = emptyList(),
+    val filteredBookings: List<Booking> = emptyList(),
+    val currentStatus: String = "all",
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false
 )
@@ -60,16 +62,38 @@ class MyBookingsViewModel(application: Application) : AndroidViewModel(applicati
                     }
                 }
                 _uiState.value = _uiState.value.copy(
-                    bookings = list.sortedByDescending { it.timestamp },
+                    bookings = list.sortedByDescending { it.getCreatedAt() },
                     isLoading = false,
                     isRefreshing = false
                 )
+                applyFilter()
             }
             override fun onCancelled(error: DatabaseError) {
                 _uiState.value = _uiState.value.copy(isLoading = false, isRefreshing = false)
             }
         }
         bookingsListener?.let { bookingsQuery?.addValueEventListener(it) }
+    }
+
+    fun onStatusFilterChange(status: String) {
+        _uiState.value = _uiState.value.copy(currentStatus = status)
+        applyFilter()
+    }
+
+    private fun applyFilter() {
+        val allBookings = _uiState.value.bookings
+        val status = _uiState.value.currentStatus
+        
+        val filtered = when (status.lowercase()) {
+            "all" -> allBookings
+            "active" -> allBookings.filter { 
+                val s = it.status?.lowercase() ?: ""
+                s == "pending" || s == "confirmed" || s == "paid"
+            }
+            else -> allBookings.filter { it.status?.lowercase() == status.lowercase() }
+        }
+        
+        _uiState.value = _uiState.value.copy(filteredBookings = filtered)
     }
 
     fun refresh() {

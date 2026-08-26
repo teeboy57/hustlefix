@@ -10,9 +10,14 @@ public class User {
     private String location;
     private boolean isVerified;
     private boolean isSuspended;
+    private Long suspensionUntil;
+    private String suspensionReason;
     private long createdAt;
     private String verificationStatus;
     private String rejectionReason;
+    private String adminNotes;
+    private Integer reportCount;
+    private boolean isFlagged;
     private Double walletBalance;
     private Double latitude;
     private Double longitude;
@@ -62,6 +67,12 @@ public class User {
     public boolean isSuspended() { return isSuspended; }
     public void setSuspended(boolean suspended) { isSuspended = suspended; }
 
+    public Long getSuspensionUntil() { return suspensionUntil; }
+    public void setSuspensionUntil(Long suspensionUntil) { this.suspensionUntil = suspensionUntil; }
+
+    public String getSuspensionReason() { return suspensionReason; }
+    public void setSuspensionReason(String suspensionReason) { this.suspensionReason = suspensionReason; }
+
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 
@@ -70,6 +81,15 @@ public class User {
 
     public String getRejectionReason() { return rejectionReason; }
     public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+    public String getAdminNotes() { return adminNotes; }
+    public void setAdminNotes(String adminNotes) { this.adminNotes = adminNotes; }
+
+    public Integer getReportCount() { return reportCount != null ? reportCount : 0; }
+    public void setReportCount(Integer reportCount) { this.reportCount = reportCount; }
+
+    public boolean isFlagged() { return isFlagged; }
+    public void setFlagged(boolean flagged) { isFlagged = flagged; }
 
     public Double getWalletBalance() { return walletBalance != null ? walletBalance : 0.0; }
     public void setWalletBalance(Double walletBalance) { this.walletBalance = walletBalance; }

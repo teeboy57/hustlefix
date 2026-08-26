@@ -8,7 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,6 +25,8 @@ fun MyServicesScreen(
     onDeleteClick: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
+    var showDeleteDialog by remember { mutableStateOf<String?>(null) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -52,9 +54,37 @@ fun MyServicesScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 items(services) { service ->
-                    MyServiceCard(service, onClick = { onServiceClick(service) }, onDelete = { onDeleteClick(service.serviceId) })
+                    MyServiceCard(
+                        service = service,
+                        onClick = { onServiceClick(service) },
+                        onDelete = { showDeleteDialog = service.serviceId }
+                    )
                 }
             }
+        }
+
+        if (showDeleteDialog != null) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = null },
+                title = { Text("Delete Service") },
+                text = { Text("Are you sure you want to delete this service? This action cannot be undone.") },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog?.let { onDeleteClick(it) }
+                            showDeleteDialog = null
+                        },
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = null }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
@@ -62,6 +92,7 @@ fun MyServicesScreen(
 @Composable
 fun MyServiceCard(service: Service, onClick: () -> Unit, onDelete: () -> Unit) {
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -73,6 +104,11 @@ fun MyServiceCard(service: Service, onClick: () -> Unit, onDelete: () -> Unit) {
                 Text(service.category ?: "General", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                 Text("R${service.price}", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
             }
+            
+            IconButton(onClick = onClick) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit", tint = MaterialTheme.colorScheme.primary)
+            }
+            
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
             }

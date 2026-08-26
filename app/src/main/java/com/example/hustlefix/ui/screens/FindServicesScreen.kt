@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.hustlefix.R
 import com.example.hustlefix.Service
+import com.example.hustlefix.ui.components.*
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,40 +52,16 @@ fun FindServicesScreen(
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
 
-    if (pullToRefreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            onRefresh()
-        }
-    }
-
-    LaunchedEffect(isRefreshing) {
-        if (!isRefreshing) {
-            pullToRefreshState.endRefresh()
-        } else {
-            pullToRefreshState.startRefresh()
-        }
-    }
-
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Find Services", fontWeight = FontWeight.ExtraBold) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
+            HustleFixTopBar(
+                title = "Find Services",
+                onNavigationClick = onBackClick,
                 actions = {
                     IconButton(onClick = onSortClick) {
                         Icon(Icons.Default.Tune, contentDescription = "Filter")
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                }
             )
         }
     ) { padding ->
@@ -137,11 +114,25 @@ fun FindServicesScreen(
 
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (isLoading && !isRefreshing) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CircularProgressIndicator(strokeWidth = 3.dp)
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(20.dp),
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(6) {
+                                ShimmerItem(modifier = Modifier.height(220.dp))
+                            }
                         }
                     } else if (services.isEmpty()) {
-                        EmptyServicesState()
+                        EmptyState(
+                            title = "No services found",
+                            description = "Try adjusting your search or filters to find what you need.",
+                            icon = Icons.Default.SearchOff,
+                            actionLabel = "Clear Search",
+                            onActionClick = { onSearchQueryChange("") }
+                        )
                     } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
@@ -150,8 +141,11 @@ fun FindServicesScreen(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            items(services) { service ->
-                                ServiceGridItem(service = service, onClick = { onServiceClick(service) })
+                            items(services.size) { index ->
+                                val service = services[index]
+                                AnimatedEntrance(delay = index * 50) {
+                                    ServiceGridItem(service = service, onClick = { onServiceClick(service) })
+                                }
                             }
                         }
                     }
@@ -164,6 +158,12 @@ fun FindServicesScreen(
                 containerColor = MaterialTheme.colorScheme.surface,
                 contentColor = MaterialTheme.colorScheme.primary
             )
+
+            if (pullToRefreshState.isRefreshing) {
+                LaunchedEffect(true) {
+                    onRefresh()
+                }
+            }
         }
     }
 }
@@ -173,13 +173,10 @@ fun ServiceGridItem(
     service: Service,
     onClick: () -> Unit
 ) {
-    Card(
+    StandardCard(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            .fillMaxWidth(),
+        onClick = onClick
     ) {
         Column {
             Box(modifier = Modifier.height(140.dp)) {

@@ -43,39 +43,19 @@ class ChatViewModel : ViewModel() {
         _listUiState.value = _listUiState.value.copy(isLoading = true)
 
         listRef?.let { ref -> listListener?.let { ref.removeEventListener(it) } }
-        listRef = database.getReference("messages")
+        listRef = database.getReference("user_chats").child(uid)
         listListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val chatMap = mutableMapOf<String, ChatSummary>()
+                val chats = mutableListOf<ChatSummary>()
                 for (chatSnapshot in snapshot.children) {
-                    val chatId = chatSnapshot.key ?: continue
-                    if (!chatId.contains(uid)) continue
-
-                    val messages = mutableListOf<Message>()
-                    for (msgSnapshot in chatSnapshot.children) {
-                        msgSnapshot.getValue(Message::class.java)?.let { messages.add(it) }
-                    }
-
-                    if (messages.isNotEmpty()) {
-                        val lastMsg = messages.maxByOrNull { it.timestamp }
-                        if (lastMsg != null) {
-                            val partnerId = if (lastMsg.senderId == uid) lastMsg.receiverId else lastMsg.senderId
-                            val partnerName = if (lastMsg.senderId == uid) lastMsg.receiverName else lastMsg.senderName
-
-                            val summary = ChatSummary().apply {
-                                this.chatId = chatId
-                                this.partnerId = partnerId
-                                this.partnerName = partnerName
-                                this.lastMessage = lastMsg.messageText
-                                this.lastTimestamp = lastMsg.timestamp ?: 0L
-                            }
-                            chatMap[chatId] = summary
-                            fetchPartnerProfile(summary)
-                        }
+                    val summary = chatSnapshot.getValue(ChatSummary::class.java)
+                    if (summary != null) {
+                        chats.add(summary)
+                        fetchPartnerProfile(summary)
                     }
                 }
                 _listUiState.value = _listUiState.value.copy(
-                    chats = chatMap.values.sortedByDescending { it.lastTimestamp ?: 0L },
+                    chats = chats.sortedByDescending { it.lastTimestamp ?: 0L },
                     isLoading = false
                 )
             }
@@ -139,6 +119,50 @@ class ChatViewModel : ViewModel() {
         
         val message = Message(msgId, uid, senderName, partnerId, partnerName, text)
         msgRef.child(msgId).setValue(message)
+
+        // Update Index for both users
+        val summaryForMe = ChatSummary(chatId, partnerId, partnerName, text, message.timestamp)
+        val summaryForPartner = ChatSummary(chatId, uid, senderName, text, message.timestamp)
+
+        database.getReference("user_chats").child(uid).child(chatId).setValue(summaryForMe)
+        database.getReference("user_chats").child(partnerId).child(chatId).setValue(summaryForPartner)
+    }
+
+    fun editMessage(partnerId: String, messageId: String, newText: String) {
+        if (newText.trim().isEmpty()) return
+        val uid = currentUserId ?: return
+        val chatId = if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid"
+        
+        val updates = mapOf(
+            "messageText" to newText,
+            "edited" to true
+        )
+        database.getReference("messages").child(chatId).child(messageId).updateChildren(updates)
+        
+        // Update index if it's the last message (checking by timestamp/logic is complex, so we update anyway if it matches text)
+        // For performance, we'll check the current index first
+        database.getReference("user_chats").child(uid).child(chatId).child("lastMessage").get().addOnSuccessListener { snapshot ->
+            // If the index's last message is what we're editing (simplified check), update it
+            // Actually, we should just update it to be safe.
+            val summaryUpdates = mapOf("lastMessage" to newText)
+            database.getReference("user_chats").child(uid).child(chatId).updateChildren(summaryUpdates)
+            database.getReference("user_chats").child(partnerId).child(chatId).updateChildren(summaryUpdates)
+        }
+    }
+
+    fun deleteMessage(partnerId: String, messageId: String) {
+        val uid = currentUserId ?: return
+        val chatId = if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid"
+        
+        val updates = mapOf(
+            "messageText" to "This message was deleted",
+            "deleted" to true
+        )
+        database.getReference("messages").child(chatId).child(messageId).updateChildren(updates)
+
+        val summaryUpdates = mapOf("lastMessage" to "This message was deleted")
+        database.getReference("user_chats").child(uid).child(chatId).updateChildren(summaryUpdates)
+        database.getReference("user_chats").child(partnerId).child(chatId).updateChildren(summaryUpdates)
     }
 
     override fun onCleared() {

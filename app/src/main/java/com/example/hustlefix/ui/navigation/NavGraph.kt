@@ -18,13 +18,16 @@ import com.example.hustlefix.ApiClient
 
 sealed class Screen(val route: String) {
     object Welcome : Screen("welcome")
+    object Onboarding : Screen("onboarding")
     object Login : Screen("login")
     object Register : Screen("register")
     object ClientDashboard : Screen("client_dashboard")
     object ServiceProviderDashboard : Screen("service_provider_dashboard")
-    object MyBookings : Screen("my_bookings")
-    object FindServices : Screen("find_services?category={category}") {
-        fun createRoute(category: String = "All") = "find_services?category=$category"
+    object MyBookings : Screen("my_bookings?status={status}") {
+        fun createRoute(status: String = "all") = "my_bookings?status=$status"
+    }
+    object FindServices : Screen("find_services?category={category}&query={query}") {
+        fun createRoute(category: String = "All", query: String = "") = "find_services?category=$category&query=$query"
     }
     object Profile : Screen("profile")
     object Wallet : Screen("wallet")
@@ -118,11 +121,21 @@ fun HustleFixNavGraph(
             WelcomeScreen(
                 onServiceProviderClick = { 
                     SessionHelper.saveRole(context, "service_provider")
-                    navController.navigate(Screen.Login.route) 
+                    navController.navigate(Screen.Onboarding.route) 
                 },
                 onClientClick = { 
                     SessionHelper.saveRole(context, "client")
-                    navController.navigate(Screen.Login.route)
+                    navController.navigate(Screen.Onboarding.route)
+                }
+            )
+        }
+
+        composable(Screen.Onboarding.route) {
+            OnboardingScreen(
+                onFinished = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
                 }
             )
         }
@@ -175,10 +188,14 @@ fun HustleFixNavGraph(
 
             ClientDashboardScreen(
                 clientName = uiState.clientName,
+                walletBalance = uiState.walletBalance,
                 totalBookings = uiState.totalBookings,
                 activeBookings = uiState.activeBookings,
                 completedBookings = uiState.completedBookings,
                 recentBookings = uiState.recentBookings,
+                upcomingBooking = uiState.upcomingBooking,
+                unreadMessagesCount = uiState.unreadMessagesCount,
+                nearbyServices = uiState.nearbyServices,
                 unreadNotifications = notifState.unreadCount,
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { viewModel.refresh() },
@@ -186,18 +203,32 @@ fun HustleFixNavGraph(
                     navController.navigate(Screen.FindServices.createRoute(category))
                 },
                 onQuickActionClick = { action ->
-                    when (action) {
-                        "post_job" -> navController.navigate(Screen.PostJob.route)
-                        "find" -> navController.navigate(Screen.Map.route)
-                        "bookings" -> navController.navigate(Screen.MyBookings.route)
-                        "saved" -> navController.navigate(Screen.SavedServices.route)
-                        "messages" -> navController.navigate(Screen.ChatList.route)
-                        "notifications" -> navController.navigate(Screen.Notifications.route)
-                        "emergency" -> navController.navigate(Screen.Emergency.route)
+                    if (action.startsWith("find_query")) {
+                        val query = action.substringAfter("q=")
+                        navController.navigate(Screen.FindServices.createRoute(query = query))
+                    } else if (action.startsWith("chat_")) {
+                        val pid = action.substringAfter("chat_")
+                        navController.navigate(Screen.Chat.createRoute(pid, "Provider"))
+                    } else {
+                        when (action) {
+                            "find" -> navController.navigate(Screen.Map.route)
+                            "bookings" -> navController.navigate(Screen.MyBookings.createRoute("all"))
+                            "active_bookings" -> navController.navigate(Screen.MyBookings.createRoute("active"))
+                            "done_bookings" -> navController.navigate(Screen.MyBookings.createRoute("completed"))
+                            "saved" -> navController.navigate(Screen.SavedServices.route)
+                            "messages" -> navController.navigate(Screen.ChatList.route)
+                            "notifications" -> navController.navigate(Screen.Notifications.route)
+                            "emergency" -> navController.navigate(Screen.Emergency.route)
+                            "wallet" -> navController.navigate(Screen.Wallet.route)
+                            "urgent_jobs" -> navController.navigate(Screen.UrgentJobs.route)
+                        }
                     }
                 },
                 onBookingClick = { booking ->
                     navController.navigate("booking_detail/${booking.bookingId}")
+                },
+                onServiceClick = { service ->
+                    navController.navigate(Screen.ServiceDetail.createRoute(service.serviceId ?: ""))
                 },
                 onMenuClick = onMenuClick
             )
@@ -233,9 +264,12 @@ fun HustleFixNavGraph(
                         "find_jobs" -> navController.navigate(Screen.AvailableJobs.route)
                         "my_services" -> navController.navigate(Screen.MyServices.route)
                         "new" -> navController.navigate(Screen.PostService.route)
-                        "work" -> navController.navigate(Screen.UrgentJobs.route)
+                        "work" -> navController.navigate(Screen.Analytics.route)
+                        "urgent" -> navController.navigate(Screen.UrgentJobs.route)
+                        "bookings" -> navController.navigate(Screen.MyBookings.createRoute("all"))
                         "settings" -> navController.navigate(Screen.Settings.route)
                         "notifications" -> navController.navigate(Screen.Notifications.route)
+                        "ratings" -> navController.navigate(Screen.Ratings.route)
                     }
                 },
                 onBookingClick = { booking ->
@@ -245,13 +279,23 @@ fun HustleFixNavGraph(
             )
         }
 
-        composable(Screen.MyBookings.route) {
+        composable(
+            route = Screen.MyBookings.route,
+            arguments = listOf(navArgument("status") { defaultValue = "all" })
+        ) { backStackEntry ->
+            val status = backStackEntry.arguments?.getString("status") ?: "all"
             val viewModel: MyBookingsViewModel = viewModel()
             val uiState by viewModel.uiState.collectAsState()
             
+            LaunchedEffect(status) {
+                viewModel.onStatusFilterChange(status)
+            }
+            
             MyBookingsScreen(
-                bookings = uiState.bookings,
+                bookings = uiState.filteredBookings,
                 isLoading = uiState.isLoading,
+                isServiceProvider = SessionHelper.getRole(context) == "service_provider",
+                currentStatus = uiState.currentStatus,
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { viewModel.refresh() },
                 onBookingClick = { booking ->
@@ -264,14 +308,21 @@ fun HustleFixNavGraph(
 
         composable(
             route = Screen.FindServices.route,
-            arguments = listOf(navArgument("category") { defaultValue = "All" })
+            arguments = listOf(
+                navArgument("category") { defaultValue = "All" },
+                navArgument("query") { defaultValue = "" }
+            )
         ) { backStackEntry ->
             val category = backStackEntry.arguments?.getString("category") ?: "All"
+            val query = backStackEntry.arguments?.getString("query") ?: ""
             val viewModel: FindServicesViewModel = viewModel()
             val uiState by viewModel.uiState.collectAsState()
             
-            LaunchedEffect(category) {
+            LaunchedEffect(category, query) {
                 viewModel.onCategoryChange(category)
+                if (query.isNotEmpty()) {
+                    viewModel.onSearchQueryChange(query)
+                }
             }
             
             FindServicesScreen(
@@ -353,6 +404,8 @@ fun HustleFixNavGraph(
                 selectedImageUri = uiState.selectedImageUri,
                 walletBalance = uiState.walletBalance,
                 role = uiState.role,
+                isFlagged = uiState.isFlagged,
+                adminNotes = uiState.adminNotes,
                 isLoading = uiState.isLoading,
                 isSuccess = uiState.isSuccess,
                 error = uiState.error,
@@ -373,7 +426,8 @@ fun HustleFixNavGraph(
                     }
                 },
                 onClearStatus = { viewModel.clearStatus() },
-                onVerificationClick = { navController.navigate(Screen.Verification.route) }
+                onVerificationClick = { navController.navigate(Screen.Verification.route) },
+                onSubmitDispute = { viewModel.submitDispute(it) }
             )
         }
 
@@ -627,6 +681,19 @@ fun HustleFixNavGraph(
             AnalyticsScreen(
                 stats = uiState.stats,
                 isLoading = uiState.isLoading,
+                onDetailClick = { action ->
+                    when (action) {
+                        "wallet" -> navController.navigate(Screen.Wallet.route)
+                        "ratings" -> navController.navigate(Screen.Ratings.route)
+                        "bookings" -> navController.navigate(Screen.MyBookings.createRoute("all"))
+                        "bookings_completed" -> navController.navigate(Screen.MyBookings.createRoute("completed"))
+                        "bookings_pending" -> navController.navigate(Screen.MyBookings.createRoute("pending"))
+                        "bookings_cancelled" -> navController.navigate(Screen.MyBookings.createRoute("cancelled"))
+                        "bookings_weekly" -> navController.navigate(Screen.MyBookings.createRoute("all"))
+                        "income_statement" -> navController.navigate(Screen.IncomeStatement.route)
+                        "clients" -> { /* Future feature */ }
+                    }
+                },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -662,6 +729,7 @@ fun HustleFixNavGraph(
                 isLoading = uiState.isLoading,
                 isSuccess = uiState.isSuccess,
                 error = uiState.error,
+                activeRequest = uiState.activeRequest,
                 onSendEmergency = { t, d -> viewModel.sendEmergencyRequest(t, d) },
                 onBackClick = { navController.popBackStack() },
                 onClearError = { viewModel.clearError() }
@@ -774,6 +842,16 @@ fun HustleFixNavGraph(
                         viewModel.sendMessage(partnerId, partnerName, it)
                     }
                 },
+                onEditMessage = { mid, text ->
+                    if (partnerId.isNotEmpty()) {
+                        viewModel.editMessage(partnerId, mid, text)
+                    }
+                },
+                onDeleteMessage = { mid ->
+                    if (partnerId.isNotEmpty()) {
+                        viewModel.deleteMessage(partnerId, mid)
+                    }
+                },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -861,6 +939,7 @@ fun HustleFixNavGraph(
                 isServiceProvider = isServiceProvider,
                 isLoading = uiState.isLoading,
                 isVerifyingPayment = uiState.isVerifyingPayment,
+                walletBalance = uiState.walletBalance,
                 onStatusUpdate = { viewModel.updateStatus(it) },
                 onRatingSubmit = { s, c, a -> viewModel.submitRating(s, c, a) },
                 onChatClick = {
@@ -880,6 +959,9 @@ fun HustleFixNavGraph(
                         viewModel.startPaymentVerification()
                         payfastViewModel.initiatePayment(booking)
                     }
+                },
+                onPayWithWalletClick = {
+                    viewModel.payWithWallet()
                 },
                 onSharePayLink = { message ->
                     uiState.booking?.let { booking ->
@@ -911,7 +993,7 @@ fun HustleFixNavGraph(
             
             PostJobScreen(
                 isLoading = uiState.isLoading,
-                onPostClick = { t, c, d, a, l -> viewModel.postJob(t, c, d, a, l) },
+                onPostClick = { t, c, d, a, l, dl -> viewModel.postJob(t, c, d, a, l, dl) },
                 onBackClick = { navController.popBackStack() }
             )
         }

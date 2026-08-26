@@ -18,6 +18,11 @@ class RatingRepository {
             
             // Update user's average rating
             updateUserRating(rating.ratedId, rating.rating)
+
+            // Update service's average rating if applicable
+            if (!rating.jobId.isNullOrEmpty()) {
+                updateServiceRating(rating.jobId, rating.rating)
+            }
             
             Result.success(Unit)
         } catch (e: Exception) {
@@ -37,5 +42,21 @@ class RatingRepository {
         
         userRef.child("rating").setValue(newAvg)
         userRef.child("ratingCount").setValue(newCount)
+    }
+
+    private suspend fun updateServiceRating(serviceId: String, newRating: Float) {
+        val serviceRef = database.getReference("services").child(serviceId)
+        val snapshot = serviceRef.get().await()
+        if (!snapshot.exists()) return
+
+        val currentRating = snapshot.child("averageRating").getValue(Double::class.java) ?: 0.0
+        val bookingsCount = snapshot.child("bookingsCount").getValue(Int::class.java) ?: 0
+        
+        // We use bookingsCount as the denominator, assuming each rating corresponds to a booking
+        val newCount = bookingsCount + 1
+        val newAvg = ((currentRating * bookingsCount) + newRating) / newCount
+        
+        serviceRef.child("averageRating").setValue(newAvg)
+        serviceRef.child("bookingsCount").setValue(newCount)
     }
 }

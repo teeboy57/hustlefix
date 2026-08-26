@@ -55,7 +55,21 @@ fun ServiceDetailScreen(
 
     if (showBookingDialog && service != null) {
         var notes by remember { mutableStateOf("") }
-        var date by remember { mutableStateOf("") }
+        var dateText by remember { mutableStateOf("") }
+        var showDatePicker by remember { mutableStateOf(false) }
+        var selectedDateMillis by remember { mutableStateOf<Long?>(null) }
+
+        if (showDatePicker) {
+            com.example.hustlefix.ui.components.HustleFixDatePicker(
+                onDateSelected = { millis ->
+                    selectedDateMillis = millis
+                    millis?.let {
+                        dateText = com.example.hustlefix.ui.components.formatMillisToDate(it)
+                    }
+                },
+                onDismiss = { showDatePicker = false }
+            )
+        }
 
         AlertDialog(
             onDismissRequest = { showBookingDialog = false },
@@ -65,12 +79,32 @@ fun ServiceDetailScreen(
                     Text("Provide a preferred date and any special instructions.")
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
-                        value = date,
-                        onValueChange = { date = it },
-                        label = { Text("Preferred Date/Time") },
-                        placeholder = { Text("e.g. Next Monday at 10 AM") },
+                        value = dateText,
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Preferred Date") },
+                        placeholder = { Text("Select a date") },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        trailingIcon = {
+                            IconButton(onClick = { showDatePicker = true }) {
+                                Icon(Icons.Default.CalendarToday, contentDescription = "Select Date")
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                            .also { interactionSource ->
+                                LaunchedEffect(interactionSource) {
+                                    interactionSource.interactions.collect {
+                                        if (it is androidx.compose.foundation.interaction.PressInteraction.Release) {
+                                            showDatePicker = true
+                                        }
+                                    }
+                                }
+                            }
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
@@ -85,10 +119,10 @@ fun ServiceDetailScreen(
             confirmButton = {
                 Button(
                     onClick = { 
-                        onBookNowClick(date, notes)
+                        onBookNowClick(dateText, notes)
                         showBookingDialog = false 
                     },
-                    enabled = date.isNotEmpty()
+                    enabled = dateText.isNotEmpty()
                 ) {
                     Text("CONFIRM BOOKING")
                 }

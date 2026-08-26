@@ -10,6 +10,8 @@ public class Message {
     private Long timestamp;
     private Boolean isRead;
     private String chatId;
+    private Boolean edited;
+    private Boolean deleted;
 
     public Message() {
         // Default constructor required for Firebase
@@ -55,4 +57,8 @@ public class Message {
     public void setRead(Boolean isRead) { this.isRead = isRead; }
     public String getChatId() { return chatId; }
     public void setChatId(String chatId) { this.chatId = chatId; }
+    public Boolean isEdited() { return edited != null ? edited : false; }
+    public void setEdited(Boolean edited) { this.edited = edited; }
+    public Boolean isDeleted() { return deleted != null ? deleted : false; }
+    public void setDeleted(Boolean deleted) { this.deleted = deleted; }
 }

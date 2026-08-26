@@ -105,6 +105,7 @@ class ServiceDetailViewModel : ViewModel() {
             
             val booking = Booking(
                 service.serviceId,
+                service.title,
                 userId,
                 clientName,
                 service.getserviceProviderId(),

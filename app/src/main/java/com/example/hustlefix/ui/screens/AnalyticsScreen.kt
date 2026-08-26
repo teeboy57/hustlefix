@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 fun AnalyticsScreen(
     stats: Map<String, String>,
     isLoading: Boolean,
+    onDetailClick: (String) -> Unit = {},
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -60,9 +61,13 @@ fun AnalyticsScreen(
 
                 // Key Metrics
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Total Revenue", stats["totalRevenue"] ?: "R0.00", Icons.Default.Payments, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+                    MetricCard("Total Revenue", stats["totalRevenue"] ?: "R0.00", Icons.Default.Payments, MaterialTheme.colorScheme.primary, Modifier.weight(1f)) {
+                        onDetailClick("wallet")
+                    }
                     Spacer(modifier = Modifier.width(16.dp))
-                    MetricCard("Avg Rating", stats["avgRating"] ?: "0.0", Icons.Default.Star, Color(0xFFFFC107), Modifier.weight(1f))
+                    MetricCard("Avg Rating", stats["avgRating"] ?: "0.0", Icons.Default.Star, Color(0xFFFFC107), Modifier.weight(1f)) {
+                        onDetailClick("ratings")
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -77,10 +82,10 @@ fun AnalyticsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     userScrollEnabled = false
                 ) {
-                    item { SmallStatCard("Total Bookings", stats["totalBookings"] ?: "0", Icons.Default.Assignment) }
-                    item { SmallStatCard("Completed", stats["completed"] ?: "0", Icons.Default.CheckCircle) }
-                    item { SmallStatCard("Pending", stats["pending"] ?: "0", Icons.Default.HourglassEmpty) }
-                    item { SmallStatCard("Cancelled", stats["cancelled"] ?: "0", Icons.Default.Cancel) }
+                    item { SmallStatCard("Total Bookings", stats["totalBookings"] ?: "0", Icons.Default.Assignment) { onDetailClick("bookings") } }
+                    item { SmallStatCard("Completed", stats["completed"] ?: "0", Icons.Default.CheckCircle) { onDetailClick("bookings_completed") } }
+                    item { SmallStatCard("Pending", stats["pending"] ?: "0", Icons.Default.HourglassEmpty) { onDetailClick("bookings_pending") } }
+                    item { SmallStatCard("Cancelled", stats["cancelled"] ?: "0", Icons.Default.Cancel) { onDetailClick("bookings_cancelled") } }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -89,9 +94,9 @@ fun AnalyticsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    GrowthRow("Monthly Revenue", stats["monthlyRevenue"] ?: "R0.00", Icons.Default.TrendingUp)
-                    GrowthRow("Weekly Bookings", stats["weeklyBookings"] ?: "0", Icons.Default.DateRange)
-                    GrowthRow("New Clients", stats["totalClients"] ?: "0", Icons.Default.PersonAdd)
+                    GrowthRow("Monthly Revenue", stats["monthlyRevenue"] ?: "R0.00", Icons.Default.TrendingUp) { onDetailClick("income_statement") }
+                    GrowthRow("Weekly Bookings", stats["weeklyBookings"] ?: "0", Icons.Default.DateRange) { onDetailClick("bookings_weekly") }
+                    GrowthRow("New Clients", stats["totalClients"] ?: "0", Icons.Default.PersonAdd) { onDetailClick("clients") }
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))
@@ -101,8 +106,9 @@ fun AnalyticsScreen(
 }
 
 @Composable
-fun MetricCard(label: String, value: String, icon: ImageVector, color: Color, modifier: Modifier = Modifier) {
+fun MetricCard(label: String, value: String, icon: ImageVector, color: Color, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Card(
+        onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f))
@@ -117,8 +123,9 @@ fun MetricCard(label: String, value: String, icon: ImageVector, color: Color, mo
 }
 
 @Composable
-fun SmallStatCard(label: String, value: String, icon: ImageVector) {
+fun SmallStatCard(label: String, value: String, icon: ImageVector, onClick: () -> Unit = {}) {
     Card(
+        onClick = onClick,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
     ) {
@@ -134,8 +141,9 @@ fun SmallStatCard(label: String, value: String, icon: ImageVector) {
 }
 
 @Composable
-fun GrowthRow(label: String, value: String, icon: ImageVector) {
+fun GrowthRow(label: String, value: String, icon: ImageVector, onClick: () -> Unit = {}) {
     Card(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)

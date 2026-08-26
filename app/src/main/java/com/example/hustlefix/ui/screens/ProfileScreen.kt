@@ -47,6 +47,8 @@ fun ProfileScreen(
     selectedImageUri: Uri?,
     walletBalance: String,
     role: String = "client",
+    isFlagged: Boolean = false,
+    adminNotes: String? = null,
     isLoading: Boolean,
     isSuccess: Boolean,
     error: String?,
@@ -62,10 +64,13 @@ fun ProfileScreen(
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onClearStatus: () -> Unit,
-    onVerificationClick: () -> Unit
+    onVerificationClick: () -> Unit,
+    onSubmitDispute: (String) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showDisputeDialog by remember { mutableStateOf(false) }
+    var disputeReason by remember { mutableStateOf("") }
     
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -84,6 +89,40 @@ fun ProfileScreen(
             snackbarHostState.showSnackbar("Error: $error")
             onClearStatus()
         }
+    }
+
+    if (showDisputeDialog) {
+        AlertDialog(
+            onDismissRequest = { showDisputeDialog = false },
+            title = { Text("Dispute Investigation") },
+            text = {
+                Column {
+                    Text("Provide your side of the story or explain why this flag is a mistake.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = disputeReason,
+                        onValueChange = { disputeReason = it },
+                        label = { Text("Your Explanation") },
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        onSubmitDispute(disputeReason)
+                        showDisputeDialog = false 
+                    },
+                    enabled = disputeReason.isNotBlank()
+                ) {
+                    Text("SUBMIT DISPUTE")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDisputeDialog = false }) { Text("CANCEL") }
+            }
+        )
     }
 
     Scaffold(
@@ -164,6 +203,36 @@ fun ProfileScreen(
             }
 
             Column(modifier = Modifier.padding(24.dp)) {
+                if (isFlagged) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) {
+                        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Report, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text("ACCOUNT UNDER REVIEW", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error)
+                                Text(
+                                    text = adminNotes ?: "Your account has been flagged for investigation. Please contact support.", 
+                                    style = MaterialTheme.typography.bodySmall, 
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(
+                                    onClick = { showDisputeDialog = true },
+                                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                                    modifier = Modifier.height(32.dp)
+                                ) {
+                                    Text("DISPUTE", fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Wallet Summary Card
                 Card(
                     modifier = Modifier.fillMaxWidth(),

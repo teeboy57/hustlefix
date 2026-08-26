@@ -64,25 +64,29 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
         }
     }
 
-    fun postJob(title: String, category: String, description: String, amount: Double, location: String) {
+    fun postJob(title: String, category: String, description: String, amount: Double, location: String, deadline: String? = null) {
         val uid = currentUserId ?: return
-        val name = auth.currentUser?.displayName ?: "Client"
         
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
+                // Fetch latest name from DB to avoid "Client" default
+                val userSnapshot = com.google.firebase.database.FirebaseDatabase.getInstance()
+                    .getReference("users").child(uid).get().await()
+                val dbName = userSnapshot.child("name").getValue(String::class.java) ?: auth.currentUser?.displayName ?: "Client"
+
                 // Check suspension
-                val isSuspended = com.google.firebase.database.FirebaseDatabase.getInstance()
-                    .getReference("users").child(uid).child("isSuspended").get().await()
-                    .getValue(Boolean::class.java) ?: false
+                val isSuspended = userSnapshot.child("isSuspended").getValue(Boolean::class.java) ?: false
                 
                 if (isSuspended) {
                     _uiState.update { it.copy(isLoading = false, error = "Action denied. Your account is suspended.") }
                     return@launch
                 }
 
-                val job = Job(title, category, uid, name, location, description, amount)
+                val job = Job(title, category, uid, dbName, location, description, amount).apply {
+                    this.deadline = deadline
+                }
                 val result = repository.createJob(job)
                 if (result.isSuccess) {
                     _uiState.update { it.copy(isLoading = false, successMessage = "Job posted successfully") }
@@ -97,23 +101,33 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
 
     fun submitQuote(jobId: String, amount: Double, message: String) {
         val uid = currentUserId ?: return
-        val name = auth.currentUser?.displayName ?: "Worker"
         
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
+                // Fetch latest name from DB to avoid "Worker" default
+                val userSnapshot = com.google.firebase.database.FirebaseDatabase.getInstance()
+                    .getReference("users").child(uid).get().await()
+                val dbName = userSnapshot.child("name").getValue(String::class.java) ?: auth.currentUser?.displayName ?: "Worker"
+
                 // Check suspension
-                val isSuspended = com.google.firebase.database.FirebaseDatabase.getInstance()
-                    .getReference("users").child(uid).child("isSuspended").get().await()
-                    .getValue(Boolean::class.java) ?: false
+                val isSuspended = userSnapshot.child("isSuspended").getValue(Boolean::class.java) ?: false
                 
                 if (isSuspended) {
                     _uiState.update { it.copy(isLoading = false, error = "Action denied. Your account is suspended.") }
                     return@launch
                 }
 
-                val quote = Quote(jobId, "", uid, name, "", "", message, amount, "")
+                val job = _uiState.value.availableJobs.find { it.jobId == jobId } 
+                    ?: _uiState.value.myJobs.find { it.jobId == jobId }
+                
+                if (job == null) {
+                    _uiState.update { it.copy(isLoading = false, error = "Could not find job details. Please try again.") }
+                    return@launch
+                }
+
+                val quote = Quote(jobId, job.title, uid, dbName, job.clientId, job.clientName, message, amount, "")
                 val result = repository.submitQuote(quote)
                 if (result.isSuccess) {
                     _uiState.update { it.copy(isLoading = false, successMessage = "Quote submitted successfully") }

@@ -2,6 +2,7 @@ package com.example.hustlefix.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -117,16 +118,21 @@ fun ChatItem(chat: ChatSummary, onClick: () -> Unit) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun ChatScreen(
     partnerName: String,
     messages: List<Message>,
     isLoading: Boolean,
     onSendMessage: (String) -> Unit,
+    onEditMessage: (String, String) -> Unit,
+    onDeleteMessage: (String) -> Unit,
     onBackClick: () -> Unit
 ) {
     var messageText by remember { mutableStateOf("") }
+    var editingMessageId by remember { mutableStateOf<String?>(null) }
+    var showOptionsForMessage by remember { mutableStateOf<Message?>(null) }
+    
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     val listState = rememberLazyListState()
 
@@ -189,7 +195,12 @@ fun ChatScreen(
                     IconButton(
                         onClick = {
                             if (messageText.isNotBlank()) {
-                                onSendMessage(messageText)
+                                if (editingMessageId != null) {
+                                    onEditMessage(editingMessageId!!, messageText)
+                                    editingMessageId = null
+                                } else {
+                                    onSendMessage(messageText)
+                                }
                                 messageText = ""
                             }
                         },
@@ -198,7 +209,18 @@ fun ChatScreen(
                             contentColor = Color.White
                         )
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
+                        Icon(
+                            if (editingMessageId != null) Icons.Default.Check else Icons.AutoMirrored.Filled.Send,
+                            contentDescription = if (editingMessageId != null) "Update" else "Send"
+                        )
+                    }
+                    if (editingMessageId != null) {
+                        IconButton(onClick = { 
+                            editingMessageId = null
+                            messageText = ""
+                        }) {
+                            Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+                        }
                     }
                 }
             }
@@ -217,36 +239,124 @@ fun ChatScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(messages) { message ->
-                        MessageBubble(message = message, isMe = message.senderId == currentUserId)
+                        MessageBubble(
+                            message = message, 
+                            isMe = message.senderId == currentUserId,
+                            onLongClick = {
+                                if (message.senderId == currentUserId && !message.isDeleted) {
+                                    showOptionsForMessage = message
+                                }
+                            }
+                        )
                     }
                 }
+            }
+
+            if (showOptionsForMessage != null) {
+                MessageOptionsSheet(
+                    onEdit = {
+                        editingMessageId = showOptionsForMessage?.messageId
+                        messageText = showOptionsForMessage?.messageText ?: ""
+                        showOptionsForMessage = null
+                    },
+                    onDelete = {
+                        showOptionsForMessage?.messageId?.let { onDeleteMessage(it) }
+                        showOptionsForMessage = null
+                    },
+                    onDismiss = { showOptionsForMessage = null }
+                )
             }
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MessageBubble(message: Message, isMe: Boolean) {
+fun MessageOptionsSheet(
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(),
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 32.dp)
+        ) {
+            ListItem(
+                headlineContent = { Text("Edit Message") },
+                leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
+                modifier = Modifier.clickable { onEdit() }
+            )
+            ListItem(
+                headlineContent = { Text("Delete Message", color = MaterialTheme.colorScheme.error) },
+                leadingContent = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
+                modifier = Modifier.clickable { onDelete() }
+            )
+        }
+    }
+}
+
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@Composable
+fun MessageBubble(
+    message: Message, 
+    isMe: Boolean,
+    onLongClick: () -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = if (isMe) Alignment.End else Alignment.Start
     ) {
         Surface(
-            color = if (isMe) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
+            color = if (message.isDeleted) {
+                MaterialTheme.colorScheme.surfaceVariant
+            } else if (isMe) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
             shape = RoundedCornerShape(
                 topStart = 16.dp,
                 topEnd = 16.dp,
                 bottomStart = if (isMe) 16.dp else 4.dp,
                 bottomEnd = if (isMe) 4.dp else 16.dp
             ),
-            tonalElevation = 2.dp
-        ) {
-            Text(
-                text = message.messageText ?: "",
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                color = if (isMe) Color.White else MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.bodyLarge
+            tonalElevation = 2.dp,
+            modifier = Modifier.combinedClickable(
+                onClick = {},
+                onLongClick = onLongClick
             )
+        ) {
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)) {
+                Text(
+                    text = message.messageText ?: "",
+                    color = if (message.isDeleted) {
+                        MaterialTheme.colorScheme.outline
+                    } else if (isMe) {
+                        Color.White
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                    style = if (message.isDeleted) {
+                        MaterialTheme.typography.bodyLarge.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+                    } else {
+                        MaterialTheme.typography.bodyLarge
+                    }
+                )
+                if (message.isEdited && !message.isDeleted) {
+                    Text(
+                        text = "edited",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isMe) Color.White.copy(alpha = 0.7f) else MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.align(Alignment.End)
+                    )
+                }
+            }
         }
         Text(
             text = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(message.timestamp)),

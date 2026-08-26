@@ -13,6 +13,7 @@ public class Booking {
     private String status;
     private String paymentStatus; // PAID, UNPAID, PENDING
     private Long createdAt;
+    private String serviceTitle;
     private String serviceImageUrl;
     private String preferredDate;
     private String instructions;
@@ -23,8 +24,9 @@ public class Booking {
         this.createdAt = System.currentTimeMillis();
     }
 
-    public Booking(String jobId, String clientId, String clientName, String workerId, String workerName, Double amount) {
+    public Booking(String jobId, String serviceTitle, String clientId, String clientName, String workerId, String workerName, Double amount) {
         this.jobId = jobId;
+        this.serviceTitle = serviceTitle;
         this.clientId = clientId;
         this.clientName = clientName;
         this.workerId = workerId;
@@ -66,6 +68,9 @@ public class Booking {
     public Long getCreatedAt() { return createdAt != null ? createdAt : 0L; }
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
 
+    public String getServiceTitle() { return serviceTitle; }
+    public void setServiceTitle(String serviceTitle) { this.serviceTitle = serviceTitle; }
+
     public String getServiceImageUrl() { return serviceImageUrl; }
     public void setServiceImageUrl(String serviceImageUrl) { this.serviceImageUrl = serviceImageUrl; }
 
@@ -82,7 +87,9 @@ public class Booking {
     @Exclude
     public String getServiceProviderId() { return workerId; }
     @Exclude
-    public String getServiceProviderName() { return workerName; }
+    public String getServiceProviderName() { 
+        return (workerName != null && !workerName.isEmpty()) ? workerName : "Provider"; 
+    }
     @Exclude
     public Double getPrice() { return getAmount(); }
     @Exclude
@@ -90,18 +97,24 @@ public class Booking {
     @Exclude
     public Long getTimestamp() { return getCreatedAt(); }
     @Exclude
-    public String getServiceTitle() { 
-        if (jobId != null && !jobId.isEmpty()) {
-            return "Job #" + jobId.substring(Math.max(0, jobId.length() - 5));
+    public String getServiceTitleCompatibility() { 
+        if (serviceTitle != null && !serviceTitle.isEmpty()) {
+            return serviceTitle;
         }
-        return "New Request";
+        if (instructions != null && !instructions.isEmpty()) {
+            return instructions.length() > 30 ? instructions.substring(0, 27) + "..." : instructions;
+        }
+        if (jobId != null && !jobId.isEmpty()) {
+            return "Job #" + jobId.substring(Math.max(0, jobId.length() - 6));
+        }
+        return "Professional Service";
     }
     @Exclude
     public String getServiceId() { return jobId; }
     @Exclude
     public long getBookingDate() { return createdAt; }
     @Exclude
-    public String getServiceName() { return getServiceTitle(); }
+    public String getServiceName() { return getServiceTitleCompatibility(); }
     @Exclude
     public String getProviderProfileImageUrl() { return null; }
     
@@ -111,7 +124,7 @@ public class Booking {
     @Exclude
     public String getserviceProviderName() { return workerName; }
     @Exclude
-    public String getserviceTitle() { return getServiceTitle(); }
+    public String getserviceTitle() { return getServiceTitleCompatibility(); }
     @Exclude
     public String getserviceId() { return jobId; }
 }

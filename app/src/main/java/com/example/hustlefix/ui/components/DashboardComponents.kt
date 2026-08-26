@@ -187,7 +187,45 @@ fun UrgentRequestButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun BookingItem(booking: Booking, onClick: (Booking) -> Unit) {
+fun NearbyServiceCard(
+    service: com.example.hustlefix.Service,
+    onClick: (com.example.hustlefix.Service) -> Unit
+) {
+    Card(
+        modifier = Modifier.width(180.dp),
+        onClick = { onClick(service) },
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(service.getServiceImageUrl())
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.ic_image_placeholder),
+                error = painterResource(R.drawable.ic_image_placeholder),
+                contentDescription = null,
+                modifier = Modifier.fillMaxWidth().height(100.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(service.title ?: "Service", fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                Text(service.category ?: "Pro", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text("R${String.format(java.util.Locale.getDefault(), "%.0f", service.price)}", fontWeight = FontWeight.Black)
+            }
+        }
+    }
+}
+
+@Composable
+fun BookingItem(
+    booking: Booking,
+    isServiceProvider: Boolean = false,
+    onClick: (Booking) -> Unit
+) {
     ListItem(
         leadingContent = {
             Surface(
@@ -208,8 +246,18 @@ fun BookingItem(booking: Booking, onClick: (Booking) -> Unit) {
                 )
             }
         },
-        headlineContent = { Text(booking.getServiceTitle() ?: "Service", fontWeight = FontWeight.Bold) },
-        supportingContent = { Text(booking.getServiceProviderName() ?: "Provider") },
+        headlineContent = { 
+            Text(
+                text = booking.getServiceTitleCompatibility(), 
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            ) 
+        },
+        supportingContent = { 
+            val name = if (isServiceProvider) booking.getClientName() else booking.getServiceProviderName()
+            Text(name ?: "User") 
+        },
         trailingContent = { 
             Text(
                 text = "R${String.format(java.util.Locale.getDefault(), "%.2f", booking.getPrice())}", 

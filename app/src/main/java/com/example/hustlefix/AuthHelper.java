@@ -91,6 +91,9 @@ public final class AuthHelper {
                 .startActivityForSignInWithProvider(activity, provider.build())
                 .addOnSuccessListener(authResult -> {
                     FirebaseUser user = authResult.getUser();
+                    if (user != null) {
+                        ensureUserProfile(user, userRole, user.getDisplayName(), user.getEmail());
+                    }
                     completeSocialLogin(activity, user, userRole, callback);
                 })
                 .addOnFailureListener(e ->
@@ -162,6 +165,9 @@ public final class AuthHelper {
         userMap.put("role", firebaseRole);
         userMap.put("available", true);
         userMap.put("rating", 0);
+        userMap.put("isVerified", false);
+        userMap.put("isSuspended", false);
+        userMap.put("createdAt", System.currentTimeMillis());
 
         FirebaseDatabase.getInstance().getReference("users").child(uid)
                 .get()

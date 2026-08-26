@@ -30,18 +30,20 @@ class AnalyticsViewModel : ViewModel() {
         val uid = userId ?: return
         _uiState.value = _uiState.value.copy(isLoading = true)
 
-        database.getReference("bookings").orderByChild("serviceProviderId").equalTo(uid)
+        database.getReference("bookings").orderByChild("workerId").equalTo(uid)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val bookings = snapshot.children.mapNotNull { it.getValue(Booking::class.java) }
                     
                     val totalBookings = bookings.size
-                    val completed = bookings.count { it.status == "completed" }
-                    val pending = bookings.count { it.status == "pending" }
-                    val cancelled = bookings.count { it.status == "cancelled" }
-                    val totalRevenue = bookings.filter { it.status == "completed" }.sumOf { it.price }
-                    val ratingCount = bookings.count { it.status == "completed" && it.rating > 0 }
-                    val avgRating = if (ratingCount > 0) bookings.filter { it.status == "completed" && it.rating > 0 }.map { it.rating }.average() else 0.0
+                    val completed = bookings.count { it.status?.lowercase() == "completed" }
+                    val pending = bookings.count { it.status?.lowercase() == "pending" }
+                    val cancelled = bookings.count { it.status?.lowercase() == "cancelled" }
+                    val totalRevenue = bookings.filter { it.status?.lowercase() == "completed" }.sumOf { it.getAmount() }
+                    
+                    // In a real app, you'd calculate these accurately from timestamps
+                    val monthlyRevenue = totalRevenue 
+                    val weeklyBookings = totalBookings
                     
                     val stats = mapOf(
                         "totalBookings" to totalBookings.toString(),
@@ -49,10 +51,10 @@ class AnalyticsViewModel : ViewModel() {
                         "pending" to pending.toString(),
                         "cancelled" to cancelled.toString(),
                         "totalRevenue" to String.format(Locale.getDefault(), "R%.2f", totalRevenue),
-                        "avgRating" to String.format(Locale.getDefault(), "%.1f", avgRating),
-                        "totalClients" to bookings.mapNotNull { it.clientId }.distinct().size.toString(),
-                        "monthlyRevenue" to String.format(Locale.getDefault(), "R%.2f", totalRevenue), // Simplification for now
-                        "weeklyBookings" to totalBookings.toString()
+                        "avgRating" to String.format(Locale.getDefault(), "%.1f", 0.0), // Need Rating data model update
+                        "totalClients" to bookings.mapNotNull { it.getClientId() }.distinct().size.toString(),
+                        "monthlyRevenue" to String.format(Locale.getDefault(), "R%.2f", monthlyRevenue),
+                        "weeklyBookings" to weeklyBookings.toString()
                     )
                     
                     _uiState.value = _uiState.value.copy(stats = stats, isLoading = false)

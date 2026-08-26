@@ -1,8 +1,13 @@
 package com.example.hustlefix
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -22,12 +27,21 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        // Permission granted
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // enableEdgeToEdge()
+        
+        askNotificationPermission()
 
         setContent {
             HustleFixTheme {
@@ -43,16 +57,26 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     val uid = FirebaseAuth.getInstance().currentUser?.uid
                     if (uid != null) {
-                        FirebaseDatabase.getInstance().getReference("users").child(uid).child("isSuspended")
+                        // Update FCM Token
+                        FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                            FirebaseDatabase.getInstance().getReference("users").child(uid)
+                                .child("fcmToken").setValue(token)
+                        }
+
+                        FirebaseDatabase.getInstance().getReference("users").child(uid)
                             .addValueEventListener(object : ValueEventListener {
                                 override fun onDataChange(snapshot: DataSnapshot) {
-                                    val isSuspended = when (val value = snapshot.value) {
-                                        is Boolean -> value
-                                        is String -> value.toBoolean()
-                                        else -> false
-                                    }
+                                    val isSuspended = snapshot.child("isSuspended").getValue(Boolean::class.java) ?: false
+                                    val suspensionUntil = snapshot.child("suspensionUntil").getValue(Long::class.java)
                                     
                                     if (isSuspended) {
+                                        // Check if suspension has expired
+                                        if (suspensionUntil != null && suspensionUntil < System.currentTimeMillis()) {
+                                            // Auto-unsuspend in DB
+                                            snapshot.ref.child("isSuspended").setValue(false)
+                                            return
+                                        }
+
                                         FirebaseAuth.getInstance().signOut()
                                         SessionHelper.setLoggedIn(this@MainActivity, false)
                                         navController.navigate(Screen.Welcome.route) {
@@ -78,6 +102,21 @@ class MainActivity : ComponentActivity() {
                         if (data.toString().contains("payment-success")) {
                             navController.navigate(Screen.MyBookings.route) {
                                 popUpTo(Screen.ClientDashboard.route)
+                            }
+                        }
+                    }
+
+                    intent.getStringExtra("navigate_to")?.let { destination ->
+                        when (destination) {
+                            "verification" -> navController.navigate(Screen.Verification.route)
+                            "emergency" -> navController.navigate(Screen.Emergency.route)
+                            "wallet" -> navController.navigate(Screen.Wallet.route)
+                            "chat" -> {
+                                val pid = intent.getStringExtra("senderId") ?: ""
+                                val pname = intent.getStringExtra("senderName") ?: "Chat"
+                                if (pid.isNotEmpty()) {
+                                    navController.navigate(Screen.Chat.createRoute(pid, pname))
+                                }
                             }
                         }
                     }
@@ -171,6 +210,16 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                 }
+            }
+        }
+    }
+
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }
     }

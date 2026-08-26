@@ -44,9 +44,11 @@ fun BookingDetailScreen(
     onTrackClick: (String) -> Unit,
     onRatingSubmit: (Float, String, Boolean) -> Unit = { _, _, _ -> },
     onPayClick: () -> Unit = {},
+    onPayWithWalletClick: () -> Unit = {},
     onSharePayLink: (String) -> Unit = {},
     onReportClick: (String, String) -> Unit = { _, _ -> },
     isVerifyingPayment: Boolean = false,
+    walletBalance: Double = 0.0,
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -179,7 +181,13 @@ fun BookingDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text(booking.getServiceTitle() ?: "Service", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
+                            Text(
+                                text = booking.getServiceTitleCompatibility(), 
+                                style = MaterialTheme.typography.headlineSmall, 
+                                fontWeight = FontWeight.Black,
+                                maxLines = 2,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                            )
                             Text(
                                 "Date: " + SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(booking.getTimestamp())),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -313,6 +321,21 @@ fun BookingDetailScreen(
 
                                 if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
                                     if (booking.status == "confirmed" && booking.paymentStatus == "UNPAID") {
+                                        // Wallet Payment Option
+                                        if (walletBalance >= (booking.amount ?: 0.0)) {
+                                            Button(
+                                                onClick = onPayWithWalletClick,
+                                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                                shape = RoundedCornerShape(16.dp),
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6750A4))
+                                            ) {
+                                                Icon(Icons.Default.AccountBalanceWallet, contentDescription = null)
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Text("PAY WITH WALLET (R${String.format(Locale.getDefault(), "%.2f", walletBalance)})", fontWeight = FontWeight.Bold)
+                                            }
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                        }
+
                                         Button(
                                             onClick = onPayClick,
                                             modifier = Modifier.fillMaxWidth().height(56.dp),
