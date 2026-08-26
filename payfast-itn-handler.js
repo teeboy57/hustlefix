@@ -35,16 +35,30 @@ const PASSPHRASE = 'Treasure071152'; // Set this in Payfast Dashboard -> Setting
  * 1. Create Checkout Request
  * Called by the Android app to get a signed checkout URL.
  */
+/**
+ * Helper: Payfast-compliant URL Encoding
+ * Payfast requires spaces as + and specific character encoding.
+ */
+const pfEncode = (str) => {
+  return encodeURIComponent(String(str).trim())
+    .replace(/%20/g, '+')
+    .replace(/!/g, '%21')
+    .replace(/'/g, '%27')
+    .replace(/\(/g, '%28')
+    .replace(/\)/g, '%29')
+    .replace(/\*/g, '%2A')
+    .replace(/~/g, '%7E');
+};
+
+/**
+ * 1. Create Checkout Request
+ */
 app.post('/api/payments/create-checkout', async (req, res) => {
   const { amount, item_name, m_payment_id, name_first, name_last, email_address } = req.body;
 
-  // Use values from request or defaults
-  const mId = req.body.merchant_id || MERCHANT_ID;
-  const mKey = req.body.merchant_key || MERCHANT_KEY;
-
   const data = {
-    merchant_id: mId,
-    merchant_key: mKey,
+    merchant_id: MERCHANT_ID,
+    merchant_key: MERCHANT_KEY,
     return_url: 'https://hustlefix.onrender.com/api/payments/success',
     cancel_url: 'https://hustlefix.onrender.com/api/payments/cancel',
     notify_url: 'https://hustlefix.onrender.com/api/payments/payfast-itn',
@@ -56,31 +70,34 @@ app.post('/api/payments/create-checkout', async (req, res) => {
     item_name: item_name || "HustleFix Service"
   };
 
-  // 2. Generate Signature
+  // 1. Sort keys alphabetically and build the signature string
   let signatureString = '';
   Object.keys(data).sort().forEach(key => {
     if (data[key] !== "" && data[key] !== null) {
-      signatureString += `${key}=${encodeURIComponent(String(data[key]).trim()).replace(/%20/g, '+')}&`;
+      signatureString += `${key}=${pfEncode(data[key])}&`;
     }
   });
 
+  // 2. Remove trailing & and append raw passphrase
   signatureString = signatureString.substring(0, signatureString.length - 1);
   if (PASSPHRASE) {
-    signatureString += `&passphrase=${encodeURIComponent(PASSPHRASE.trim()).replace(/%20/g, '+')}`;
+    signatureString += `&passphrase=${pfEncode(PASSPHRASE)}`;
   }
+
+  // 3. Generate MD5 hash
   const signature = crypto.createHash('md5').update(signatureString).digest('hex');
 
-  // 3. Determine Base URL
-  // LIVE: www.payfast.co.za | SANDBOX: sandbox.payfast.co.za
-  const isSandbox = mId.startsWith('10');
+  // 4. Build final URL (Signature must be at the end)
+  const isSandbox = MERCHANT_ID.startsWith('10');
   const baseUrl = isSandbox
     ? 'https://sandbox.payfast.co.za/eng/process'
     : 'https://www.payfast.co.za/eng/process';
 
-  const finalQueryString = signatureString.split('&passphrase=')[0] + `&signature=${signature}`;
-  const checkoutUrl = `${baseUrl}?${finalQueryString}`;
+  // Important: Use the EXACT same string as the signature (minus the passphrase part)
+  const finalParams = signatureString.split('&passphrase=')[0];
+  const checkoutUrl = `${baseUrl}?${finalParams}&signature=${signature}`;
 
-  console.log(`Checkout URL Generated for ${isSandbox ? 'SANDBOX' : 'LIVE'}`);
+  console.log(`Generated signature for ${data.item_name}: ${signature}`);
 
   res.json({
     success: true,
