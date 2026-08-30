@@ -22,17 +22,51 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import com.example.hustlefix.R
 
 @Composable
 fun WelcomeScreen(
+    suspensionReason: String? = null,
     onServiceProviderClick: () -> Unit,
-    onClientClick: () -> Unit
+    onClientClick: () -> Unit,
+    onSupportClick: () -> Unit = {},
+    onDismissSuspension: () -> Unit = {}
 ) {
     var visible by remember { mutableStateOf(false) }
+    var showSuspensionDialog by remember { mutableStateOf(suspensionReason != null) }
 
     LaunchedEffect(Unit) {
         visible = true
+    }
+
+    if (showSuspensionDialog && suspensionReason != null) {
+        AlertDialog(
+            onDismissRequest = { /* Prevent accidental dismissal */ },
+            properties = androidx.compose.ui.window.DialogProperties(
+                dismissOnBackPress = false, 
+                dismissOnClickOutside = false
+            ),
+            title = { Text(stringResource(R.string.account_suspended), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
+            text = { Text(suspensionReason) },
+            confirmButton = {
+                Button(onClick = { 
+                    showSuspensionDialog = false
+                    onDismissSuspension()
+                }) {
+                    Text(stringResource(R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { 
+                    showSuspensionDialog = false
+                    onSupportClick()
+                }) {
+                    Text(stringResource(R.string.chat_with_admin))
+                }
+            },
+            shape = RoundedCornerShape(24.dp)
+        )
     }
 
     Surface(
@@ -79,7 +113,7 @@ fun WelcomeScreen(
                     )
                     Spacer(modifier = Modifier.height(32.dp))
                     Text(
-                        text = "HustleFix",
+                        text = stringResource(R.string.welcome_banner),
                         style = MaterialTheme.typography.displayMedium,
                         fontWeight = FontWeight.Black,
                         color = MaterialTheme.colorScheme.primary,
@@ -87,7 +121,7 @@ fun WelcomeScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Your Professional Marketplace",
+                        text = stringResource(R.string.welcome_tagline),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.secondary,
                         textAlign = TextAlign.Center,
@@ -95,7 +129,7 @@ fun WelcomeScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Get things done by the best experts or grow your business today.",
+                        text = stringResource(R.string.welcome_description),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -118,7 +152,7 @@ fun WelcomeScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Choose Your Path",
+                        text = stringResource(R.string.choose_path),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.ExtraBold,
                         modifier = Modifier.padding(bottom = 32.dp)
@@ -139,7 +173,7 @@ fun WelcomeScreen(
                             Icon(Icons.Default.BusinessCenter, contentDescription = null, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "I'm a Service Provider",
+                                text = stringResource(R.string.im_provider),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.ExtraBold
                             )
@@ -162,7 +196,7 @@ fun WelcomeScreen(
                             Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "I'm looking for help",
+                                text = stringResource(R.string.im_client),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = MaterialTheme.colorScheme.primary

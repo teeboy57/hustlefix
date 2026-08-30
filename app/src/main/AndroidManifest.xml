@@ -54,19 +54,6 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_GOOGLE_MAPS_API_KEY_HERE" />
 
-        <!-- Activities yet to be fully migrated -->
-        <activity android:name=".HireWorkerActivity" android:exported="false" />
-        <activity android:name=".FindWorkersActivity" android:exported="false" />
-        <activity android:name=".QuotesActivity" android:exported="false" />
-        <activity android:name=".SendQuoteActivity" android:exported="false" />
-        <activity android:name=".RatingsActivity" android:exported="false" />
-        <activity android:name=".RevenueActivity" android:exported="false" />
-        <activity android:name=".AnalyticsActivity" android:exported="false" />
-        <activity android:name=".ImageViewerActivity" android:exported="false" />
-        <activity android:name=".ImageUploadActivity" android:exported="false" />
-        <activity android:name=".PaymentMethodsActivity" android:exported="false" />
-        <activity android:name=".WorkerProfileActivity" android:exported="false" />
-
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">

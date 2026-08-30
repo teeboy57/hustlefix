@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
@@ -26,7 +28,9 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -55,7 +59,7 @@ fun FindServicesScreen(
     Scaffold(
         topBar = {
             HustleFixTopBar(
-                title = "Find Services",
+                title = stringResource(R.string.find_services_title),
                 onNavigationClick = onBackClick,
                 actions = {
                     IconButton(onClick = onSortClick) {
@@ -80,7 +84,7 @@ fun FindServicesScreen(
                 ) {
                     Column(modifier = Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
                         Text(
-                            text = "Expert Help Awaits",
+                            text = stringResource(R.string.expert_help_awaits),
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold
@@ -90,7 +94,7 @@ fun FindServicesScreen(
                             value = searchQuery,
                             onValueChange = onSearchQueryChange,
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("What are you looking for?") },
+                            placeholder = { Text(stringResource(R.string.search_placeholder)) },
                             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                             trailingIcon = {
                                 if (searchQuery.isNotEmpty()) {
@@ -101,6 +105,10 @@ fun FindServicesScreen(
                             },
                             shape = RoundedCornerShape(16.dp),
                             singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(onSearch = {
+                                // Already reactive, but can add explicit refresh if needed
+                            }),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                                 unfocusedContainerColor = MaterialTheme.colorScheme.surface,
@@ -127,10 +135,10 @@ fun FindServicesScreen(
                         }
                     } else if (services.isEmpty()) {
                         EmptyState(
-                            title = "No services found",
+                            title = stringResource(R.string.no_services_found),
                             description = "Try adjusting your search or filters to find what you need.",
                             icon = Icons.Default.SearchOff,
-                            actionLabel = "Clear Search",
+                            actionLabel = stringResource(R.string.clear_search),
                             onActionClick = { onSearchQueryChange("") }
                         )
                     } else {
@@ -279,44 +287,6 @@ fun ServiceGridItem(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun EmptyServicesState() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(40.dp)
-        ) {
-            Surface(
-                modifier = Modifier.size(120.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                shape = CircleShape
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.SearchOff,
-                        contentDescription = null,
-                        modifier = Modifier.size(60.dp),
-                        tint = MaterialTheme.colorScheme.outline
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                "No services found",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                "Try adjusting your search or filters to find what you need.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                modifier = Modifier.padding(top = 8.dp)
-            )
         }
     }
 }

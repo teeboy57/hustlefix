@@ -30,7 +30,7 @@ class AuthViewModel(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun login(email: String, password: String, context: Context) {
+    fun login(email: String, password: String, expectedRole: String, context: Context) {
         if (!com.example.hustlefix.util.NetworkUtils.isNetworkAvailable(context)) {
             _uiState.value = _uiState.value.copy(error = "No internet connection")
             return
@@ -58,6 +58,19 @@ class AuthViewModel(
                                     return@launch
                                 }
                                 
+                                // Role Validation
+                                val actualRole = if (profile.role == "worker") "service_provider" else "client"
+                                if (actualRole != expectedRole) {
+                                    auth.signOut()
+                                    val errorMessage = if (actualRole == "service_provider") {
+                                        "This is a Service Provider account. Please log in through the Service Provider portal."
+                                    } else {
+                                        "This is a Client account. Please log in through the Client portal."
+                                    }
+                                    _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
+                                    return@launch
+                                }
+
                                 if (profile.isSuspended) {
                                     val suspensionUntil = profile.suspensionUntil
                                     if (suspensionUntil != null && suspensionUntil > System.currentTimeMillis()) {

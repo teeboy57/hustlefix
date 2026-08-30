@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -21,10 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hustlefix.Booking
+import com.example.hustlefix.R
 import com.example.hustlefix.ui.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +65,7 @@ fun ClientDashboardScreen(
     Scaffold(
         topBar = {
             HustleFixTopBar(
-                title = "HustleFix",
+                title = stringResource(R.string.app_name),
                 navigationIcon = Icons.Default.Menu,
                 onNavigationClick = onMenuClick,
                 actions = {
@@ -143,12 +148,12 @@ fun ClientDashboardScreen(
                                 
                                 Spacer(modifier = Modifier.height(20.dp))
                                 
-                                // Search Bar Placeholder
+                                // Search Bar with Keyboard Action
                                 OutlinedTextField(
                                     value = searchQuery,
                                     onValueChange = { searchQuery = it },
                                     modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text("Search for experts...") },
+                                    placeholder = { Text(stringResource(R.string.search_placeholder)) },
                                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                                     trailingIcon = {
                                         if (searchQuery.isNotEmpty()) {
@@ -159,6 +164,12 @@ fun ClientDashboardScreen(
                                     },
                                     shape = RoundedCornerShape(16.dp),
                                     singleLine = true,
+                                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                    keyboardActions = KeyboardActions(onSearch = {
+                                        if (searchQuery.isNotEmpty()) {
+                                            onQuickActionClick("find_query?q=$searchQuery")
+                                        }
+                                    }),
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                                         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
@@ -172,7 +183,7 @@ fun ClientDashboardScreen(
                 Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                     if (upcomingBooking != null) {
                         Text(
-                            text = "Upcoming Today",
+                            text = stringResource(R.string.upcoming_today),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -205,7 +216,7 @@ fun ClientDashboardScreen(
                     }
 
                     Text(
-                        text = "Categories",
+                        text = stringResource(R.string.categories),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -230,7 +241,7 @@ fun ClientDashboardScreen(
                         Spacer(modifier = Modifier.height(24.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "Pros Near You",
+                                text = stringResource(R.string.pros_near_you),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold
                             )
@@ -250,19 +261,19 @@ fun ClientDashboardScreen(
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         AnimatedEntrance(delay = 100, modifier = Modifier.weight(1f)) {
-                            AnimatedStatCard("Total", totalBookings.toString(), MaterialTheme.colorScheme.primary) {
+                            AnimatedStatCard(stringResource(R.string.stat_total), totalBookings.toString(), MaterialTheme.colorScheme.primary) {
                                 onQuickActionClick("bookings")
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         AnimatedEntrance(delay = 200, modifier = Modifier.weight(1f)) {
-                            AnimatedStatCard("Active", activeBookings.toString(), Color(0xFFFF4081)) {
+                            AnimatedStatCard(stringResource(R.string.stat_active), activeBookings.toString(), Color(0xFFFF4081)) {
                                 onQuickActionClick("active_bookings")
                             }
                         }
                         Spacer(modifier = Modifier.width(12.dp))
                         AnimatedEntrance(delay = 300, modifier = Modifier.weight(1f)) {
-                            AnimatedStatCard("Done", completedBookings.toString(), Color(0xFF03DAC6)) {
+                            AnimatedStatCard(stringResource(R.string.stat_done), completedBookings.toString(), Color(0xFF03DAC6)) {
                                 onQuickActionClick("done_bookings")
                             }
                         }
@@ -271,7 +282,7 @@ fun ClientDashboardScreen(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Text(
-                        text = "Quick Actions",
+                        text = stringResource(R.string.quick_actions),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -313,7 +324,7 @@ fun ClientDashboardScreen(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Text(
-                        text = "Recent Activity",
+                        text = stringResource(R.string.recent_activity),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -322,7 +333,7 @@ fun ClientDashboardScreen(
 
                     if (recentBookings.isEmpty()) {
                         EmptyState(
-                            title = "No recent activity",
+                            title = stringResource(R.string.no_recent_activity),
                             description = "Your recent bookings and jobs will appear here.",
                             icon = Icons.Default.Info,
                             actionLabel = "Find Experts",

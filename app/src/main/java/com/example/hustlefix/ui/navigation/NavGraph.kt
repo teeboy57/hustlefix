@@ -17,7 +17,14 @@ import com.example.hustlefix.ui.viewmodels.*
 import com.example.hustlefix.ApiClient
 
 sealed class Screen(val route: String) {
-    object Welcome : Screen("welcome")
+    object Welcome : Screen("welcome?reason={reason}") {
+        fun createRoute(reason: String? = null): String {
+            return if (reason != null) {
+                val encoded = android.net.Uri.encode(reason)
+                "welcome?reason=$encoded"
+            } else "welcome"
+        }
+    }
     object Onboarding : Screen("onboarding")
     object Login : Screen("login")
     object Register : Screen("register")
@@ -117,8 +124,13 @@ fun HustleFixNavGraph(
         popEnterTransition = { fadeIn(tween(500)) + slideInHorizontally(tween(500)) { -it } },
         popExitTransition = { fadeOut(tween(500)) + slideOutHorizontally(tween(500)) { it } }
     ) {
-        composable(Screen.Welcome.route) {
+        composable(
+            route = Screen.Welcome.route,
+            arguments = listOf(navArgument("reason") { defaultValue = null; nullable = true })
+        ) { backStackEntry ->
+            val reason = backStackEntry.arguments?.getString("reason")
             WelcomeScreen(
+                suspensionReason = reason,
                 onServiceProviderClick = { 
                     SessionHelper.saveRole(context, "service_provider")
                     navController.navigate(Screen.Onboarding.route) 
@@ -126,6 +138,13 @@ fun HustleFixNavGraph(
                 onClientClick = { 
                     SessionHelper.saveRole(context, "client")
                     navController.navigate(Screen.Onboarding.route)
+                },
+                onSupportClick = {
+                    navController.navigate(Screen.Chat.createRoute("admin_support", "HustleFix Support"))
+                },
+                onDismissSuspension = {
+                    com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                    SessionHelper.logout(context)
                 }
             )
         }
@@ -142,7 +161,10 @@ fun HustleFixNavGraph(
         
         composable(Screen.Login.route) {
             LoginScreen(
-                onLoginClick = { e, p -> authViewModel.login(e, p, context) },
+                onLoginClick = { e, p -> 
+                    val expectedRole = SessionHelper.getRole(context)
+                    authViewModel.login(e, p, expectedRole, context) 
+                },
                 onRegisterClick = { 
                     navController.navigate(Screen.Register.route) 
                 },

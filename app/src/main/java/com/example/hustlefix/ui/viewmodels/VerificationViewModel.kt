@@ -29,18 +29,34 @@ class VerificationViewModel : ViewModel() {
     private val database = FirebaseDatabase.getInstance()
     private val userId = auth.currentUser?.uid
 
+    private var statusListener: com.google.firebase.database.ValueEventListener? = null
+
     init {
-        loadVerificationStatus()
+        observeVerificationStatus()
     }
 
-    private fun loadVerificationStatus() {
+    private fun observeVerificationStatus() {
         val uid = userId ?: return
-        database.getReference("users").child(uid).get()
-            .addOnSuccessListener { snapshot ->
+        val userRef = database.getReference("users").child(uid)
+        
+        statusListener = object : com.google.firebase.database.ValueEventListener {
+            override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
                 val status = snapshot.child("verificationStatus").getValue(String::class.java) ?: "unverified"
                 val reason = snapshot.child("rejectionReason").getValue(String::class.java)
                 _uiState.value = _uiState.value.copy(currentStatus = status, rejectionReason = reason)
             }
+            override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
+        }
+        
+        userRef.addValueEventListener(statusListener!!)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        val uid = userId ?: return
+        statusListener?.let {
+            database.getReference("users").child(uid).removeEventListener(it)
+        }
     }
 
     fun onIdImageSelected(uri: Uri?) {

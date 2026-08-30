@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.hustlefix.ui.navigation.HustleFixNavGraph
 import com.example.hustlefix.ui.navigation.Screen
@@ -49,47 +50,89 @@ class MainActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
                 
-                val isLoggedIn = SessionHelper.isLoggedIn(this)
-                val role = SessionHelper.getRole(this)
+                val currentBackStackEntry by navController.currentBackStackEntryAsState()
+                
+                // Reactive session state
+                var isLoggedIn by remember { mutableStateOf(SessionHelper.isLoggedIn(this@MainActivity)) }
+                var role by remember { mutableStateOf(SessionHelper.getRole(this@MainActivity)) }
+                var activeSuspensionReason by remember { mutableStateOf<String?>(null) }
+                
+                // Refresh session state whenever navigation changes
+                LaunchedEffect(currentBackStackEntry) {
+                    val newIsLoggedIn = SessionHelper.isLoggedIn(this@MainActivity)
+                    // Only update if not currently suspended (suspended logic handles its own state)
+                    if (activeSuspensionReason == null) {
+                        if (isLoggedIn != newIsLoggedIn) {
+                            isLoggedIn = newIsLoggedIn
+                        }
+                        val newRole = SessionHelper.getRole(this@MainActivity)
+                        if (role != newRole) {
+                            role = newRole
+                        }
+                    }
+                }
+
                 val isProvider = role == "service_provider"
                 
                 // Real-time suspension check
-                LaunchedEffect(Unit) {
+                DisposableEffect(isLoggedIn) {
                     val uid = FirebaseAuth.getInstance().currentUser?.uid
-                    if (uid != null) {
+                    var listener: ValueEventListener? = null
+                    var userRef: com.google.firebase.database.DatabaseReference? = null
+
+                    if (isLoggedIn && uid != null) {
                         // Update FCM Token
                         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                             FirebaseDatabase.getInstance().getReference("users").child(uid)
                                 .child("fcmToken").setValue(token)
                         }
 
-                        FirebaseDatabase.getInstance().getReference("users").child(uid)
-                            .addValueEventListener(object : ValueEventListener {
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    val isSuspended = snapshot.child("isSuspended").getValue(Boolean::class.java) ?: false
-                                    val suspensionUntil = snapshot.child("suspensionUntil").getValue(Long::class.java)
-                                    
-                                    if (isSuspended) {
-                                        // Check if suspension has expired
-                                        if (suspensionUntil != null && suspensionUntil < System.currentTimeMillis()) {
-                                            // Auto-unsuspend in DB
-                                            snapshot.ref.child("isSuspended").setValue(false)
-                                            return
-                                        }
+                        userRef = FirebaseDatabase.getInstance().getReference("users").child(uid)
+                        listener = object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val isSuspended = snapshot.child("isSuspended").getValue(Boolean::class.java) ?: false
+                                val suspensionUntil = snapshot.child("suspensionUntil").getValue(Long::class.java)
+                                
+                                if (isSuspended) {
+                                    // Check if suspension has expired
+                                    if (suspensionUntil != null && suspensionUntil < System.currentTimeMillis()) {
+                                        // Auto-unsuspend in DB
+                                        snapshot.ref.child("isSuspended").setValue(false)
+                                        return
+                                    }
 
-                                        FirebaseAuth.getInstance().signOut()
+                                    val reason = snapshot.child("suspensionReason").getValue(String::class.java)
+                                        ?: "Your account has been suspended for violating our terms of service."
+
+                                    if (activeSuspensionReason == null) {
+                                        activeSuspensionReason = reason
+                                        
+                                        // DO NOT SIGN OUT YET TO ALLOW SUPPORT CHAT
                                         SessionHelper.setLoggedIn(this@MainActivity, false)
-                                        navController.navigate(Screen.Welcome.route) {
-                                            popUpTo(0) { inclusive = true }
+                                        isLoggedIn = false
+                                        
+                                        navController.navigate(Screen.Welcome.createRoute(reason)) {
+                                            popUpTo(navController.graph.id) { inclusive = true }
                                         }
                                     }
+                                } else {
+                                    activeSuspensionReason = null
                                 }
-                                override fun onCancelled(error: DatabaseError) {}
-                            })
+                            }
+                            override fun onCancelled(error: DatabaseError) {}
+                        }
+                        
+                        userRef.addValueEventListener(listener)
+                    }
+
+                    onDispose {
+                        listener?.let { userRef?.removeEventListener(it) }
                     }
                 }
                 
-                val startDestination = if (isLoggedIn) {
+                val startDestination = if (activeSuspensionReason != null) {
+                    Screen.Welcome.createRoute(activeSuspensionReason)
+                } else if (isLoggedIn) {
                     if (isProvider) Screen.ServiceProviderDashboard.route else Screen.ClientDashboard.route
                 } else {
                     Screen.Welcome.route
@@ -144,25 +187,58 @@ class MainActivity : ComponentActivity() {
                             Spacer(Modifier.height(12.dp))
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                                label = { Text("My Profile") },
+                                label = { Text(getString(R.string.nav_profile)) },
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
                                     navController.navigate(Screen.Profile.route)
                                 }
                             )
+                            if (!isProvider) {
+                                NavigationDrawerItem(
+                                    icon = { Icon(Icons.Default.Search, contentDescription = null) },
+                                    label = { Text(getString(R.string.nav_find_services)) },
+                                    selected = false,
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate(Screen.FindServices.createRoute())
+                                    }
+                                )
+                            }
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.Default.History, contentDescription = null) },
-                                label = { Text("My Bookings") },
+                                label = { Text(getString(R.string.nav_bookings)) },
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
                                     navController.navigate(Screen.MyBookings.route)
                                 }
                             )
+                            if (isProvider) {
+                                NavigationDrawerItem(
+                                    icon = { Icon(Icons.Default.Engineering, contentDescription = null) },
+                                    label = { Text(getString(R.string.nav_services)) },
+                                    selected = false,
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate(Screen.MyServices.route)
+                                    }
+                                )
+                            }
+                            if (!isProvider) {
+                                NavigationDrawerItem(
+                                    icon = { Icon(Icons.Default.FlashOn, contentDescription = null) },
+                                    label = { Text(getString(R.string.nav_emergency)) },
+                                    selected = false,
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate(Screen.Emergency.route)
+                                    }
+                                )
+                            }
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null) },
-                                label = { Text("Messages") },
+                                label = { Text(getString(R.string.nav_messages)) },
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
@@ -171,7 +247,7 @@ class MainActivity : ComponentActivity() {
                             )
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.Default.AccountBalanceWallet, contentDescription = null) },
-                                label = { Text("My Wallet") },
+                                label = { Text(getString(R.string.nav_wallet)) },
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
@@ -181,7 +257,7 @@ class MainActivity : ComponentActivity() {
                             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 24.dp))
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                                label = { Text("Settings") },
+                                label = { Text(getString(R.string.nav_settings)) },
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }
@@ -190,7 +266,7 @@ class MainActivity : ComponentActivity() {
                             )
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null) },
-                                label = { Text("Logout") },
+                                label = { Text(getString(R.string.nav_logout)) },
                                 selected = false,
                                 onClick = {
                                     scope.launch { drawerState.close() }

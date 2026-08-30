@@ -31,7 +31,7 @@ class UserRepository {
 
     suspend fun saveUserProfile(uid: String, userMap: Map<String, Any>): Result<Unit> {
         return try {
-            usersRef.child(uid).setValue(userMap).await()
+            usersRef.child(uid).updateChildren(userMap).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
