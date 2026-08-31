@@ -97,6 +97,9 @@ class AuthViewModel(
                                 SessionHelper.saveRole(context, appRole)
                                 SessionHelper.setLoggedIn(context, true)
                                 
+                                // Log Activity
+                                com.example.hustlefix.util.ActivityLogger.logLogin(user.uid, profile.name ?: "User", appRole)
+                                
                                 // Update FCM Token
                                 try {
                                     com.google.firebase.messaging.FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->

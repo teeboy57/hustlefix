@@ -135,13 +135,46 @@ class ClientDashboardViewModel : ViewModel() {
     }
 
     private fun loadNearbyServices() {
-        database.getReference("services").limitToFirst(10).addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val list = snapshot.children.mapNotNull { it.getValue(com.example.hustlefix.Service::class.java) }
-                _uiState.value = _uiState.value.copy(nearbyServices = list.shuffled().take(4))
-            }
-            override fun onCancelled(error: DatabaseError) {}
-        })
+        val uid = currentUserId ?: return
+        
+        // 1. Get User's Location
+        database.getReference("users").child(uid).get().addOnSuccessListener { userSnapshot ->
+            val userLat = userSnapshot.child("latitude").getValue(Double::class.java) ?: 0.0
+            val userLng = userSnapshot.child("longitude").getValue(Double::class.java) ?: 0.0
+            
+            // 2. Load Services and Filter by Distance (Simple Math)
+            database.getReference("services").limitToFirst(50).addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val allServices = snapshot.children.mapNotNull { it.getValue(com.example.hustlefix.Service::class.java) }
+                    
+                    val nearby = allServices.filter { service ->
+                        // Calculate distance (Approximate KM using Haversine or simple Euclidean for close range)
+                        val sLat = service.latitude ?: 0.0
+                        val sLng = service.longitude ?: 0.0
+                        
+                        if (sLat == 0.0 || userLat == 0.0) true // Fallback for demo
+                        else {
+                            val dist = calculateDistance(userLat, userLng, sLat, sLng)
+                            dist < 50.0 // 50KM Radius
+                        }
+                    }.shuffled().take(4)
+
+                    _uiState.value = _uiState.value.copy(nearbyServices = nearby)
+                }
+                override fun onCancelled(error: DatabaseError) {}
+            })
+        }
+    }
+
+    private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371 // Earth radius in KM
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        return r * c
     }
 
     fun refresh() {

@@ -119,28 +119,39 @@ class PostServiceViewModel : ViewModel() {
         val ref = database.getReference("services")
         val serviceId = ref.push().key ?: return
         
-        val service = Service().apply {
-            setServiceId(serviceId)
-            setserviceProviderId(uid)
-            setserviceProviderName(userName)
-            setserviceProviderEmail(email)
-            setTitle(title)
-            setDescription(desc)
-            setCategory(category)
-            setPrice(price)
-            if (imageUrl != null) {
-                setServiceImageUrls(listOf(imageUrl))
+        // Fetch current user's location to tag the service
+        database.getReference("users").child(uid).get().addOnSuccessListener { snapshot ->
+            val lat = snapshot.child("latitude").getValue(Double::class.java)
+            val lng = snapshot.child("longitude").getValue(Double::class.java)
+            
+            val service = Service().apply {
+                setServiceId(serviceId)
+                setserviceProviderId(uid)
+                setserviceProviderName(userName)
+                setserviceProviderEmail(email)
+                setTitle(title)
+                setDescription(desc)
+                setCategory(category)
+                setPrice(price)
+                if (imageUrl != null) {
+                    setServiceImageUrls(listOf(imageUrl))
+                }
+                setCreatedAt(System.currentTimeMillis())
+                setStatus("active")
+                setAvailability("Available")
+                setLatitude(lat)
+                setLongitude(lng)
             }
-            setCreatedAt(System.currentTimeMillis())
-            setStatus("active")
-            setAvailability("Available")
-        }
 
-        ref.child(serviceId).setValue(service).addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
-            } else {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = "Database error")
+            ref.child(serviceId).setValue(service).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Log Activity
+                    com.example.hustlefix.util.ActivityLogger.log(uid, userName, "NEW_SERVICE", "Posted service: $title")
+                    
+                    _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true)
+                } else {
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Database error")
+                }
             }
         }
     }

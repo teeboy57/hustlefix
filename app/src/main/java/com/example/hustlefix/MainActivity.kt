@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -49,6 +51,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
                 val scope = rememberCoroutineScope()
+                val database = FirebaseDatabase.getInstance()
                 
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 
@@ -56,6 +59,20 @@ class MainActivity : ComponentActivity() {
                 var isLoggedIn by remember { mutableStateOf(SessionHelper.isLoggedIn(this@MainActivity)) }
                 var role by remember { mutableStateOf(SessionHelper.getRole(this@MainActivity)) }
                 var activeSuspensionReason by remember { mutableStateOf<String?>(null) }
+                
+                var broadcastMessage by remember { mutableStateOf<String?>(null) }
+                
+                if (broadcastMessage != null) {
+                    AlertDialog(
+                        onDismissRequest = { broadcastMessage = null },
+                        title = { Text("System Announcement", fontWeight = FontWeight.Black) },
+                        text = { Text(broadcastMessage!!) },
+                        confirmButton = {
+                            Button(onClick = { broadcastMessage = null }) { Text("OK") }
+                        },
+                        shape = RoundedCornerShape(24.dp)
+                    )
+                }
                 
                 // Refresh session state whenever navigation changes
                 LaunchedEffect(currentBackStackEntry) {
@@ -73,15 +90,19 @@ class MainActivity : ComponentActivity() {
                 }
 
                 val isProvider = role == "service_provider"
+                val isAdmin = role == "admin"
                 
                 // Real-time suspension check
                 DisposableEffect(isLoggedIn) {
                     val uid = FirebaseAuth.getInstance().currentUser?.uid
                     var listener: ValueEventListener? = null
                     var userRef: com.google.firebase.database.DatabaseReference? = null
+                    
+                    var broadcastListener: ValueEventListener? = null
+                    val broadcastRef = database.getReference("broadcasts")
 
                     if (isLoggedIn && uid != null) {
-                        // Update FCM Token
+                        // ... existing FCM update ...
                         FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                             FirebaseDatabase.getInstance().getReference("users").child(uid)
                                 .child("fcmToken").setValue(token)
@@ -94,9 +115,7 @@ class MainActivity : ComponentActivity() {
                                 val suspensionUntil = snapshot.child("suspensionUntil").getValue(Long::class.java)
                                 
                                 if (isSuspended) {
-                                    // Check if suspension has expired
                                     if (suspensionUntil != null && suspensionUntil < System.currentTimeMillis()) {
-                                        // Auto-unsuspend in DB
                                         snapshot.ref.child("isSuspended").setValue(false)
                                         return
                                     }
@@ -106,11 +125,8 @@ class MainActivity : ComponentActivity() {
 
                                     if (activeSuspensionReason == null) {
                                         activeSuspensionReason = reason
-                                        
-                                        // DO NOT SIGN OUT YET TO ALLOW SUPPORT CHAT
                                         SessionHelper.setLoggedIn(this@MainActivity, false)
                                         isLoggedIn = false
-                                        
                                         navController.navigate(Screen.Welcome.createRoute(reason)) {
                                             popUpTo(navController.graph.id) { inclusive = true }
                                         }
@@ -121,19 +137,40 @@ class MainActivity : ComponentActivity() {
                             }
                             override fun onCancelled(error: DatabaseError) {}
                         }
-                        
                         userRef.addValueEventListener(listener)
+                        
+                        // 2. Global Broadcast Listener
+                        broadcastListener = object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val lastBroadcast = snapshot.children.lastOrNull()
+                                val message = lastBroadcast?.child("message")?.getValue(String::class.java)
+                                val timestamp = lastBroadcast?.child("timestamp")?.getValue(Long::class.java) ?: 0L
+                                
+                                // Only show if recent (last 1 hour)
+                                val oneHourAgo = System.currentTimeMillis() - 3600000
+                                if (message != null && timestamp > oneHourAgo) {
+                                    broadcastMessage = message
+                                }
+                            }
+                            override fun onCancelled(error: DatabaseError) {}
+                        }
+                        broadcastRef.limitToLast(1).addValueEventListener(broadcastListener)
                     }
 
                     onDispose {
                         listener?.let { userRef?.removeEventListener(it) }
+                        broadcastListener?.let { broadcastRef.removeEventListener(it) }
                     }
                 }
                 
                 val startDestination = if (activeSuspensionReason != null) {
                     Screen.Welcome.createRoute(activeSuspensionReason)
                 } else if (isLoggedIn) {
-                    if (isProvider) Screen.ServiceProviderDashboard.route else Screen.ClientDashboard.route
+                    when (role) {
+                        "admin" -> Screen.AdminDashboard.route
+                        "service_provider" -> Screen.ServiceProviderDashboard.route
+                        else -> Screen.ClientDashboard.route
+                    }
                 } else {
                     Screen.Welcome.route
                 }
@@ -185,6 +222,18 @@ class MainActivity : ComponentActivity() {
                     drawerContent = {
                         ModalDrawerSheet {
                             Spacer(Modifier.height(12.dp))
+                            if (isAdmin) {
+                                NavigationDrawerItem(
+                                    icon = { Icon(Icons.Default.Dashboard, contentDescription = null) },
+                                    label = { Text("Admin Dashboard") },
+                                    selected = false,
+                                    onClick = {
+                                        scope.launch { drawerState.close() }
+                                        navController.navigate(Screen.AdminDashboard.route)
+                                    }
+                                )
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp, horizontal = 24.dp))
+                            }
                             NavigationDrawerItem(
                                 icon = { Icon(Icons.Default.Person, contentDescription = null) },
                                 label = { Text(getString(R.string.nav_profile)) },

@@ -165,6 +165,17 @@ class ChatViewModel : ViewModel() {
         database.getReference("user_chats").child(partnerId).child(chatId).updateChildren(summaryUpdates)
     }
 
+    fun sendSystemMessage(partnerId: String, partnerName: String, text: String) {
+        val uid = currentUserId ?: return
+        val chatId = if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid"
+        
+        database.getReference("messages").child(chatId).get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                sendMessage(partnerId, partnerName, text)
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         listRef?.let { ref -> listListener?.let { ref.removeEventListener(it) } }

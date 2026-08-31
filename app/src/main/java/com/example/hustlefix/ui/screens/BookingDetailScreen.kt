@@ -28,6 +28,7 @@ import coil.request.ImageRequest
 import com.example.hustlefix.Booking
 import com.example.hustlefix.R
 import com.example.hustlefix.Service
+import com.example.hustlefix.ui.components.StandardCard
 import com.example.hustlefix.ui.theme.getStatusColor
 import java.text.SimpleDateFormat
 import java.util.*
@@ -39,7 +40,7 @@ fun BookingDetailScreen(
     service: Service?,
     isServiceProvider: Boolean,
     isLoading: Boolean,
-    onStatusUpdate: (String) -> Unit,
+    onStatusUpdate: (String, String?) -> Unit,
     onChatClick: () -> Unit,
     onTrackClick: (String) -> Unit,
     onRatingSubmit: (Float, String, Boolean) -> Unit = { _, _, _ -> },
@@ -47,15 +48,99 @@ fun BookingDetailScreen(
     onPayWithWalletClick: () -> Unit = {},
     onSharePayLink: (String) -> Unit = {},
     onReportClick: (String, String) -> Unit = { _, _ -> },
+    onDisputeSubmit: (String) -> Unit = {},
     isVerifyingPayment: Boolean = false,
     walletBalance: Double = 0.0,
+    onClearError: () -> Unit = {},
+    error: String? = null,
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val snackbarHostState = remember { SnackbarHostState() }
     var showCancelDialog by remember { mutableStateOf(false) }
     var showRatingDialog by remember { mutableStateOf(false) }
+    var showCompletionCodeDialog by remember { mutableStateOf(false) }
+    var showDisputeDialog by remember { mutableStateOf(false) }
+    var disputeReason by remember { mutableStateOf("") }
+    var inputCode by remember { mutableStateOf("") }
     var pendingStatusUpdate by remember { mutableStateOf<String?>(null) }
+
+    if (showDisputeDialog) {
+        AlertDialog(
+            onDismissRequest = { showDisputeDialog = false },
+            title = { Text("Report a Problem", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Explain the issue clearly. An admin will review the case and resolve the payment escrow.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = disputeReason,
+                        onValueChange = { disputeReason = it },
+                        label = { Text("Issue Details") },
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        onDisputeSubmit(disputeReason)
+                        showDisputeDialog = false 
+                    },
+                    enabled = disputeReason.isNotBlank()
+                ) {
+                    Text("SUBMIT TO ADMIN")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDisputeDialog = false }) { Text("CANCEL") }
+            }
+        )
+    }
+
+    LaunchedEffect(error) {
+        if (error != null) {
+            snackbarHostState.showSnackbar(error)
+            onClearError()
+        }
+    }
     
+    if (showCompletionCodeDialog) {
+        AlertDialog(
+            onDismissRequest = { showCompletionCodeDialog = false },
+            title = { Text("Complete Job", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Enter the 4-digit code provided by the client to confirm work is finished.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = inputCode,
+                        onValueChange = { if (it.length <= 4) inputCode = it },
+                        label = { Text("4-Digit Code") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { 
+                        onStatusUpdate("completed", inputCode)
+                        showCompletionCodeDialog = false 
+                    },
+                    enabled = inputCode.length == 4
+                ) {
+                    Text("VERIFY & COMPLETE")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCompletionCodeDialog = false }) { Text("CANCEL") }
+            }
+        )
+    }
+
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
@@ -63,7 +148,7 @@ fun BookingDetailScreen(
             text = { Text("Are you sure you want to cancel this booking? This action cannot be undone.") },
             confirmButton = {
                 TextButton(onClick = { 
-                    pendingStatusUpdate?.let { onStatusUpdate(it) }
+                    pendingStatusUpdate?.let { onStatusUpdate(it, null) }
                     showCancelDialog = false 
                 }) { 
                     Text("YES, CANCEL", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) 
@@ -126,6 +211,7 @@ fun BookingDetailScreen(
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Booking Summary", fontWeight = FontWeight.ExtraBold) },
@@ -217,6 +303,31 @@ fun BookingDetailScreen(
                         BookingInfoRow(label = "Your Payout", value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice())}", icon = Icons.Default.AccountBalanceWallet)
                     }
                     BookingInfoRow(label = "Payment Status", value = booking.getPaymentStatus() ?: "UNPAID", icon = Icons.Default.Security)
+                    
+                    if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
+                        com.example.hustlefix.ui.components.StandardCard(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text("Job Completion Code", style = MaterialTheme.typography.labelSmall)
+                                Text(
+                                    text = booking.completionCode ?: "----",
+                                    style = MaterialTheme.typography.displaySmall,
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = 8.sp,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                                Text(
+                                    "Give this 4-digit code to the pro ONLY when the job is done.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+                        }
+                    }
+
                     BookingInfoRow(
                         label = if (isServiceProvider) "Client" else "Provider", 
                         value = if (isServiceProvider) booking.getClientName() ?: "User" else booking.getServiceProviderName() ?: "Pro", 
@@ -257,7 +368,7 @@ fun BookingDetailScreen(
                             if (isServiceProvider && booking.status == "pending") {
                                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                                     Button(
-                                        onClick = { onStatusUpdate("confirmed") },
+                                        onClick = { onStatusUpdate("confirmed", null) },
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                                     ) {
@@ -303,7 +414,7 @@ fun BookingDetailScreen(
                                     Spacer(modifier = Modifier.height(12.dp))
                                     if (booking.paymentStatus == "PAID") {
                                         OutlinedButton(
-                                            onClick = { onStatusUpdate("completed") },
+                                            onClick = { showCompletionCodeDialog = true },
                                             modifier = Modifier.fillMaxWidth().height(56.dp),
                                             shape = RoundedCornerShape(16.dp)
                                         ) {
@@ -349,18 +460,6 @@ fun BookingDetailScreen(
                                         Spacer(modifier = Modifier.height(12.dp))
                                     }
                                     
-                                    if (booking.paymentStatus == "PAID") {
-                                        Button(
-                                            onClick = { onStatusUpdate("completed") },
-                                            modifier = Modifier.fillMaxWidth().height(56.dp),
-                                            shape = RoundedCornerShape(16.dp),
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-                                        ) {
-                                            Text("CONFIRM COMPLETION", fontWeight = FontWeight.Bold)
-                                        }
-                                        Spacer(modifier = Modifier.height(12.dp))
-                                    }
-                                    
                                     Button(
                                         onClick = { onTrackClick(booking.getWorkerId() ?: "") },
                                         modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -388,13 +487,23 @@ fun BookingDetailScreen(
 
                                 Spacer(modifier = Modifier.height(24.dp))
                                 TextButton(
+                                    onClick = { showDisputeDialog = true },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Icon(Icons.Default.ReportProblem, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Report a Problem")
+                                }
+                                
+                                TextButton(
                                     onClick = {
                                         val pid = if (isServiceProvider) booking.getClientId() else booking.getWorkerId()
                                         val pname = if (isServiceProvider) booking.getClientName() else booking.getServiceProviderName()
                                         onReportClick(pid ?: "", pname ?: "User")
                                     },
                                     modifier = Modifier.fillMaxWidth(),
-                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.outline)
                                 ) {
                                     Icon(Icons.Default.Report, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))

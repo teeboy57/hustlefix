@@ -19,6 +19,8 @@ public class Service {
     private Long createdAt;
     private Integer bookingsCount;
     private Double averageRating;
+    private Double latitude;
+    private Double longitude;
 
     public Service() {
         // Default constructor required for Firebase
@@ -104,4 +106,10 @@ public class Service {
 
     public Double getAverageRating() { return averageRating != null ? averageRating : 0.0; }
     public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
 }

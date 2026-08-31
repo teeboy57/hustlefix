@@ -89,6 +89,9 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
                 }
                 val result = repository.createJob(job)
                 if (result.isSuccess) {
+                    // Log Activity
+                    com.example.hustlefix.util.ActivityLogger.log(uid, dbName, "NEW_JOB_POSTED", "Posted job: $title for R$amount")
+                    
                     _uiState.update { it.copy(isLoading = false, successMessage = "Job posted successfully") }
                 } else {
                     _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }
@@ -141,10 +144,14 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
     }
 
     fun acceptQuote(job: Job, quote: Quote) {
+        val uid = currentUserId ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             val result = repository.acceptQuote(job, quote)
             if (result.isSuccess) {
+                // Log Activity
+                com.example.hustlefix.util.ActivityLogger.log(uid, job.clientName ?: "Client", "QUOTE_ACCEPTED", "Accepted quote from ${quote.workerName} for ${job.title}")
+                
                 _uiState.update { it.copy(isLoading = false, successMessage = "Quote accepted. Job started.") }
             } else {
                 _uiState.update { it.copy(isLoading = false, error = result.exceptionOrNull()?.message) }

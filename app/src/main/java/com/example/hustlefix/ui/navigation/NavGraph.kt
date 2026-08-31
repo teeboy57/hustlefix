@@ -30,6 +30,7 @@ sealed class Screen(val route: String) {
     object Register : Screen("register")
     object ClientDashboard : Screen("client_dashboard")
     object ServiceProviderDashboard : Screen("service_provider_dashboard")
+    object AdminDashboard : Screen("admin_dashboard")
     object MyBookings : Screen("my_bookings?status={status}") {
         fun createRoute(status: String = "all") = "my_bookings?status=$status"
     }
@@ -105,7 +106,9 @@ fun HustleFixNavGraph(
     LaunchedEffect(authState.isLoginSuccessful, authState.isRegisterSuccessful) {
         if (authState.isLoginSuccessful || authState.isRegisterSuccessful) {
             val role = SessionHelper.getRole(context)
-            val destination = if (role == "service_provider") {
+            val destination = if (role == "admin") {
+                Screen.AdminDashboard.route
+            } else if (role == "service_provider") {
                 Screen.ServiceProviderDashboard.route
             } else {
                 Screen.ClientDashboard.route
@@ -129,6 +132,8 @@ fun HustleFixNavGraph(
             arguments = listOf(navArgument("reason") { defaultValue = null; nullable = true })
         ) { backStackEntry ->
             val reason = backStackEntry.arguments?.getString("reason")
+            val chatViewModel: ChatViewModel = viewModel()
+            
             WelcomeScreen(
                 suspensionReason = reason,
                 onServiceProviderClick = { 
@@ -140,6 +145,8 @@ fun HustleFixNavGraph(
                     navController.navigate(Screen.Onboarding.route)
                 },
                 onSupportClick = {
+                    val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
+                    chatViewModel.sendSystemMessage("admin_support", "HustleFix Support", "Support Request: I need help regarding my account suspension. (User ID: $uid, Reason: $reason)")
                     navController.navigate(Screen.Chat.createRoute("admin_support", "HustleFix Support"))
                 },
                 onDismissSuspension = {
@@ -252,6 +259,33 @@ fun HustleFixNavGraph(
                     navController.navigate(Screen.ServiceDetail.createRoute(service.serviceId ?: ""))
                 },
                 onMenuClick = onMenuClick
+            )
+        }
+
+        composable(Screen.AdminDashboard.route) {
+            val viewModel: AdminDashboardViewModel = viewModel(factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                    return AdminDashboardViewModel() as T
+                }
+            })
+            val uiState by viewModel.uiState.collectAsState()
+
+            AdminDashboardScreen(
+                profitBalance = uiState.profitBalance,
+                totalUsers = uiState.totalUsers,
+                totalJobs = uiState.totalJobs,
+                pendingVerifications = uiState.pendingVerifications,
+                activeEmergencies = uiState.activeEmergencies,
+                isLoading = uiState.isLoading,
+                onMenuClick = onMenuClick,
+                onQuickActionClick = { action ->
+                    when (action) {
+                        "verifications" -> { /* Open user management */ }
+                        "emergencies" -> navController.navigate(Screen.Emergency.route)
+                        "logs" -> { /* Open logs screen */ }
+                        "broadcast" -> { /* Open broadcast dialog */ }
+                    }
+                }
             )
         }
 
@@ -961,7 +995,9 @@ fun HustleFixNavGraph(
                 isLoading = uiState.isLoading,
                 isVerifyingPayment = uiState.isVerifyingPayment,
                 walletBalance = uiState.walletBalance,
-                onStatusUpdate = { viewModel.updateStatus(it) },
+                error = uiState.error,
+                onClearError = { viewModel.clearStatus() },
+                onStatusUpdate = { s, c -> viewModel.updateStatus(s, c) },
                 onRatingSubmit = { s, c, a -> viewModel.submitRating(s, c, a) },
                 onChatClick = {
                     val partnerId = if (isServiceProvider) uiState.booking?.getClientId() else uiState.booking?.getWorkerId()
@@ -997,6 +1033,9 @@ fun HustleFixNavGraph(
                 },
                 onReportClick = { id, name ->
                     navController.navigate(Screen.ReportUser.createRoute(id, name))
+                },
+                onDisputeSubmit = { reason ->
+                    viewModel.submitDispute(reason)
                 },
                 onBackClick = { navController.popBackStack() }
             )

@@ -17,11 +17,13 @@ public class Booking {
     private String serviceImageUrl;
     private String preferredDate;
     private String instructions;
+    private String completionCode; // 4-digit OTP
 
     public Booking() {
         this.status = "pending";
         this.paymentStatus = "UNPAID";
         this.createdAt = System.currentTimeMillis();
+        generateCompletionCode();
     }
 
     public Booking(String jobId, String serviceTitle, String clientId, String clientName, String workerId, String workerName, Double amount) {
@@ -35,6 +37,12 @@ public class Booking {
         this.status = "pending";
         this.paymentStatus = "UNPAID";
         this.createdAt = System.currentTimeMillis();
+        generateCompletionCode();
+    }
+
+    private void generateCompletionCode() {
+        int code = (int)(Math.random() * 9000) + 1000;
+        this.completionCode = String.valueOf(code);
     }
 
     // Getters and Setters
@@ -79,6 +87,9 @@ public class Booking {
 
     public String getInstructions() { return instructions; }
     public void setInstructions(String instructions) { this.instructions = instructions; }
+
+    public String getCompletionCode() { return completionCode; }
+    public void setCompletionCode(String completionCode) { this.completionCode = completionCode; }
 
     @Exclude
     public String getFormattedAmount() { return String.format("R%.2f", getAmount()); }

@@ -109,7 +109,11 @@ class BookingDetailViewModel(
         
         viewModelScope.launch {
             try {
-                // 1. Deduct from client wallet
+                val platformFeeRate = 0.10 // 10% Commission
+                val platformFee = amount * platformFeeRate
+                val workerEarnings = amount - platformFee
+
+                // 1. Deduct full amount from client wallet
                 val userRef = database.getReference("users").child(uid)
                 val newBalance = _uiState.value.walletBalance - amount
                 userRef.child("walletBalance").setValue(newBalance).await()
@@ -123,12 +127,36 @@ class BookingDetailViewModel(
                     "timestamp" to System.currentTimeMillis()
                 )).await()
 
-                // 3. Update Booking
+                // 3. Move Commission to Admin Revenue Node
+                val revenueRef = database.getReference("admin_revenue").push()
+                revenueRef.setValue(mapOf(
+                    "bookingId" to booking.bookingId,
+                    "totalAmount" to amount,
+                    "commission" to platformFee,
+                    "timestamp" to System.currentTimeMillis()
+                )).await()
+
+                // 4. Update Admin Global Wallet Balance
+                database.getReference("admin_wallet").child("balance").runTransaction(object : Transaction.Handler {
+                    override fun doTransaction(currentData: MutableData): Transaction.Result {
+                        val currentBalance = currentData.getValue(Double::class.java) ?: 0.0
+                        currentData.value = currentBalance + platformFee
+                        return Transaction.success(currentData)
+                    }
+                    override fun onComplete(error: DatabaseError?, committed: Boolean, snapshot: DataSnapshot?) {}
+                })
+
+                // 5. Update Booking with payout details
                 database.getReference("bookings").child(booking.bookingId).updateChildren(mapOf(
                     "paymentStatus" to "PAID",
                     "paidAt" to System.currentTimeMillis(),
-                    "paymentMethod" to "wallet"
+                    "paymentMethod" to "wallet",
+                    "platformFee" to platformFee,
+                    "workerEarnings" to workerEarnings
                 )).await()
+
+                // Log Activity
+                com.example.hustlefix.util.ActivityLogger.log(uid, "System", "PAYMENT_PROCESSED", "R$amount paid for booking ${booking.bookingId}")
 
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -141,9 +169,17 @@ class BookingDetailViewModel(
         }
     }
 
-    fun updateStatus(status: String) {
+    fun updateStatus(status: String, inputCode: String? = null) {
         val booking = _uiState.value.booking ?: return
         
+        // Security Check: Only verify code if completing the job
+        if (status == "completed" && inputCode != null) {
+            if (booking.completionCode != inputCode) {
+                _uiState.value = _uiState.value.copy(error = "Invalid Completion Code. Please ask the Client for the 4-digit code.")
+                return
+            }
+        }
+
         _uiState.value = _uiState.value.copy(isLoading = true)
         viewModelScope.launch {
             val result = repository.updateBookingStatus(booking, status)
@@ -179,6 +215,40 @@ class BookingDetailViewModel(
                 _uiState.value = _uiState.value.copy(isLoading = false, isUpdateSuccess = true)
             } else {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = result.exceptionOrNull()?.message)
+            }
+        }
+    }
+
+    fun submitDispute(reason: String) {
+        val booking = _uiState.value.booking ?: return
+        val uid = auth.currentUser?.uid ?: return
+        
+        _uiState.value = _uiState.value.copy(isLoading = true)
+        viewModelScope.launch {
+            try {
+                val disputeRef = database.getReference("disputes").push()
+                val id = disputeRef.key ?: return@launch
+                
+                val dispute = mapOf(
+                    "id" to id,
+                    "bookingId" to booking.bookingId,
+                    "reporterId" to uid,
+                    "reason" to reason,
+                    "status" to "pending",
+                    "timestamp" to System.currentTimeMillis()
+                )
+                disputeRef.setValue(dispute).await()
+                
+                // Mark booking as disputed to freeze actions
+                database.getReference("bookings").child(booking.bookingId)
+                    .child("status").setValue("disputed").await()
+                
+                // Log for Admin Website
+                com.example.hustlefix.util.ActivityLogger.log(uid, "User", "DISPUTE_OPENED", "Dispute raised for booking ${booking.bookingId}")
+
+                _uiState.value = _uiState.value.copy(isLoading = false, isUpdateSuccess = true)
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
     }

@@ -114,6 +114,9 @@ class EmergencyRequestViewModel(application: Application) : AndroidViewModel(app
 
         ref.child(id).setValue(request).addOnCompleteListener { task ->
             if (task.isSuccessful) {
+                // Log Activity
+                com.example.hustlefix.util.ActivityLogger.logEmergency(user.uid, user.displayName ?: "User", type)
+                
                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, activeRequest = request)
                 listenToRequest(id)
             } else {
