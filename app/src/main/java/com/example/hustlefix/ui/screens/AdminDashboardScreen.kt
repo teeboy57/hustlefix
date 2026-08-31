@@ -31,6 +31,7 @@ fun AdminDashboardScreen(
     onQuickActionClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Scaffold(
         topBar = {
@@ -39,7 +40,10 @@ fun AdminDashboardScreen(
                 navigationIcon = Icons.Default.Menu,
                 onNavigationClick = onMenuClick,
                 actions = {
-                    IconButton(onClick = { onQuickActionClick("refresh") }) {
+                    IconButton(onClick = { 
+                        com.example.hustlefix.util.SoundHelper.playClick(context)
+                        onQuickActionClick("refresh") 
+                    }) {
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 }
@@ -177,8 +181,12 @@ fun AdminDashboardScreen(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         QuickActionCard("Broadcast", Icons.Default.Campaign, Color(0xFF2196F3), { onQuickActionClick("broadcast") }, Modifier.weight(1f))
                         Spacer(modifier = Modifier.width(16.dp))
-                        QuickActionCard("Activity Log", Icons.Default.ListAlt, Color(0xFF4CAF50), { onQuickActionClick("logs") }, Modifier.weight(1f))
+                        QuickActionCard("Delete Last", Icons.Default.DeleteForever, Color(0xFFFF5252), { onQuickActionClick("delete_broadcast") }, Modifier.weight(1f))
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    QuickActionCard("Activity Log", Icons.Default.ListAlt, Color(0xFF4CAF50), { onQuickActionClick("logs") }, Modifier.fillMaxWidth())
 
                     Spacer(modifier = Modifier.height(40.dp))
                 }

@@ -66,6 +66,7 @@
     <string name="account_suspended">Account Suspended</string>
     <string name="chat_with_admin">CHAT WITH ADMIN</string>
     <string name="suspension_default_reason">Your account has been suspended for violating our terms of service.</string>
+    <string name="system_announcement">System Announcement</string>
 
     <!-- Find Services -->
     <string name="expert_help_awaits">Expert Help Awaits</string>

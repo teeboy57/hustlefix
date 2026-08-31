@@ -50,6 +50,7 @@ fun LoginScreen(
 
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(error) {
         if (error != null) {
@@ -190,7 +191,10 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { onLoginClick(email, password) },
+                    onClick = { 
+                        com.example.hustlefix.util.SoundHelper.playClick(context)
+                        onLoginClick(email, password) 
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),

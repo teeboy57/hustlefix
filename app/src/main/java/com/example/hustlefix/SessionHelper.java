@@ -14,6 +14,8 @@ public final class SessionHelper {
     private static final String KEY_LOGGED_IN = "isLoggedIn";
     private static final String LEGACY_PREFS = "HustleFix";
     private static final String LEGACY_ROLE = "USER_ROLE";
+    private static final String KEY_LAST_BROADCAST = "lastSeenBroadcast";
+
     private SessionHelper() {}
     public static SharedPreferences prefs(Context context) {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -31,6 +33,12 @@ public final class SessionHelper {
         if (!TextUtils.isEmpty(role)) return role;
         return context.getSharedPreferences(LEGACY_PREFS, Context.MODE_PRIVATE)
                 .getString(LEGACY_ROLE, "CLIENT");
+    }
+    public static String getLastSeenBroadcastId(Context context) {
+        return prefs(context).getString(KEY_LAST_BROADCAST, "");
+    }
+    public static void setLastSeenBroadcastId(Context context, String id) {
+        prefs(context).edit().putString(KEY_LAST_BROADCAST, id).apply();
     }
     public static boolean isLoggedIn(Context context) {
         return prefs(context).getBoolean(KEY_LOGGED_IN, false)

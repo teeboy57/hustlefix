@@ -152,6 +152,7 @@ fun HustleFixTopBar(
     containerColor: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = MaterialTheme.colorScheme.onPrimary
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     CenterAlignedTopAppBar(
         title = { Text(title, fontWeight = FontWeight.ExtraBold) },
         navigationIcon = {

@@ -53,10 +53,18 @@ fun BookingDetailScreen(
     walletBalance: Double = 0.0,
     onClearError: () -> Unit = {},
     error: String? = null,
+    isUpdateSuccess: Boolean = false,
     onBackClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    LaunchedEffect(isUpdateSuccess) {
+        if (isUpdateSuccess) {
+            com.example.hustlefix.util.SoundHelper.playSuccess(context)
+        }
+    }
     var showCancelDialog by remember { mutableStateOf(false) }
     var showRatingDialog by remember { mutableStateOf(false) }
     var showCompletionCodeDialog by remember { mutableStateOf(false) }

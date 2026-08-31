@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -40,6 +41,19 @@ fun NotificationScreen(
     onBackClick: () -> Unit
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
+    var selectedAnnouncement by remember { mutableStateOf<AppNotification?>(null) }
+
+    if (selectedAnnouncement != null) {
+        AlertDialog(
+            onDismissRequest = { selectedAnnouncement = null },
+            title = { Text("System Announcement", fontWeight = FontWeight.Black) },
+            text = { Text(selectedAnnouncement?.message ?: "") },
+            confirmButton = {
+                Button(onClick = { selectedAnnouncement = null }) { Text("OK") }
+            },
+            shape = RoundedCornerShape(24.dp)
+        )
+    }
 
     if (pullToRefreshState.isRefreshing) {
         LaunchedEffect(true) {
@@ -93,7 +107,12 @@ fun NotificationScreen(
                     items(notifications) { notification ->
                         NotificationItem(
                             notification = notification,
-                            onClick = { onNotificationClick(notification) },
+                            onClick = { 
+                                if (notification.type == "system_broadcast") {
+                                    selectedAnnouncement = notification
+                                }
+                                onNotificationClick(notification) 
+                            },
                             onDelete = { onDeleteNotification(notification.id) }
                         )
                         HorizontalDivider(

@@ -60,9 +60,15 @@ class NotificationViewModel : ViewModel() {
         broadcastListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val broadcasts = snapshot.children.mapNotNull { ds ->
-                    ds.getValue(AppNotification::class.java)?.apply {
-                        this.id = ds.key
-                        this.type = "system_broadcast"
+                    try {
+                        ds.getValue(AppNotification::class.java)?.apply {
+                            this.id = ds.key ?: ""
+                            this.type = "system_broadcast"
+                            // If title is missing in broadcast node, use a default
+                            if (this.title == null) this.title = "Announcement"
+                        }
+                    } catch (e: Exception) {
+                        null
                     }
                 }
                 database.getReference("notifications").child(uid).get().addOnSuccessListener { personalSnapshot ->
@@ -78,7 +84,10 @@ class NotificationViewModel : ViewModel() {
     }
 
     private fun mergeAndSort(personal: List<AppNotification>, broadcasts: List<AppNotification>) {
-        val all = (personal + broadcasts).sortedByDescending { it.timestamp }
+        val all = (personal + broadcasts)
+            .filter { it.timestamp != null && it.timestamp > 0 } // Remove malformed/01 Jan notifications
+            .sortedByDescending { it.timestamp }
+            
         _uiState.value = _uiState.value.copy(
             notifications = all,
             unreadCount = all.count { !it.isRead },

@@ -76,4 +76,10 @@ class AdminDashboardViewModel : ViewModel() {
             override fun onCancelled(error: DatabaseError) {}
         })
     }
+
+    fun deleteLastBroadcast() {
+        database.getReference("broadcasts").limitToLast(1).get().addOnSuccessListener { snapshot ->
+            snapshot.children.lastOrNull()?.ref?.removeValue()
+        }
+    }
 }

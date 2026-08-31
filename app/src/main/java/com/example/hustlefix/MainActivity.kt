@@ -65,10 +65,10 @@ class MainActivity : ComponentActivity() {
                 if (broadcastMessage != null) {
                     AlertDialog(
                         onDismissRequest = { broadcastMessage = null },
-                        title = { Text("System Announcement", fontWeight = FontWeight.Black) },
-                        text = { Text(broadcastMessage!!) },
+                        title = { Text(getString(R.string.system_announcement), fontWeight = FontWeight.Black) },
+                        text = { Text(broadcastMessage ?: "") },
                         confirmButton = {
-                            Button(onClick = { broadcastMessage = null }) { Text("OK") }
+                            Button(onClick = { broadcastMessage = null }) { Text(getString(R.string.ok)) }
                         },
                         shape = RoundedCornerShape(24.dp)
                     )
@@ -142,14 +142,24 @@ class MainActivity : ComponentActivity() {
                         // 2. Global Broadcast Listener
                         broadcastListener = object : ValueEventListener {
                             override fun onDataChange(snapshot: DataSnapshot) {
-                                val lastBroadcast = snapshot.children.lastOrNull()
-                                val message = lastBroadcast?.child("message")?.getValue(String::class.java)
-                                val timestamp = lastBroadcast?.child("timestamp")?.getValue(Long::class.java) ?: 0L
-                                
-                                // Only show if recent (last 1 hour)
-                                val oneHourAgo = System.currentTimeMillis() - 3600000
-                                if (message != null && timestamp > oneHourAgo) {
-                                    broadcastMessage = message
+                                try {
+                                    val lastBroadcast = snapshot.children.lastOrNull()
+                                    val broadcastId = lastBroadcast?.key ?: ""
+                                    val message = lastBroadcast?.child("message")?.getValue(String::class.java)
+                                    val timestamp = lastBroadcast?.child("timestamp")?.getValue(Long::class.java) ?: 0L
+                                    
+                                    // 1. Only show if recent (last 1 hour)
+                                    // 2. Only show if NOT seen before
+                                    val oneHourAgo = System.currentTimeMillis() - 3600000
+                                    val lastSeenId = SessionHelper.getLastSeenBroadcastId(this@MainActivity)
+                                    
+                                    if (message != null && timestamp > oneHourAgo && broadcastId != lastSeenId) {
+                                        broadcastMessage = message
+                                        SessionHelper.setLastSeenBroadcastId(this@MainActivity, broadcastId)
+                                        com.example.hustlefix.util.SoundHelper.playNotification(this@MainActivity)
+                                    }
+                                } catch (e: Exception) {
+                                    // Ignore malformed broadcasts
                                 }
                             }
                             override fun onCancelled(error: DatabaseError) {}

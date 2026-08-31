@@ -105,6 +105,7 @@ fun HustleFixNavGraph(
     // Navigation logic after successful auth
     LaunchedEffect(authState.isLoginSuccessful, authState.isRegisterSuccessful) {
         if (authState.isLoginSuccessful || authState.isRegisterSuccessful) {
+            com.example.hustlefix.util.SoundHelper.playSuccess(context)
             val role = SessionHelper.getRole(context)
             val destination = if (role == "admin") {
                 Screen.AdminDashboard.route
@@ -284,6 +285,7 @@ fun HustleFixNavGraph(
                         "emergencies" -> navController.navigate(Screen.Emergency.route)
                         "logs" -> { /* Open logs screen */ }
                         "broadcast" -> { /* Open broadcast dialog */ }
+                        "delete_broadcast" -> viewModel.deleteLastBroadcast()
                     }
                 }
             )
@@ -764,6 +766,31 @@ fun HustleFixNavGraph(
                 onRefresh = { viewModel.refresh() },
                 onNotificationClick = { notification ->
                     viewModel.markAsRead(notification.id)
+                    
+                    // Navigate based on type
+                    when (notification.type) {
+                        "booking" -> {
+                            notification.relatedId?.let { id ->
+                                if (id.isNotEmpty()) {
+                                    val isProvider = SessionHelper.getRole(context) == "service_provider"
+                                    navController.navigate("booking_detail/$id?isServiceProvider=$isProvider")
+                                }
+                            }
+                        }
+                        "chat" -> {
+                            notification.relatedId?.let { id ->
+                                if (id.isNotEmpty()) {
+                                    navController.navigate(Screen.Chat.createRoute(id, "Chat"))
+                                }
+                            }
+                        }
+                        "emergency" -> {
+                            navController.navigate(Screen.Emergency.route)
+                        }
+                        "payment" -> {
+                            navController.navigate(Screen.Wallet.route)
+                        }
+                    }
                 },
                 onDeleteNotification = { viewModel.deleteNotification(it) },
                 onMarkAllRead = { viewModel.markAllAsRead() },
@@ -996,6 +1023,7 @@ fun HustleFixNavGraph(
                 isVerifyingPayment = uiState.isVerifyingPayment,
                 walletBalance = uiState.walletBalance,
                 error = uiState.error,
+                isUpdateSuccess = uiState.isUpdateSuccess,
                 onClearError = { viewModel.clearStatus() },
                 onStatusUpdate = { s, c -> viewModel.updateStatus(s, c) },
                 onRatingSubmit = { s, c, a -> viewModel.submitRating(s, c, a) },

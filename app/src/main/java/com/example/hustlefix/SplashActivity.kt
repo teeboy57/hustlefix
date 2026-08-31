@@ -31,6 +31,7 @@ class SplashActivity : ComponentActivity() {
                 val scale = remember { Animatable(0f) }
 
                 LaunchedEffect(Unit) {
+                    com.example.hustlefix.util.SoundHelper.playSuccess(this@SplashActivity)
                     scale.animateTo(
                         targetValue = 1f,
                         animationSpec = tween(

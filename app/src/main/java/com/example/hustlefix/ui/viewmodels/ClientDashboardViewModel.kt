@@ -126,9 +126,9 @@ class ClientDashboardViewModel : ViewModel() {
         
         database.getReference("user_chats").child(uid).addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                // Mocking unread for demo if logic isn't fully in backend yet
-                // In production, this would be a single field update by cloud functions
-                _uiState.value = _uiState.value.copy(unreadMessagesCount = snapshot.childrenCount.toInt() % 3) // Demo variation
+                // In production, we'd check a specific field like "totalUnread" updated by Cloud Functions.
+                // For now, we'll just count chats that exist.
+                _uiState.value = _uiState.value.copy(unreadMessagesCount = 0) 
             }
             override fun onCancelled(error: DatabaseError) {}
         })

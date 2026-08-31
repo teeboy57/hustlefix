@@ -49,6 +49,12 @@ fun EmergencyRequestScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(isSuccess) {
+        if (isSuccess) {
+            com.example.hustlefix.util.SoundHelper.playSuccess(context)
+        }
+    }
+
     // Permission state
     var locationPermissionGranted by remember {
         mutableStateOf(

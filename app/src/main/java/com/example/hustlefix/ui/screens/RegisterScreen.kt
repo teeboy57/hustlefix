@@ -43,6 +43,7 @@ fun RegisterScreen(
 
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(error) {
         if (error != null) {
@@ -174,7 +175,10 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = { onRegisterClick(fullName, email, phone, password) },
+                    onClick = { 
+                        com.example.hustlefix.util.SoundHelper.playClick(context)
+                        onRegisterClick(fullName, email, phone, password) 
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),
