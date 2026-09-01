@@ -5,13 +5,86 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+const templates = require("./emailTemplates");
 
 admin.initializeApp();
 const db = admin.database();
 
 const MERCHANT_ID = "10053500";
 const MERCHANT_KEY = "s7dtvpr5uallq";
-const PASSPHRASE = "Treasure071152"; // Set this in Payfast Dashboard -> Settings -> Integration
+const PASSPHRASE = "Treasure071152";
+
+// SMTP Transporter Setup
+const mailTransport = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: functions.config().email?.user || "",
+    pass: functions.config().email?.pass || "",
+  },
+});
+
+/**
+ * Global Email Helper
+ */
+async function sendEmail(to, type, data, lang = "en") {
+  if (!to) return;
+
+  const template = templates[lang]?.[type] || templates["en"]?.[type];
+  if (!template) return;
+
+  let subject = template.subject;
+  let body = template.body;
+
+  // Dynamic replacements
+  for (const key in data) {
+    const regex = new RegExp(`{${key}}`, "g");
+    subject = subject.replace(regex, data[key]);
+    body = body.replace(regex, data[key]);
+  }
+
+  const mailOptions = {
+    from: `"HustleFix" <noreply@hustlefix.com>`,
+    to: to,
+    subject: subject,
+    text: body,
+  };
+
+  try {
+    await mailTransport.sendMail(mailOptions);
+
+    // Log to Activity Log
+    await db.ref("activity_log").push({
+      action: "EMAIL_SENT",
+      userId: data.uid || "system",
+      userName: data.name || "User",
+      details: `Sent ${type} email to ${to}`,
+      timestamp: Date.now(),
+    });
+
+    console.log(`Email sent: ${type} to ${to}`);
+  } catch (error) {
+    console.error("Email Error:", error);
+    // Log Failure
+    await db.ref("activity_log").push({
+      action: "EMAIL_FAILED",
+      details: `Failed to send ${type} email to ${to}. Error: ${error.message}`,
+      timestamp: Date.now(),
+    });
+  }
+}
+
+/**
+ * 0. Auth Triggers
+ */
+exports.onUserCreated = functions.auth.user().onCreate(async (user) => {
+  const {email, displayName, uid} = user;
+  await sendEmail(email, "registration", {name: displayName || "Hustler", uid: uid});
+});
+
+exports.onUserDeleted = functions.auth.user().onDelete(async (user) => {
+  await sendEmail(user.email, "deletion", {name: user.displayName || "User", uid: user.uid});
+});
 
 /**
  * 1. createCheckout
@@ -208,6 +281,21 @@ exports.onBookingStatusChanged = functions.database.ref("/bookings/{bookingId}")
         },
       };
 
+      // Also trigger Email if confirmed
+      if (after.status === "confirmed") {
+        const userSnapshot = await db.ref(`users/${after.clientId}`).get();
+        const user = userSnapshot.val();
+        if (user && user.email) {
+          await sendEmail(user.email, "booking_confirmed", {
+            name: user.name || "Client",
+            serviceTitle: after.serviceTitle,
+            partnerName: after.workerName,
+            date: after.preferredDate,
+            uid: after.clientId,
+          });
+        }
+      }
+
       return admin.messaging().sendToDevice(fcmToken, payload);
     });
 
@@ -286,6 +374,154 @@ exports.onBookingCompleted = functions.database.ref("/bookings/{bookingId}")
       }
       return null;
     });
+
+/**
+ * 6. onWithdrawalRequest
+ */
+exports.onWithdrawalRequest = functions.database.ref("/withdrawal_requests/{id}")
+    .onCreate(async (snapshot, context) => {
+      const request = snapshot.val();
+      const userSnap = await db.ref(`users/${request.userId}`).get();
+      const user = userSnap.val();
+
+      await sendEmail(user.email, "withdrawal", {
+        name: user.name || "Hustler",
+        amount: request.amount,
+        bankName: request.bankName,
+        uid: request.userId,
+      });
+    });
+
+/**
+ * 7. onEmergencyPosted (Email to Admins)
+ */
+exports.onEmergencyEmail = functions.database.ref("/emergency_requests/{requestId}")
+    .onCreate(async (snapshot, context) => {
+      const request = snapshot.val();
+
+      // Find all admins to email
+      const adminsSnap = await db.ref("users").orderByChild("role").equalTo("admin").get();
+
+      adminsSnap.forEach((child) => {
+        const admin = child.val();
+        if (admin.email) {
+          sendEmail(admin.email, "emergency", {
+            location: request.address,
+            description: request.description,
+          });
+        }
+      });
+    });
+
+/**
+ * 8. onProfileUpdated
+ */
+exports.onProfileUpdatedEmail = functions.database.ref("/users/{uid}")
+    .onUpdate(async (change, context) => {
+      const before = change.before.val();
+      const after = change.after.val();
+
+      // Only notify on sensitive changes (phone, email, bank details)
+      if (before.phone !== after.phone || before.email !== after.email || before.accountNumber !== after.accountNumber) {
+        await sendEmail(after.email, "profile_update", {
+          name: after.name || "User",
+          uid: context.params.uid,
+        });
+      }
+    });
+
+/**
+ * 9. testEmailTrigger (HTTPS)
+ * Call this to simulate an email trigger.
+ * Params: ?email=...&type=registration&name=...
+ */
+exports.testEmailTrigger = functions.https.onRequest(async (req, res) => {
+  const {email, type, name, amount, bankName} = req.query;
+
+  if (!email || !type) {
+    return res.status(400).send("Missing email or type");
+  }
+
+  const data = {
+    name: name || "Test User",
+    amount: amount || "0.00",
+    bankName: bankName || "Test Bank",
+    serviceTitle: "Test Service",
+    partnerName: "Test Partner",
+    date: new Date().toLocaleDateString(),
+    location: "Test Location",
+    description: "Test Description",
+    month: "August 2026",
+    jobCount: "12",
+    totalEarnings: "1200.00",
+    platformFees: "120.00",
+    netPay: "1080.00",
+  };
+
+  try {
+    await sendEmail(email, type, data);
+    res.status(200).send(`Test email of type ${type} sent to ${email}`);
+  } catch (error) {
+    res.status(500).send("Test Failed: " + error.message);
+  }
+});
+
+/**
+ * 9. generateMonthlyStatements (HTTPS / Scheduled)
+ */
+exports.generateMonthlyStatements = functions.https.onRequest(async (req, res) => {
+  const usersSnap = await db.ref("users").orderByChild("role").equalTo("worker").get();
+  const date = new Date();
+  date.setMonth(date.getMonth() - 1); // Get previous month
+  const monthName = date.toLocaleString("en-US", {month: "long", year: "numeric"});
+
+  const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1).getTime();
+  const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getTime();
+
+  let sentCount = 0;
+
+  const userPromises = [];
+  usersSnap.forEach((child) => {
+    const user = child.val();
+    const uid = child.key;
+
+    if (user.email) {
+      const p = (async () => {
+        const transSnap = await db.ref(`transactions/${uid}`).get();
+        let totalEarnings = 0;
+        let jobCount = 0;
+
+        transSnap.forEach((tChild) => {
+          const t = tChild.val();
+          if (t.timestamp >= startOfMonth && t.timestamp <= endOfMonth && t.type === "Job Payout") {
+            totalEarnings += parseFloat(t.amount || 0);
+            jobCount++;
+          }
+        });
+
+        if (jobCount > 0) {
+          const fees = totalEarnings * 0.10;
+          const net = totalEarnings - fees;
+
+          await sendEmail(user.email, "monthly_statement", {
+            name: user.name || "Hustler",
+            month: monthName,
+            jobCount: jobCount.toString(),
+            totalEarnings: totalEarnings.toFixed(2),
+            platformFees: fees.toFixed(2),
+            netPay: net.toFixed(2),
+            uid: uid
+          });
+          sentCount++;
+        }
+      })();
+      userPromises.push(p);
+    }
+  });
+
+  await Promise.all(userPromises);
+  res.status(200).send(`Generated and sent ${sentCount} statements for ${monthName}`);
+});
 
 /**
  * Signature Generation Helper
