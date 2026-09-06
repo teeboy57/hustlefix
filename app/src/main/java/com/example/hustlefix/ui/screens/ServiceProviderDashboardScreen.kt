@@ -145,71 +145,6 @@ fun ServiceProviderDashboardScreen(
                 }
 
                 Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                    // Revenue Card Refined
-                    AnimatedEntrance(delay = 100) {
-                        StandardCard(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = { onQuickActionClick("work") }
-                        ) {
-                            Column(modifier = Modifier.padding(24.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Earnings Overview",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    IconButton(onClick = { onQuickActionClick("work") }) {
-                                        Icon(Icons.AutoMirrored.Filled.TrendingUp, contentDescription = null, tint = Color(0xFF4CAF50))
-                                    }
-                                }
-                                
-                                val animatedEarningsValue = totalEarnings.filter { it.isDigit() || it == '.' }.toFloatOrNull() ?: 0f
-                                val animatedValue by animateFloatAsState(
-                                    targetValue = animatedEarningsValue,
-                                    animationSpec = tween(durationMillis = 1500, easing = FastOutSlowInEasing),
-                                    label = "earningsAnimation"
-                                )
-                                
-                                Text(
-                                    text = "R${String.format(java.util.Locale.getDefault(), "%.2f", animatedValue)}",
-                                    style = MaterialTheme.typography.displayMedium,
-                                    fontWeight = FontWeight.Black,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                
-                                Spacer(modifier = Modifier.height(20.dp))
-                                
-                                val progress by animateFloatAsState(
-                                    targetValue = 0.85f,
-                                    animationSpec = tween(durationMillis = 2000, easing = FastOutSlowInEasing),
-                                    label = "progressAnimation"
-                                )
-                                
-                                LinearProgressIndicator(
-                                    progress = { progress },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(12.dp),
-                                    color = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.primaryContainer,
-                                    strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
-                                )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = "85% of monthly goal reached",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
                     // Stats Row with better spacing
                     Row(modifier = Modifier.fillMaxWidth()) {
                         AnimatedEntrance(delay = 200, modifier = Modifier.weight(1f)) {
@@ -254,6 +189,10 @@ fun ServiceProviderDashboardScreen(
                         Spacer(modifier = Modifier.width(16.dp))
                         QuickActionCard("Urgent Jobs", Icons.Default.FlashOn, Color(0xFFFF4081), { onQuickActionClick("urgent") }, Modifier.weight(1f))
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    QuickActionCard("Help & Support", Icons.Default.SupportAgent, Color(0xFF6750A4), { onQuickActionClick("support") }, Modifier.fillMaxWidth())
 
                     Spacer(modifier = Modifier.height(32.dp))
 

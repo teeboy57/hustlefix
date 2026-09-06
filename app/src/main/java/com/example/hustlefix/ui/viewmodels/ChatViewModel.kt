@@ -82,10 +82,16 @@ class ChatViewModel : ViewModel() {
 
     fun loadChat(partnerId: String, partnerName: String) {
         val uid = currentUserId ?: return
-        val chatId = if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid"
+        val isSupport = partnerId == "admin_support"
+        val chatId = if (isSupport) "support_$uid" else (if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid")
         
         _chatUiState.value = _chatUiState.value.copy(partnerName = partnerName, isLoading = true)
         
+        // Reset User's Unread Count if Support
+        if (isSupport) {
+            database.getReference("user_chats/admin_support").child(chatId).child("userUnreadCount").setValue(0)
+        }
+
         chatRef?.let { ref -> chatListener?.let { ref.removeEventListener(it) } }
         chatRef = database.getReference("messages").child(chatId)
         
@@ -99,6 +105,11 @@ class ChatViewModel : ViewModel() {
                     messages = list.sortedBy { it.getTimestamp() ?: 0L },
                     isLoading = false
                 )
+                
+                // If the last message was from admin, marking the chat as read when opened
+                if (isSupport && list.isNotEmpty() && list.last().senderId == "admin") {
+                    database.getReference("user_chats/admin_support").child(chatId).child("userUnreadCount").setValue(0)
+                }
             }
             override fun onCancelled(error: DatabaseError) {
                 _chatUiState.value = _chatUiState.value.copy(isLoading = false)
@@ -112,20 +123,47 @@ class ChatViewModel : ViewModel() {
         val uid = currentUserId ?: return
         val user = auth.currentUser ?: return
         val senderName = user.displayName ?: "User"
+        val userEmail = user.email ?: ""
         
-        val chatId = if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid"
+        val isSupport = partnerId == "admin_support"
+        val chatId = if (isSupport) "support_$uid" else (if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid")
+        
         val msgRef = database.getReference("messages").child(chatId)
         val msgId = msgRef.push().key ?: return
         
         val message = Message(msgId, uid, senderName, partnerId, partnerName, text)
         msgRef.child(msgId).setValue(message)
 
-        // Update Index for both users
-        val summaryForMe = ChatSummary(chatId, partnerId, partnerName, text, message.timestamp)
-        val summaryForPartner = ChatSummary(chatId, uid, senderName, text, message.timestamp)
+        if (isSupport) {
+            // Support Logic: Update central support node for Admin
+            val supportRef = database.getReference("user_chats/admin_support").child(chatId)
+            val metadata = mapOf(
+                "chatId" to chatId,
+                "userId" to uid,
+                "userName" to senderName,
+                "userEmail" to userEmail,
+                "lastMessage" to text,
+                "updatedAt" to ServerValue.TIMESTAMP,
+                "lastSender" to uid
+            )
+            supportRef.updateChildren(metadata)
+            // Increment admin's unread count
+            supportRef.child("adminUnreadCount").runTransaction(object : Transaction.Handler {
+                override fun doTransaction(currentData: MutableData): Transaction.Result {
+                    val count = currentData.getValue(Int::class.java) ?: 0
+                    currentData.value = count + 1
+                    return Transaction.success(currentData)
+                }
+                override fun onComplete(e: DatabaseError?, b: Boolean, s: DataSnapshot?) {}
+            })
+        } else {
+            // Standard Chat Logic: Update Index for both users
+            val summaryForMe = ChatSummary(chatId, partnerId, partnerName, text, message.timestamp)
+            val summaryForPartner = ChatSummary(chatId, uid, senderName, text, message.timestamp)
 
-        database.getReference("user_chats").child(uid).child(chatId).setValue(summaryForMe)
-        database.getReference("user_chats").child(partnerId).child(chatId).setValue(summaryForPartner)
+            database.getReference("user_chats").child(uid).child(chatId).setValue(summaryForMe)
+            database.getReference("user_chats").child(partnerId).child(chatId).setValue(summaryForPartner)
+        }
     }
 
     fun editMessage(partnerId: String, messageId: String, newText: String) {
@@ -167,7 +205,8 @@ class ChatViewModel : ViewModel() {
 
     fun sendSystemMessage(partnerId: String, partnerName: String, text: String) {
         val uid = currentUserId ?: return
-        val chatId = if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid"
+        val isSupport = partnerId == "admin_support"
+        val chatId = if (isSupport) "support_$uid" else (if (uid < partnerId) "${uid}_$partnerId" else "${partnerId}_$uid")
         
         database.getReference("messages").child(chatId).get().addOnSuccessListener { snapshot ->
             if (!snapshot.exists()) {

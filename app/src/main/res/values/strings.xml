@@ -73,4 +73,7 @@
     <string name="find_services_title">Find Services</string>
     <string name="no_services_found">No services found</string>
     <string name="clear_search">Clear Search</string>
+
+    <!-- API Keys -->
+    <string name="google_maps_key">YOUR_REAL_KEY_HERE</string>
 </resources>

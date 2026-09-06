@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -34,6 +35,8 @@ import com.example.hustlefix.R
 fun VerificationScreen(
     idImageUri: Uri?,
     certImageUri: Uri?,
+    remoteIdUrl: String?,
+    remoteCertUrl: String?,
     isLoading: Boolean,
     isSuccess: Boolean,
     error: String?,
@@ -41,6 +44,7 @@ fun VerificationScreen(
     rejectionReason: String?,
     onIdImageSelected: (Uri?) -> Unit,
     onCertImageSelected: (Uri?) -> Unit,
+    onDeleteDocument: (String) -> Unit,
     onSubmit: () -> Unit,
     onBackClick: () -> Unit,
     onClearStatus: () -> Unit
@@ -130,7 +134,9 @@ fun VerificationScreen(
                 title = "Identity Document",
                 description = "Clear photo of your ID or Driver's License",
                 imageUri = idImageUri,
+                remoteUrl = remoteIdUrl,
                 enabled = currentStatus == "unverified" || currentStatus == "rejected",
+                onDelete = { onDeleteDocument("id") },
                 onClick = {
                     idLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
@@ -143,7 +149,9 @@ fun VerificationScreen(
                 title = "Trade Certificate",
                 description = "Certificates or proof of your professional skills",
                 imageUri = certImageUri,
+                remoteUrl = remoteCertUrl,
                 enabled = currentStatus == "unverified" || currentStatus == "rejected",
+                onDelete = { onDeleteDocument("cert") },
                 onClick = {
                     certLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
@@ -209,20 +217,23 @@ fun DocumentUploadCard(
     title: String,
     description: String,
     imageUri: Uri?,
+    remoteUrl: String?,
     enabled: Boolean,
+    onDelete: () -> Unit,
     onClick: () -> Unit
 ) {
     Card(
-        onClick = if (enabled) onClick else ({}),
+        onClick = if (enabled && imageUri == null && remoteUrl == null) onClick else ({}),
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
     ) {
         Box(modifier = Modifier.height(160.dp).fillMaxWidth()) {
-            if (imageUri != null) {
+            val displayImage = imageUri ?: remoteUrl
+            if (displayImage != null) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(imageUri)
+                        .data(displayImage)
                         .crossfade(true)
                         .build(),
                     contentDescription = null,
@@ -230,6 +241,16 @@ fun DocumentUploadCard(
                     contentScale = ContentScale.Crop
                 )
                 Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)))
+                
+                if (enabled) {
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
+                    }
+                }
+
                 Icon(
                     Icons.Default.CheckCircle,
                     contentDescription = null,

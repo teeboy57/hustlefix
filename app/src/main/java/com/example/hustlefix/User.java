@@ -8,7 +8,7 @@ public class User {
     private String photoURL;
     private String phone;
     private String location;
-    private boolean isVerified;
+    private boolean verified;
     private boolean isSuspended;
     private Long suspensionUntil;
     private String suspensionReason;
@@ -61,8 +61,8 @@ public class User {
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
 
-    public boolean isVerified() { return isVerified; }
-    public void setVerified(boolean verified) { isVerified = verified; }
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
 
     public boolean isSuspended() { return isSuspended; }
     public void setSuspended(boolean suspended) { isSuspended = suspended; }

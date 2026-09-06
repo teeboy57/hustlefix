@@ -148,6 +148,21 @@ app.get('/api/test/email', async (req, res) => {
     res.send("Email Triggered");
 });
 
+// 4. Manual Withdrawal Approval Email (Triggered by Admin Portal)
+app.post('/api/admin/approve-withdrawal', async (req, res) => {
+    const {userId, amount} = req.body;
+    try {
+        const userSnap = await db.ref(`users/${userId}`).get();
+        const user = userSnap.val();
+        if (user && user.email) {
+            await sendEmail(user.email, "withdrawal_success", { name: user.name, amount: amount });
+            res.json({ success: true });
+        } else {
+            res.status(404).send("User not found");
+        }
+    } catch (e) { res.status(500).send(e.message); }
+});
+
 /**
  * REAL-TIME LISTENERS (Replacing Cloud Triggers)
  */
@@ -174,6 +189,28 @@ db.ref("withdrawal_requests").on("child_added", async (snapshot) => {
             uid: request.userId
         });
     }
+});
+
+// 4. Listen for User Profile Changes (Verification Status)
+db.ref("users").on("child_changed", async (snapshot) => {
+  const user = snapshot.val();
+  const uid = snapshot.key;
+
+  // We check if the status was just changed to verified or rejected
+  // Note: For a more robust solution, we'd compare before/after,
+  // but since we're using .on("child_changed"), we check the current value.
+
+  if (user.verificationStatus === "verified" && !user.verifiedEmailSent) {
+    await sendEmail(user.email, "verification_approved", { name: user.name, uid: uid });
+    await db.ref(`users/${uid}`).update({ verifiedEmailSent: true, verified: true });
+  } else if (user.verificationStatus === "rejected" && !user.rejectionEmailSent) {
+    await sendEmail(user.email, "verification_rejected", {
+        name: user.name,
+        reason: user.rejectionReason || "Documents were unclear",
+        uid: uid
+    });
+    await db.ref(`users/${uid}`).update({ rejectionEmailSent: true, verified: false });
+  }
 });
 
 /**

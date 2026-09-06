@@ -60,49 +60,6 @@ fun AdminDashboardScreen(
                         .verticalScroll(scrollState)
                         .padding(24.dp)
                 ) {
-                    // Admin Wallet Card
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(28.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .background(
-                                    Brush.linearGradient(
-                                        colors = listOf(Color(0xFF6750A4), Color(0xFF4F378B))
-                                    )
-                                )
-                                .padding(32.dp)
-                                .fillMaxWidth()
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Total Platform Profit", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.labelLarge)
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = profitBalance,
-                                    style = MaterialTheme.typography.displayMedium,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Surface(
-                                    color = Color.White.copy(alpha = 0.2f),
-                                    shape = RoundedCornerShape(12.dp)
-                                ) {
-                                    Text(
-                                        "Available for Payout",
-                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
-                                        color = Color.White,
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(32.dp))
-
                     Text("System Overview", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
                     Spacer(modifier = Modifier.height(16.dp))
 

@@ -132,18 +132,6 @@ fun ClientDashboardScreen(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
-                                    
-                                    // Wallet Quick View
-                                    Surface(
-                                        onClick = { onQuickActionClick("wallet") },
-                                        color = MaterialTheme.colorScheme.secondaryContainer,
-                                        shape = RoundedCornerShape(16.dp)
-                                    ) {
-                                        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Text("Wallet", style = MaterialTheme.typography.labelSmall)
-                                            Text(walletBalance, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
-                                        }
-                                    }
                                 }
                                 
                                 Spacer(modifier = Modifier.height(20.dp))
@@ -316,9 +304,9 @@ fun ClientDashboardScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        UrgentRequestButton({ onQuickActionClick("emergency") }, Modifier.weight(1f))
+                        QuickActionCard("Help & Support", Icons.Default.SupportAgent, Color(0xFF6750A4), { onQuickActionClick("support") }, Modifier.weight(1f))
                         Spacer(modifier = Modifier.width(16.dp))
-                        QuickActionCard("My Wallet", Icons.Default.AccountBalanceWallet, MaterialTheme.colorScheme.primary, { onQuickActionClick("wallet") }, Modifier.weight(1f))
+                        UrgentRequestButton({ onQuickActionClick("emergency") }, Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))

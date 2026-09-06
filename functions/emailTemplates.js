@@ -16,6 +16,10 @@ const templates = {
       subject: "Withdrawal Request Received",
       body: "Hi {name},\n\nWe received your request for R{amount} to your {bankName} account. It will be processed within 2-3 business days.",
     },
+    withdrawal_success: {
+      subject: "Funds Sent! 💸",
+      body: "Hi {name},\n\nGreat news! Your withdrawal request of R{amount} has been processed and sent to your bank account. It should reflect in your balance shortly.",
+    },
     booking_confirmed: {
       subject: "Booking Confirmed: {serviceTitle}",
       body: "Hi {name},\n\nYour booking for {serviceTitle} with {partnerName} has been confirmed for {date}.",
@@ -27,6 +31,14 @@ const templates = {
     profile_update: {
       subject: "Security Alert: Profile Updated",
       body: "Hi {name},\n\nYour profile information was recently updated. If this wasn't you, please contact support immediately.",
+    },
+    verification_approved: {
+      subject: "Congratulations! You're Verified ✅",
+      body: "Hi {name},\n\nGreat news! Your identity verification has been approved. A 'Verified' badge has been added to your profile, making it easier for clients to trust and book you.\n\nHappy hustling!",
+    },
+    verification_rejected: {
+      subject: "Verification Update",
+      body: "Hi {name},\n\nWe couldn't approve your verification request at this time.\n\nReason: {reason}\n\nPlease update your documents and try again.",
     },
     monthly_statement: {
       subject: "Your HustleFix Statement for {month}",

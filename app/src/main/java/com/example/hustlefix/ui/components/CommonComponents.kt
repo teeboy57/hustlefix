@@ -157,7 +157,10 @@ fun HustleFixTopBar(
         title = { Text(title, fontWeight = FontWeight.ExtraBold) },
         navigationIcon = {
             if (navigationIcon != null) {
-                IconButton(onClick = onNavigationClick) {
+                IconButton(onClick = {
+                    com.example.hustlefix.util.SoundHelper.playClick(context)
+                    onNavigationClick()
+                }) {
                     Icon(navigationIcon, contentDescription = "Navigation Icon")
                 }
             }
@@ -180,9 +183,13 @@ fun StandardCard(
     elevation: ButtonElevation? = null, // Using for conceptual consistency
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     if (onClick != null) {
         Card(
-            onClick = onClick,
+            onClick = {
+                com.example.hustlefix.util.SoundHelper.playClick(context)
+                onClick()
+            },
             modifier = modifier,
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = containerColor),

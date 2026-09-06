@@ -235,10 +235,10 @@ fun ServiceGridItem(
                         shape = CircleShape
                     ) {
                         Icon(
-                            imageVector = Icons.Default.CheckCircle,
+                            imageVector = Icons.Default.Verified,
                             contentDescription = "Verified",
                             modifier = Modifier.padding(4.dp).size(16.dp),
-                            tint = Color(0xFF4CAF50)
+                            tint = Color(0xFF2196F3)
                         )
                     }
                 }

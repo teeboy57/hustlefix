@@ -101,6 +101,7 @@ fun HustleFixNavGraph(
         }
     })
     val authState by authViewModel.uiState.collectAsState()
+    val chatViewModel: ChatViewModel = viewModel()
 
     // Navigation logic after successful auth
     LaunchedEffect(authState.isLoginSuccessful, authState.isRegisterSuccessful) {
@@ -146,8 +147,8 @@ fun HustleFixNavGraph(
                     navController.navigate(Screen.Onboarding.route)
                 },
                 onSupportClick = {
-                    val uid = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
-                    chatViewModel.sendSystemMessage("admin_support", "HustleFix Support", "Support Request: I need help regarding my account suspension. (User ID: $uid, Reason: $reason)")
+                    val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "anonymous"
+                    chatViewModel.sendSystemMessage("admin_support", "HustleFix Support", "Support Request: I need help regarding my account suspension. (User ID: $userId, Reason: $reason)")
                     navController.navigate(Screen.Chat.createRoute("admin_support", "HustleFix Support"))
                 },
                 onDismissSuspension = {
@@ -250,6 +251,10 @@ fun HustleFixNavGraph(
                             "notifications" -> navController.navigate(Screen.Notifications.route)
                             "emergency" -> navController.navigate(Screen.Emergency.route)
                             "wallet" -> navController.navigate(Screen.Wallet.route)
+                            "support" -> {
+                                chatViewModel.sendSystemMessage("admin_support", "HustleFix Support", "Hello! Welcome to HustleFix Support. How can we help you today?")
+                                navController.navigate(Screen.Chat.createRoute("admin_support", "HustleFix Support"))
+                            }
                         }
                     }
                 },
@@ -327,6 +332,10 @@ fun HustleFixNavGraph(
                         "settings" -> navController.navigate(Screen.Settings.route)
                         "notifications" -> navController.navigate(Screen.Notifications.route)
                         "ratings" -> navController.navigate(Screen.Ratings.route)
+                        "support" -> {
+                            chatViewModel.sendSystemMessage("admin_support", "HustleFix Support", "Hello! Welcome to HustleFix Support. How can we help you today?")
+                            navController.navigate(Screen.Chat.createRoute("admin_support", "HustleFix Support"))
+                        }
                     }
                 },
                 onBookingClick = { booking ->
@@ -495,6 +504,8 @@ fun HustleFixNavGraph(
             VerificationScreen(
                 idImageUri = uiState.idImageUri,
                 certImageUri = uiState.certImageUri,
+                remoteIdUrl = uiState.remoteIdUrl,
+                remoteCertUrl = uiState.remoteCertUrl,
                 isLoading = uiState.isLoading,
                 isSuccess = uiState.isSuccess,
                 error = uiState.error,
@@ -502,6 +513,7 @@ fun HustleFixNavGraph(
                 rejectionReason = uiState.rejectionReason,
                 onIdImageSelected = { viewModel.onIdImageSelected(it) },
                 onCertImageSelected = { viewModel.onCertImageSelected(it) },
+                onDeleteDocument = { viewModel.deleteDocument(it) },
                 onSubmit = { viewModel.submitVerification() },
                 onBackClick = { navController.popBackStack() },
                 onClearStatus = { viewModel.clearStatus() }

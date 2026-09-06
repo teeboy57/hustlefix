@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.asStateFlow
 data class VerificationUiState(
     val idImageUri: Uri? = null,
     val certImageUri: Uri? = null,
+    val remoteIdUrl: String? = null,
+    val remoteCertUrl: String? = null,
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val error: String? = null,
@@ -43,7 +45,15 @@ class VerificationViewModel : ViewModel() {
             override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
                 val status = snapshot.child("verificationStatus").getValue(String::class.java) ?: "unverified"
                 val reason = snapshot.child("rejectionReason").getValue(String::class.java)
-                _uiState.value = _uiState.value.copy(currentStatus = status, rejectionReason = reason)
+                val idUrl = snapshot.child("idDocumentUrl").getValue(String::class.java)
+                val certUrl = snapshot.child("certificateUrl").getValue(String::class.java)
+                
+                _uiState.value = _uiState.value.copy(
+                    currentStatus = status, 
+                    rejectionReason = reason,
+                    remoteIdUrl = idUrl,
+                    remoteCertUrl = certUrl
+                )
             }
             override fun onCancelled(error: com.google.firebase.database.DatabaseError) {}
         }
@@ -65,6 +75,24 @@ class VerificationViewModel : ViewModel() {
 
     fun onCertImageSelected(uri: Uri?) {
         _uiState.value = _uiState.value.copy(certImageUri = uri)
+    }
+
+    fun deleteDocument(type: String) {
+        val uid = userId ?: return
+        val path = if (type == "id") "idDocumentUrl" else "certificateUrl"
+        
+        _uiState.value = _uiState.value.copy(isLoading = true)
+        
+        val updates = mutableMapOf<String, Any?>(path to null)
+        // If ID is deleted, status MUST return to unverified
+        if (type == "id") {
+            updates["verificationStatus"] = "unverified"
+        }
+        
+        database.getReference("users").child(uid).updateChildren(updates)
+            .addOnCompleteListener {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
     }
 
     fun submitVerification() {

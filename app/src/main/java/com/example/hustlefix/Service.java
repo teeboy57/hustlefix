@@ -12,7 +12,7 @@ public class Service {
     private String serviceProviderName;
     private String serviceProviderEmail;
     private String serviceProviderProfileImageUrl;
-    private Boolean providerVerified;
+    private Boolean verified;
     private java.util.List<String> serviceImageUrls; // List of work photos
     private String status;
     private String availability;
@@ -79,8 +79,8 @@ public class Service {
     public String getServiceProviderProfileImageUrl() { return serviceProviderProfileImageUrl; }
     public void setServiceProviderProfileImageUrl(String serviceProviderProfileImageUrl) { this.serviceProviderProfileImageUrl = serviceProviderProfileImageUrl; }
 
-    public Boolean isProviderVerified() { return providerVerified != null ? providerVerified : false; }
-    public void setProviderVerified(Boolean providerVerified) { this.providerVerified = providerVerified; }
+    public Boolean isProviderVerified() { return verified != null ? verified : false; }
+    public void setProviderVerified(Boolean verified) { this.verified = verified; }
 
     public java.util.List<String> getServiceImageUrls() { return serviceImageUrls; }
     public void setServiceImageUrls(java.util.List<String> serviceImageUrls) { this.serviceImageUrls = serviceImageUrls; }

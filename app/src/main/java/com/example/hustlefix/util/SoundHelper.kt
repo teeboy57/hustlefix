@@ -1,7 +1,6 @@
 package com.example.hustlefix.util
 
 import android.content.Context
-import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import com.example.hustlefix.R
@@ -10,8 +9,7 @@ object SoundHelper {
     private var mediaPlayer: MediaPlayer? = null
 
     /**
-     * Plays a smooth, subtle sound. 
-     * We use a lower volume (0.3f) to keep it from being "too much".
+     * Plays a sound with a specific volume. Default is 0.3f for smoothness.
      */
     fun playSound(context: Context, resId: Int, volume: Float = 0.3f) {
         try {
@@ -23,25 +21,25 @@ object SoundHelper {
     }
 
     fun playClick(context: Context) {
-        // Only use the very subtle system tick
+        // Use the system's most subtle UI click effect
         try {
             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK, 0.2f)
+            audioManager.playSoundEffect(AudioManager.FX_KEY_CLICK, 0.15f)
         } catch (e: Exception) {}
     }
 
     fun playSuccess(context: Context) {
-        // Soft chime for success
-        playSound(context, R.raw.splash_chime, 0.4f)
+        // Soft volume for success
+        playSound(context, R.raw.splash_chime, 0.3f)
     }
 
     fun playNotification(context: Context) {
-        // Instead of a loud ringtone, use the soft success chime at low volume
+        // Subtle notification sound
         playSound(context, R.raw.splash_chime, 0.2f)
     }
 
     fun playEmergency(context: Context) {
-        // Keep emergencies audible but not ear-piercing
-        playSound(context, R.raw.splash_chime, 0.6f)
+        // Keep emergencies clear but not overly aggressive
+        playSound(context, R.raw.splash_chime, 0.5f)
     }
 }
