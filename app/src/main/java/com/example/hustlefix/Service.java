@@ -1,115 +1,105 @@
 package com.example.hustlefix;
 
+import com.google.firebase.database.Exclude;
+import com.google.firebase.database.PropertyName;
+import java.util.List;
+
 public class Service {
-    private String serviceId;
-    private String title;
-    private String description;
-    private Double price;
-    private String category;
-    private String deliveryTime;
-    private String location;
-    private String serviceProviderId;
-    private String serviceProviderName;
-    private String serviceProviderEmail;
-    private String serviceProviderProfileImageUrl;
-    private Boolean verified;
-    private java.util.List<String> serviceImageUrls; // List of work photos
-    private String status;
-    private String availability;
-    private Long createdAt;
-    private Integer bookingsCount;
-    private Double averageRating;
-    private Double latitude;
-    private Double longitude;
+    public String serviceId;
+    public String title;
+    public String description;
+    public Double price;
+    public String category;
+    public String deliveryTime;
+    public String location;
+    public String serviceProviderId;
+    public String serviceProviderName;
+    public String serviceProviderEmail;
+    public String serviceProviderProfileImageUrl;
+    public Boolean verified;
+    public List<String> serviceImageUrls;
+    public String status;
+    public String availability;
+    public Long createdAt;
+    public Integer bookingsCount;
+    public Double averageRating;
+    public Double latitude;
+    public Double longitude;
 
     public Service() {
-        // Default constructor required for Firebase
+        // Default constructor for Firebase
     }
 
-    public Service(String serviceId, String title, String description, Double price,
-                   String category, String deliveryTime, String location, String serviceProviderId, String serviceProviderName, String serviceProviderEmail) {
-        this.serviceId = serviceId;
-        this.title = title;
-        this.description = description;
-        this.price = price;
-        this.category = category;
-        this.deliveryTime = deliveryTime;
-        this.location = location;
-        this.serviceProviderId = serviceProviderId;
-        this.serviceProviderName = serviceProviderName;
-        this.serviceProviderEmail = serviceProviderEmail;
-        this.status = "active";
-        this.availability = "Available";
-        this.createdAt = System.currentTimeMillis();
-        this.bookingsCount = 0;
-        this.averageRating = 0.0;
-    }
-
-    // Getters and Setters
+    // Getters
     public String getServiceId() { return serviceId; }
-    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
-
     public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-
     public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-
     public Double getPrice() { return price != null ? price : 0.0; }
-    public void setPrice(Double price) { this.price = price; }
-
     public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
-    public String getDeliveryTime() { return deliveryTime; }
-    public void setDeliveryTime(String deliveryTime) { this.deliveryTime = deliveryTime; }
-
     public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
-
-    public String getserviceProviderId() { return serviceProviderId; }
-    public void setserviceProviderId(String serviceProviderId) { this.serviceProviderId = serviceProviderId; }
-
-    public String getserviceProviderName() { return serviceProviderName; }
-    public void setserviceProviderName(String serviceProviderName) { this.serviceProviderName = serviceProviderName; }
-
-    public String getserviceProviderEmail() { return serviceProviderEmail; }
-    public void setserviceProviderEmail(String serviceProviderEmail) { this.serviceProviderEmail = serviceProviderEmail; }
-
+    
+    @PropertyName("serviceProviderId")
+    public String getServiceProviderId() { return serviceProviderId; }
+    
+    @PropertyName("serviceProviderName")
+    public String getServiceProviderName() { return serviceProviderName; }
+    
+    @PropertyName("serviceProviderEmail")
+    public String getServiceProviderEmail() { return serviceProviderEmail; }
+    
     public String getServiceProviderProfileImageUrl() { return serviceProviderProfileImageUrl; }
-    public void setServiceProviderProfileImageUrl(String serviceProviderProfileImageUrl) { this.serviceProviderProfileImageUrl = serviceProviderProfileImageUrl; }
-
-    public Boolean isProviderVerified() { return verified != null ? verified : false; }
-    public void setProviderVerified(Boolean verified) { this.verified = verified; }
-
-    public java.util.List<String> getServiceImageUrls() { return serviceImageUrls; }
-    public void setServiceImageUrls(java.util.List<String> serviceImageUrls) { this.serviceImageUrls = serviceImageUrls; }
+    
+    @PropertyName("verified")
+    public Boolean isVerified() { return verified != null ? verified : false; }
+    
+    public Long getCreatedAt() { return createdAt != null ? createdAt : 0L; }
+    public String getStatus() { return status; }
+    public Double getLatitude() { return latitude; }
+    public Double getLongitude() { return longitude; }
 
     public String getServiceImageUrl() {
-        if (serviceImageUrls != null && !serviceImageUrls.isEmpty()) {
-            return serviceImageUrls.get(0);
-        }
+        if (serviceImageUrls != null && !serviceImageUrls.isEmpty()) return serviceImageUrls.get(0);
         return null;
     }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
-    public String getAvailability() { return availability; }
-    public void setAvailability(String availability) { this.availability = availability; }
-
-    public Long getCreatedAt() { return createdAt != null ? createdAt : 0L; }
+    // Setters
+    public void setServiceId(String serviceId) { this.serviceId = serviceId; }
+    public void setTitle(String title) { this.title = title; }
+    public void setDescription(String description) { this.description = description; }
+    public void setPrice(Double price) { this.price = price; }
+    public void setCategory(String category) { this.category = category; }
+    public void setLocation(String location) { this.location = location; }
+    
+    @PropertyName("serviceProviderId")
+    public void setServiceProviderId(String id) { this.serviceProviderId = id; }
+    
+    @PropertyName("serviceProviderName")
+    public void setServiceProviderName(String name) { this.serviceProviderName = name; }
+    
+    @PropertyName("serviceProviderEmail")
+    public void setServiceProviderEmail(String email) { this.serviceProviderEmail = email; }
+    
+    public void setServiceProviderProfileImageUrl(String url) { this.serviceProviderProfileImageUrl = url; }
+    
+    @PropertyName("verified")
+    public void setVerified(Boolean verified) { this.verified = verified; }
+    
     public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
+    public void setStatus(String status) { this.status = status; }
+    public void setAvailability(String availability) { this.availability = availability; }
+    public void setServiceImageUrls(List<String> urls) { this.serviceImageUrls = urls; }
+    public void setLatitude(Double lat) { this.latitude = lat; }
+    public void setLongitude(Double lng) { this.longitude = lng; }
+    
+    public List<String> getServiceImageUrls() { return serviceImageUrls; }
 
-    public Integer getBookingsCount() { return bookingsCount != null ? bookingsCount : 0; }
-    public void setBookingsCount(Integer bookingsCount) { this.bookingsCount = bookingsCount; }
-
-    public Double getAverageRating() { return averageRating != null ? averageRating : 0.0; }
-    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
-
-    public Double getLatitude() { return latitude; }
-    public void setLatitude(Double latitude) { this.latitude = latitude; }
-
-    public Double getLongitude() { return longitude; }
-    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    // Compatibility lowercase aliases
+    @Exclude
+    public String getserviceId() { return serviceId; }
+    @Exclude
+    public String getserviceProviderId() { return serviceProviderId; }
+    @Exclude
+    public String getserviceProviderName() { return serviceProviderName; }
+    @Exclude
+    public String getserviceProviderEmail() { return serviceProviderEmail; }
 }

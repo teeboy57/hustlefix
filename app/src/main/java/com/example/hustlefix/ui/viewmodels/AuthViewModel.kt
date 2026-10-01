@@ -58,17 +58,20 @@ class AuthViewModel(
                                     return@launch
                                 }
                                 
-                                // Role Validation
-                                val actualRole = if (profile.role == "worker") "service_provider" else "client"
-                                if (actualRole != expectedRole) {
-                                    auth.signOut()
-                                    val errorMessage = if (actualRole == "service_provider") {
-                                        "This is a Service Provider account. Please log in through the Service Provider portal."
-                                    } else {
-                                        "This is a Client account. Please log in through the Client portal."
+                                // Role Validation (Allow admins to bypass)
+                                val actualRole = profile.role
+                                if (actualRole != "admin") {
+                                    val portalRole = if (actualRole == "worker") "service_provider" else "client"
+                                    if (portalRole != expectedRole) {
+                                        auth.signOut()
+                                        val errorMessage = if (portalRole == "service_provider") {
+                                            "This is a Service Provider account. Please log in through the Service Provider portal."
+                                        } else {
+                                            "This is a Client account. Please log in through the Client portal."
+                                        }
+                                        _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
+                                        return@launch
                                     }
-                                    _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
-                                    return@launch
                                 }
 
                                 if (profile.isSuspended) {
@@ -93,7 +96,7 @@ class AuthViewModel(
                                     }
                                 }
 
-                                val appRole = if (profile.role == "worker") "service_provider" else "client"
+                                val appRole = if (profile.role == "worker") "service_provider" else (if (profile.role == "admin") "admin" else "client")
                                 SessionHelper.saveRole(context, appRole)
                                 SessionHelper.setLoggedIn(context, true)
                                 
@@ -145,8 +148,9 @@ class AuthViewModel(
                             "email" to email,
                             "phone" to phone,
                             "role" to firebaseRole,
-                            "isVerified" to false,
+                            "verified" to false,
                             "isSuspended" to false,
+                            "walletBalance" to 0.0,
                             "createdAt" to System.currentTimeMillis()
                         )
                         

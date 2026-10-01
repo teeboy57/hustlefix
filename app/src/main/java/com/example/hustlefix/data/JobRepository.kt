@@ -3,6 +3,7 @@ package com.example.hustlefix.data
 import com.example.hustlefix.Job
 import com.example.hustlefix.Quote
 import com.example.hustlefix.Booking
+import com.example.hustlefix.Service
 import com.google.firebase.database.*
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -151,26 +152,28 @@ class JobRepository {
 
     suspend fun acceptQuote(job: Job, quote: Quote): Result<Unit> {
         return try {
+            val jobId = job.jobId ?: throw Exception("Invalid Job ID")
+            
             // 1. Update Job
             val jobUpdates = mapOf(
                 "status" to "quoted",
-                "workerId" to quote.workerId,
-                "workerName" to quote.workerName,
+                "workerId" to (quote.workerId ?: ""),
+                "workerName" to (quote.workerName ?: "Pro"),
                 "quotedAmount" to quote.amount
             )
-            jobsRef.child(job.jobId).updateChildren(jobUpdates).await()
+            jobsRef.child(jobId).updateChildren(jobUpdates).await()
 
             // 2. Create Booking
             val bookingRef = bookingsRef.push()
             val bookingId = bookingRef.key ?: throw Exception("Failed to get booking key")
             
             // Try to get service image if it exists
-            val serviceSnapshot = database.getReference("services").child(job.jobId).get().await()
-            val service = serviceSnapshot.getValue(com.example.hustlefix.Service::class.java)
+            val serviceSnapshot = database.getReference("services").child(jobId).get().await()
+            val service = serviceSnapshot.getValue(Service::class.java)
             val imageUrl = service?.getServiceImageUrl()
 
-            val booking = Booking(job.jobId, job.title, job.clientId, job.clientName, quote.workerId, quote.workerName, quote.amount).apply {
-                this.bookingId = bookingId
+            val booking = Booking(jobId, job.title ?: "Service", job.clientId ?: "", job.clientName ?: "Client", quote.workerId ?: "", quote.workerName ?: "Pro", quote.amount).apply {
+                this.setBookingId(bookingId)
                 this.setServiceImageUrl(imageUrl)
             }
             bookingRef.setValue(booking).await()

@@ -26,6 +26,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.hustlefix.Booking
 import com.example.hustlefix.R
+import java.util.Locale
 
 @Composable
 fun LocationPermissionDeniedState(onOpenSettings: () -> Unit) {
@@ -214,7 +215,7 @@ fun NearbyServiceCard(
                 Text(service.title ?: "Service", fontWeight = FontWeight.Bold, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                 Text(service.category ?: "Pro", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("R${String.format(java.util.Locale.getDefault(), "%.0f", service.price)}", fontWeight = FontWeight.Black)
+                Text("R${String.format(Locale.getDefault(), "%.0f", service.price ?: 0.0)}", fontWeight = FontWeight.Black)
             }
         }
     }
@@ -260,7 +261,7 @@ fun BookingItem(
         },
         trailingContent = { 
             Text(
-                text = "R${String.format(java.util.Locale.getDefault(), "%.2f", booking.getPrice())}", 
+                text = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice() ?: 0.0)}",
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             ) 

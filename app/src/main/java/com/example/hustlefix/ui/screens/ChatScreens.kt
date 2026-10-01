@@ -1,5 +1,6 @@
 package com.example.hustlefix.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -22,7 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -45,10 +49,10 @@ fun ChatListScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Messages", fontWeight = FontWeight.ExtraBold) },
+                title = { Text(stringResource(R.string.messages), fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -104,7 +108,7 @@ fun ChatItem(chat: ChatSummary, onClick: () -> Unit) {
             Text(
                 chat.lastMessage ?: "", 
                 maxLines = 1, 
-                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             ) 
         },
@@ -118,7 +122,7 @@ fun ChatItem(chat: ChatSummary, onClick: () -> Unit) {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ChatScreen(
     partnerName: String,
@@ -158,7 +162,7 @@ fun ChatScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -181,7 +185,7 @@ fun ChatScreen(
                         value = messageText,
                         onValueChange = { messageText = it },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Type a message...") },
+                        placeholder = { Text(stringResource(R.string.type_message)) },
                         shape = RoundedCornerShape(24.dp),
                         maxLines = 4,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -211,7 +215,7 @@ fun ChatScreen(
                     ) {
                         Icon(
                             if (editingMessageId != null) Icons.Default.Check else Icons.AutoMirrored.Filled.Send,
-                            contentDescription = if (editingMessageId != null) "Update" else "Send"
+                            contentDescription = if (editingMessageId != null) stringResource(R.string.save) else stringResource(R.string.broadcast)
                         )
                     }
                     if (editingMessageId != null) {
@@ -219,7 +223,7 @@ fun ChatScreen(
                             editingMessageId = null
                             messageText = ""
                         }) {
-                            Icon(Icons.Default.Close, contentDescription = "Cancel Edit")
+                            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.cancel))
                         }
                     }
                 }
@@ -288,12 +292,12 @@ fun MessageOptionsSheet(
                 .padding(bottom = 32.dp)
         ) {
             ListItem(
-                headlineContent = { Text("Edit Message") },
+                headlineContent = { Text(stringResource(R.string.edit_message)) },
                 leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
                 modifier = Modifier.clickable { onEdit() }
             )
             ListItem(
-                headlineContent = { Text("Delete Message", color = MaterialTheme.colorScheme.error) },
+                headlineContent = { Text(stringResource(R.string.delete_message), color = MaterialTheme.colorScheme.error) },
                 leadingContent = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
                 modifier = Modifier.clickable { onDelete() }
             )
@@ -301,7 +305,7 @@ fun MessageOptionsSheet(
     }
 }
 
-@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MessageBubble(
     message: Message, 
@@ -343,7 +347,7 @@ fun MessageBubble(
                         MaterialTheme.colorScheme.onSurface
                     },
                     style = if (message.isDeleted) {
-                        MaterialTheme.typography.bodyLarge.copy(fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+                        MaterialTheme.typography.bodyLarge.copy(fontStyle = FontStyle.Italic)
                     } else {
                         MaterialTheme.typography.bodyLarge
                     }
@@ -373,7 +377,7 @@ fun EmptyChatsState() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(Icons.Default.ChatBubbleOutline, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
             Spacer(modifier = Modifier.height(16.dp))
-            Text("No messages yet", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
+            Text(stringResource(R.string.no_messages), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
         }
     }
 }

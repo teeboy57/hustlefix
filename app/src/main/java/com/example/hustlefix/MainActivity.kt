@@ -10,6 +10,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
@@ -17,11 +19,20 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.hustlefix.ui.navigation.HustleFixNavGraph
 import com.example.hustlefix.ui.navigation.Screen
 import com.example.hustlefix.ui.theme.HustleFixTheme
@@ -60,6 +71,9 @@ class MainActivity : ComponentActivity() {
                 var role by remember { mutableStateOf(SessionHelper.getRole(this@MainActivity)) }
                 var activeSuspensionReason by remember { mutableStateOf<String?>(null) }
                 
+                var userName by remember { mutableStateOf("") }
+                var userPhotoUrl by remember { mutableStateOf<String?>(null) }
+
                 var broadcastMessage by remember { mutableStateOf<String?>(null) }
                 
                 if (broadcastMessage != null) {
@@ -182,7 +196,7 @@ class MainActivity : ComponentActivity() {
                         else -> Screen.ClientDashboard.route
                     }
                 } else {
-                    Screen.Welcome.route
+                    Screen.Welcome.createRoute()
                 }
 
                 // Handle navigation from legacy components or deep links
@@ -235,7 +249,7 @@ class MainActivity : ComponentActivity() {
                             if (isAdmin) {
                                 NavigationDrawerItem(
                                     icon = { Icon(Icons.Default.Dashboard, contentDescription = null) },
-                                    label = { Text("Admin Dashboard") },
+                                    label = { Text(getString(R.string.admin_title)) },
                                     selected = false,
                                     onClick = {
                                         scope.launch { drawerState.close() }

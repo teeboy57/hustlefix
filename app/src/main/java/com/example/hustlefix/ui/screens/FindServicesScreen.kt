@@ -121,7 +121,7 @@ fun FindServicesScreen(
                 }
 
                 Box(modifier = Modifier.fillMaxSize()) {
-                    if (isLoading && !isRefreshing) {
+                    if (isLoading && !isRefreshing && services.isEmpty()) {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             modifier = Modifier.fillMaxSize(),
@@ -220,7 +220,7 @@ fun ServiceGridItem(
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "R${String.format(Locale.getDefault(), "%.0f", service.price)}",
+                        text = "R${String.format(Locale.getDefault(), "%.0f", service.getPrice())}",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                         color = MaterialTheme.colorScheme.onTertiary,
                         style = MaterialTheme.typography.labelMedium,
@@ -279,7 +279,7 @@ fun ServiceGridItem(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = service.getserviceProviderName() ?: "Unknown",
+                        text = service.getServiceProviderName() ?: "Unknown",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,

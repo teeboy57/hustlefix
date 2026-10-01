@@ -2,45 +2,94 @@
   "rules": {
     "users": {
       ".indexOn": ["role"],
+      ".read": "auth != null",
       "$uid": {
-        ".read": "auth != null && (auth.uid == $uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
-        ".write": "auth != null && (auth.uid == $uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
-        "isSuspended": {
-          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() == 'admin'"
-        },
-        "role": {
-          ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() == 'admin' && !data.exists()"
-        }
+        ".write": "auth != null && (auth.uid == $uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
+      }
+    },
+    "services": {
+      ".indexOn": ["serviceProviderId", "category"],
+      ".read": "auth != null",
+      "$serviceId": {
+        ".write": "auth != null && (newData.child('serviceProviderId').val() == auth.uid || data.child('serviceProviderId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
       }
     },
     "jobs": {
       ".indexOn": ["status", "workerId", "clientId"],
-      ".read": "auth != null && root.child('users').child(auth.uid).child('isSuspended').val() != true",
+      ".read": "auth != null",
       "$jobId": {
-        ".write": "auth != null && root.child('users').child(auth.uid).child('isSuspended').val() != true && ((!data.exists() && newData.child('clientId').val() == auth.uid) || (data.exists() && data.child('clientId').val() == auth.uid) || (data.exists() && data.child('workerId').val() == auth.uid) || (root.child('users').child(auth.uid).child('role').val() == 'admin'))",
-        "quotedAmount": {
-           ".write": "auth != null && (data.parent().child('clientId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
-        },
-        "status": {
-           ".write": "auth != null && ((data.parent().child('clientId').val() == auth.uid) || (data.parent().child('workerId').val() == auth.uid) || (root.child('users').child(auth.uid).child('role').val() == 'admin'))"
-        }
+        ".write": "auth != null && (newData.child('clientId').val() == auth.uid || data.child('clientId').val() == auth.uid || data.child('workerId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
       }
     },
     "quotes": {
       "$jobId": {
-        ".read": "auth != null && (root.child('jobs').child($jobId).child('clientId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
+        ".read": "auth != null",
         "$workerId": {
-          ".read": "auth != null && (auth.uid == $workerId || root.child('jobs').child($jobId).child('clientId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
-          ".write": "auth != null && auth.uid == $workerId && root.child('users').child(auth.uid).child('isSuspended').val() != true && root.child('users').child(auth.uid).child('role').val() == 'worker'"
+          ".write": "auth != null && auth.uid == $workerId"
         }
       }
     },
     "bookings": {
       ".indexOn": ["workerId", "clientId"],
-      ".read": "auth != null && root.child('users').child(auth.uid).child('isSuspended').val() != true",
+      ".read": "auth != null",
       "$bookingId": {
-        ".read": "auth != null && (data.child('clientId').val() == auth.uid || data.child('workerId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')",
-        ".write": "auth != null && root.child('users').child(auth.uid).child('role').val() == 'admin'"
+        ".write": "auth != null && (newData.child('clientId').val() == auth.uid || data.child('clientId').val() == auth.uid || data.child('workerId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
+      }
+    },
+    "user_chats": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "messages": {
+      "$chatId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "admin_wallet": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "admin_revenue": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "activity_log": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "disputes": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "emergency_requests": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "saved_services": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "auth != null && auth.uid == $uid",
+        ".write": "auth != null"
+      }
+    },
+    "broadcasts": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "withdrawal_requests": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "transactions": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null"
       }
     }
   }

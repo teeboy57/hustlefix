@@ -7,6 +7,8 @@ import android.os.Build
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hustlefix.EmergencyRequest
+import com.example.hustlefix.util.ActivityLogger
+import com.example.hustlefix.util.AnalyticsHelper
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.firebase.auth.FirebaseAuth
@@ -114,8 +116,12 @@ class EmergencyRequestViewModel(application: Application) : AndroidViewModel(app
 
         ref.child(id).setValue(request).addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                // Log Activity
-                com.example.hustlefix.util.ActivityLogger.logEmergency(user.uid, user.displayName ?: "User", type)
+                // Log Activity & Analytics
+                ActivityLogger.logEmergency(user.uid, user.displayName ?: "User", type)
+                AnalyticsHelper.logEmergencyTriggered(type, _uiState.value.currentAddress)
+                
+                // NEARBY BLAST AUTOMATION
+                blastToNearbyPros(id, type, description, _uiState.value.latitude, _uiState.value.longitude)
                 
                 _uiState.value = _uiState.value.copy(isLoading = false, isSuccess = true, activeRequest = request)
                 listenToRequest(id)
@@ -123,6 +129,46 @@ class EmergencyRequestViewModel(application: Application) : AndroidViewModel(app
                 _uiState.value = _uiState.value.copy(isLoading = false, error = "Database error")
             }
         }
+    }
+
+    private fun blastToNearbyPros(requestId: String, type: String, description: String, userLat: Double, userLng: Double) {
+        database.getReference("users").orderByChild("role").equalTo("worker").get().addOnSuccessListener { snapshot ->
+            for (child in snapshot.children) {
+                val proLat = child.child("latitude").getValue(Double::class.java) ?: 0.0
+                val proLng = child.child("longitude").getValue(Double::class.java) ?: 0.0
+                val isVerified = child.child("verified").getValue(Boolean::class.java) ?: false
+                
+                if (isVerified) {
+                    val distance = calculateDistance(userLat, userLng, proLat, proLng)
+                    if (distance <= 10.0) { // 10km radius
+                        val proId = child.key ?: continue
+                        val notifRef = database.getReference("notifications").child(proId).push()
+                        val notif = mapOf(
+                            "id" to notifRef.key,
+                            "userId" to proId,
+                            "title" to "🚨 URGENT: $type nearby!",
+                            "message" to "A client needs immediate help within 10km. View details in the Emergency Hub.",
+                            "type" to "emergency",
+                            "relatedId" to requestId,
+                            "timestamp" to System.currentTimeMillis(),
+                            "read" to false
+                        )
+                        notifRef.setValue(notif)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371 // Earth radius in km
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        return r * c
     }
 
     private fun listenToRequest(requestId: String) {

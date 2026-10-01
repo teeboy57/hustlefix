@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.hustlefix.Booking
 import com.example.hustlefix.Rating
 import com.example.hustlefix.Service
+import com.example.hustlefix.util.AnalyticsHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,8 +36,9 @@ class ServiceDetailViewModel : ViewModel() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val service = snapshot.getValue(Service::class.java)
                 _uiState.value = _uiState.value.copy(service = service, isLoading = false)
-                if (service != null) {
-                    loadReviews(service.getserviceProviderId())
+                val pid = service?.getServiceProviderId()
+                if (pid != null) {
+                    loadReviews(pid)
                 }
                 checkIfSaved(serviceId)
             }
@@ -108,9 +110,9 @@ class ServiceDetailViewModel : ViewModel() {
                 service.title,
                 userId,
                 clientName,
-                service.getserviceProviderId(),
-                service.getserviceProviderName(),
-                service.price
+                service.getServiceProviderId(),
+                service.getServiceProviderName(),
+                service.getPrice()
             ).apply {
                 setBookingId(bookingId)
                 setServiceImageUrl(service.serviceImageUrl ?: service.serviceImageUrls?.firstOrNull())
@@ -120,6 +122,13 @@ class ServiceDetailViewModel : ViewModel() {
 
             database.getReference("bookings").child(bookingId).setValue(booking)
                 .addOnSuccessListener {
+                    // Log Analytics
+                    AnalyticsHelper.logJobBooked(
+                        service.serviceId,
+                        service.title,
+                        service.price ?: 0.0
+                    )
+                    
                     _uiState.value = _uiState.value.copy(isLoading = false, bookingSuccess = true)
                     onSuccess()
                 }

@@ -150,12 +150,6 @@ fun SettingsScreen(
                 }
             }
 
-            Text("Account & Security", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SettingsClickItem(title = "Payment Methods", icon = Icons.Default.Payment, onClick = onPaymentMethodsClick)
-            SettingsClickItem(title = "Privacy Policy", icon = Icons.Default.Security, onClick = { showPrivacyDialog = true })
-
             Spacer(modifier = Modifier.height(32.dp))
 
             Text("Support", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)

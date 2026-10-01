@@ -13,10 +13,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.hustlefix.R
 import com.example.hustlefix.ui.components.*
+import com.example.hustlefix.util.SoundHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,20 +35,20 @@ fun AdminDashboardScreen(
     onQuickActionClick: (String) -> Unit
 ) {
     val scrollState = rememberScrollState()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             HustleFixTopBar(
-                title = "HustleFix Admin",
+                title = stringResource(R.string.admin_title),
                 navigationIcon = Icons.Default.Menu,
                 onNavigationClick = onMenuClick,
                 actions = {
                     IconButton(onClick = { 
-                        com.example.hustlefix.util.SoundHelper.playClick(context)
+                        SoundHelper.playClick(context)
                         onQuickActionClick("refresh") 
                     }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.loading))
                     }
                 }
             )
@@ -60,22 +64,22 @@ fun AdminDashboardScreen(
                         .verticalScroll(scrollState)
                         .padding(24.dp)
                 ) {
-                    Text("System Overview", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.system_overview), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        AnimatedStatCard("Users", totalUsers.toString(), MaterialTheme.colorScheme.primary, Modifier.weight(1f)) {
+                        AnimatedStatCard(stringResource(R.string.stat_users), totalUsers.toString(), MaterialTheme.colorScheme.primary, Modifier.weight(1f)) {
                             // Navigate to User Management
                         }
                         Spacer(modifier = Modifier.width(16.dp))
-                        AnimatedStatCard("Total Jobs", totalJobs.toString(), MaterialTheme.colorScheme.secondary, Modifier.weight(1f)) {
+                        AnimatedStatCard(stringResource(R.string.stat_total_jobs), totalJobs.toString(), MaterialTheme.colorScheme.secondary, Modifier.weight(1f)) {
                             // Navigate to Jobs
                         }
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    Text("Attention Required", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.attention_required), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // Pending Verifications
@@ -92,8 +96,8 @@ fun AdminDashboardScreen(
                             }
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Pending Verifications", fontWeight = FontWeight.Bold)
-                                Text("$pendingVerifications users waiting for approval", style = MaterialTheme.typography.bodySmall)
+                                Text(stringResource(R.string.attention_required), fontWeight = FontWeight.Bold)
+                                Text("$pendingVerifications " + stringResource(R.string.attention_required), style = MaterialTheme.typography.bodySmall)
                             }
                             if (pendingVerifications > 0) {
                                 Badge(containerColor = MaterialTheme.colorScheme.error) {
@@ -119,8 +123,8 @@ fun AdminDashboardScreen(
                             }
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Active Emergencies", fontWeight = FontWeight.Bold, color = if (activeEmergencies > 0) Color.Red else Color.Unspecified)
-                                Text("$activeEmergencies urgent alerts active", style = MaterialTheme.typography.bodySmall)
+                                Text(stringResource(R.string.nav_emergency), fontWeight = FontWeight.Bold, color = if (activeEmergencies > 0) Color.Red else Color.Unspecified)
+                                Text("$activeEmergencies " + stringResource(R.string.attention_required), style = MaterialTheme.typography.bodySmall)
                             }
                             if (activeEmergencies > 0) {
                                 Badge(containerColor = Color.Red) {
@@ -132,18 +136,18 @@ fun AdminDashboardScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    Text("Control Panel", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
+                    Text(stringResource(R.string.control_panel), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        QuickActionCard("Broadcast", Icons.Default.Campaign, Color(0xFF2196F3), { onQuickActionClick("broadcast") }, Modifier.weight(1f))
+                        QuickActionCard(stringResource(R.string.broadcast), Icons.Default.Campaign, Color(0xFF2196F3), { onQuickActionClick("broadcast") }, Modifier.weight(1f))
                         Spacer(modifier = Modifier.width(16.dp))
-                        QuickActionCard("Delete Last", Icons.Default.DeleteForever, Color(0xFFFF5252), { onQuickActionClick("delete_broadcast") }, Modifier.weight(1f))
+                        QuickActionCard(stringResource(R.string.delete_last), Icons.Default.DeleteForever, Color(0xFFFF5252), { onQuickActionClick("delete_broadcast") }, Modifier.weight(1f))
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    QuickActionCard("Activity Log", Icons.Default.ListAlt, Color(0xFF4CAF50), { onQuickActionClick("logs") }, Modifier.fillMaxWidth())
+                    QuickActionCard(stringResource(R.string.activity_log), Icons.Default.ListAlt, Color(0xFF4CAF50), { onQuickActionClick("logs") }, Modifier.fillMaxWidth())
 
                     Spacer(modifier = Modifier.height(40.dp))
                 }

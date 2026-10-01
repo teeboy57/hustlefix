@@ -37,14 +37,14 @@ class PostServiceViewModel : ViewModel() {
         }
     }
 
-    fun updateService(serviceId: String, title: String, desc: String, category: String, price: Double, imageUri: Uri?) {
+    fun updateService(serviceId: String, title: String, desc: String, category: String, price: Double, imageUri: Uri?, isImageDeleted: Boolean = false) {
         val user = auth.currentUser ?: return
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
         if (imageUri != null) {
             uploadImageAndUpdate(serviceId, user.uid, title, desc, category, price, imageUri)
         } else {
-            updateDatabase(serviceId, user.uid, title, desc, category, price, null)
+            updateDatabase(serviceId, user.uid, title, desc, category, price, null, isImageDeleted)
         }
     }
 
@@ -65,7 +65,7 @@ class PostServiceViewModel : ViewModel() {
             }).dispatch()
     }
 
-    private fun updateDatabase(serviceId: String, uid: String, title: String, desc: String, category: String, price: Double, imageUrl: String?) {
+    private fun updateDatabase(serviceId: String, uid: String, title: String, desc: String, category: String, price: Double, imageUrl: String?, isImageDeleted: Boolean = false) {
         val ref = database.getReference("services").child(serviceId)
         val updates = mutableMapOf<String, Any?>(
             "title" to title,
@@ -76,6 +76,8 @@ class PostServiceViewModel : ViewModel() {
         )
         if (imageUrl != null) {
             updates["serviceImageUrls"] = listOf(imageUrl)
+        } else if (isImageDeleted) {
+            updates["serviceImageUrls"] = null
         }
 
         ref.updateChildren(updates).addOnCompleteListener { task ->
@@ -126,9 +128,9 @@ class PostServiceViewModel : ViewModel() {
             
             val service = Service().apply {
                 setServiceId(serviceId)
-                setserviceProviderId(uid)
-                setserviceProviderName(userName)
-                setserviceProviderEmail(email)
+                setServiceProviderId(uid)
+                setServiceProviderName(userName)
+                setServiceProviderEmail(email)
                 setTitle(title)
                 setDescription(desc)
                 setCategory(category)

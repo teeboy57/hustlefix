@@ -185,7 +185,7 @@ fun ServiceDetailScreen(
                         Column(modifier = Modifier.weight(1f)) {
                             Text("Total Price", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
                             Text(
-                                "R${String.format(Locale.getDefault(), "%.2f", service.price)}",
+                                "R${String.format(Locale.getDefault(), "%.2f", service.getPrice())}",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.primary
@@ -239,16 +239,25 @@ fun ServiceDetailScreen(
                         )
                     } else {
                         val pagerState = rememberPagerState(pageCount = { imageUrls.size })
-                        HorizontalPager(
-                            state = pagerState,
-                            modifier = Modifier.fillMaxSize()
-                        ) { page ->
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(imageUrls[page])
-                                    .crossfade(true)
-                                    .build(),
-                                placeholder = painterResource(R.drawable.ic_image_placeholder),
+                        if (imageUrls.size > 0) {
+                            HorizontalPager(
+                                state = pagerState,
+                                modifier = Modifier.fillMaxSize()
+                            ) { page ->
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(imageUrls[page])
+                                        .crossfade(true)
+                                        .build(),
+                                    placeholder = painterResource(R.drawable.ic_image_placeholder),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        } else {
+                            Image(
+                                painter = painterResource(R.drawable.ic_image_placeholder),
                                 contentDescription = null,
                                 modifier = Modifier.fillMaxSize(),
                                 contentScale = ContentScale.Crop
@@ -367,7 +376,7 @@ fun ServiceDetailScreen(
                             Spacer(modifier = Modifier.width(16.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = service.getserviceProviderName() ?: "Unknown Professional",
+                                    text = service.serviceProviderName ?: "Unknown Professional",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )

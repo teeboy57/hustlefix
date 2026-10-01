@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,12 +23,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.example.hustlefix.EmergencyRequest
+import com.example.hustlefix.R
 import com.example.hustlefix.ui.components.LocationPermissionDeniedState
+import com.example.hustlefix.util.SoundHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,7 +41,7 @@ fun EmergencyRequestScreen(
     isLoading: Boolean,
     isSuccess: Boolean,
     error: String?,
-    activeRequest: com.example.hustlefix.EmergencyRequest? = null,
+    activeRequest: EmergencyRequest? = null,
     onSendEmergency: (String, String) -> Unit,
     onBackClick: () -> Unit,
     onClearError: () -> Unit
@@ -51,7 +56,7 @@ fun EmergencyRequestScreen(
 
     LaunchedEffect(isSuccess) {
         if (isSuccess) {
-            com.example.hustlefix.util.SoundHelper.playSuccess(context)
+            SoundHelper.playSuccess(context)
         }
     }
 
@@ -91,10 +96,13 @@ fun EmergencyRequestScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(if (activeRequest != null) "ACTIVE URGENT ALERT" else "URGENT REQUEST", fontWeight = FontWeight.Black, color = if (activeRequest != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) },
+                title = { 
+                    val title = if (activeRequest != null) stringResource(R.string.active_urgent_alert) else stringResource(R.string.urgent_request)
+                    Text(title, fontWeight = FontWeight.Black, color = if (activeRequest != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -127,7 +135,7 @@ fun EmergencyRequestScreen(
                         Icon(Icons.Default.FlashOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            "Need a pro right now? Urgent requests alert nearby experts for immediate service.",
+                            stringResource(R.string.emergency_info),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
@@ -136,7 +144,7 @@ fun EmergencyRequestScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text("How fast do you need the work done?", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.how_fast_needed), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -150,8 +158,8 @@ fun EmergencyRequestScreen(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("What work needs to be done?") },
-                    placeholder = { Text("e.g. My sink just burst, need a plumber to fix the leak immediately...") },
+                    label = { Text(stringResource(R.string.work_description_label)) },
+                    placeholder = { Text(stringResource(R.string.work_description_placeholder)) },
                     modifier = Modifier.fillMaxWidth().height(120.dp),
                     shape = RoundedCornerShape(16.dp)
                 )
@@ -168,7 +176,7 @@ fun EmergencyRequestScreen(
                         Icon(Icons.Default.MyLocation, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text("Service Location", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                            Text(stringResource(R.string.service_location), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                             Text(currentAddress, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                         }
                     }
@@ -178,7 +186,7 @@ fun EmergencyRequestScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = confirmed, onCheckedChange = { confirmed = it })
-                    Text("I confirm this is an urgent request", style = MaterialTheme.typography.bodySmall)
+                    Text(stringResource(R.string.confirm_urgent), style = MaterialTheme.typography.bodySmall)
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -193,7 +201,7 @@ fun EmergencyRequestScreen(
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                     } else {
-                        Text("POST URGENT REQUEST", fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
+                        Text(stringResource(R.string.post_urgent_request), fontWeight = FontWeight.ExtraBold, fontSize = 18.sp)
                     }
                 }
 
@@ -210,7 +218,7 @@ fun UrgencyTypeChip(label: String, icon: ImageVector, selected: Boolean, modifie
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        border = if (selected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        border = if (selected) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -218,20 +226,20 @@ fun UrgencyTypeChip(label: String, icon: ImageVector, selected: Boolean, modifie
         ) {
             Icon(icon, contentDescription = null, tint = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(label, style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = if (selected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
-fun UrgentActiveState(request: com.example.hustlefix.EmergencyRequest, onBackClick: () -> Unit) {
+fun UrgentActiveState(request: EmergencyRequest, onBackClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize().background(if (request.status == "responded") Color(0xFF4CAF50) else MaterialTheme.colorScheme.error), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(40.dp)) {
             val icon = if (request.status == "responded") Icons.Default.VerifiedUser else Icons.Default.FlashOn
-            val title = if (request.status == "responded") "HELP IS ON THE WAY" else "URGENT ALERT ACTIVE"
+            val title = if (request.status == "responded") stringResource(R.string.help_on_way) else stringResource(R.string.urgent_alert_active)
             val subText = if (request.status == "responded") 
-                "Admin ${request.responderName} has acknowledged your request and is coordinating assistance." 
-                else "Nearby professionals and admins have been notified. Keep your phone close!"
+                stringResource(R.string.admin_acknowledged, request.responderName ?: "Admin") 
+                else stringResource(R.string.nearby_notified)
 
             Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(100.dp))
             Spacer(modifier = Modifier.height(24.dp))
@@ -246,7 +254,7 @@ fun UrgentActiveState(request: com.example.hustlefix.EmergencyRequest, onBackCli
             
             if (request.status == "resolved") {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text("THIS REQUEST HAS BEEN MARKED AS RESOLVED.", fontWeight = FontWeight.Bold, color = Color.White)
+                Text(stringResource(R.string.resolved_text), fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -255,7 +263,7 @@ fun UrgentActiveState(request: com.example.hustlefix.EmergencyRequest, onBackCli
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = MaterialTheme.colorScheme.error),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("DISMISS", fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.dismiss), fontWeight = FontWeight.Bold)
             }
         }
     }

@@ -45,6 +45,7 @@ fun ClientDashboardScreen(
     unreadMessagesCount: Int = 0,
     nearbyServices: List<com.example.hustlefix.Service> = emptyList(),
     unreadNotifications: Int = 0,
+    isLoading: Boolean = false,
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {},
     onCategoryClick: (String) -> Unit,
@@ -114,23 +115,29 @@ fun ClientDashboardScreen(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
                         ) {
                             Column(modifier = Modifier.padding(24.dp)) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = "${getTimeBasedGreeting()}, $clientName!",
-                                            style = MaterialTheme.typography.headlineSmall,
-                                            fontWeight = FontWeight.Black,
-                                            color = MaterialTheme.colorScheme.primary
-                                        )
-                                        Text(
-                                            text = "What service do you need today?",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                                if (isLoading && clientName.isEmpty()) {
+                                    ShimmerItem(modifier = Modifier.height(30.dp).width(200.dp))
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    ShimmerItem(modifier = Modifier.height(20.dp).fillMaxWidth())
+                                } else {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Column {
+                                            Text(
+                                                text = "${getTimeBasedGreeting()}, $clientName!",
+                                                style = MaterialTheme.typography.headlineSmall,
+                                                fontWeight = FontWeight.Black,
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
+                                            Text(
+                                                text = "What service do you need today?",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
                                 
@@ -169,6 +176,40 @@ fun ClientDashboardScreen(
                 }
 
                 Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                    if (isLoading && nearbyServices.isEmpty()) {
+                        Text(
+                            text = stringResource(R.string.pros_near_you),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            items(3) {
+                                ShimmerItem(modifier = Modifier.size(160.dp))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                    } else if (nearbyServices.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.pros_near_you),
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            TextButton(onClick = { onQuickActionClick("find") }) {
+                                Text("See All")
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            items(nearbyServices) { service ->
+                                NearbyServiceCard(service, onServiceClick)
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+                    
                     if (upcomingBooking != null) {
                         Text(
                             text = stringResource(R.string.upcoming_today),
@@ -223,26 +264,6 @@ fun ClientDashboardScreen(
                         item { CategoryItem("Gardening", Icons.Default.Yard, Color(0xFF4CAF50)) { onCategoryClick("Gardening") } }
                         item { CategoryItem("Moving", Icons.Default.LocalShipping, Color(0xFF2196F3)) { onCategoryClick("Moving") } }
                         item { CategoryItem("All", Icons.Default.GridView, Color.Gray) { onCategoryClick("All") } }
-                    }
-
-                    if (nearbyServices.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = stringResource(R.string.pros_near_you),
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            TextButton(onClick = { onQuickActionClick("find") }) {
-                                Text("See All")
-                            }
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                            items(nearbyServices) { service ->
-                                NearbyServiceCard(service, onServiceClick)
-                            }
-                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -319,7 +340,9 @@ fun ClientDashboardScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    if (recentBookings.isEmpty()) {
+                    if (isLoading && recentBookings.isEmpty()) {
+                        ShimmerItem(modifier = Modifier.height(150.dp).fillMaxWidth())
+                    } else if (recentBookings.isEmpty()) {
                         EmptyState(
                             title = stringResource(R.string.no_recent_activity),
                             description = "Your recent bookings and jobs will appear here.",

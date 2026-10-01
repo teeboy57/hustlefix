@@ -4,6 +4,9 @@ import android.app.Application;
 import android.content.Context;
 
 import com.cloudinary.android.MediaManager;
+import com.example.hustlefix.util.AnalyticsHelper;
+import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.database.FirebaseDatabase;
 import java.util.HashMap;
 import java.util.Map;
 

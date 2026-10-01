@@ -4,8 +4,11 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -34,7 +37,7 @@ import com.example.hustlefix.Service
 fun EditServiceScreen(
     service: Service?,
     isLoading: Boolean,
-    onSaveClick: (String, String, String, Double, Uri?) -> Unit,
+    onSaveClick: (String, String, String, Double, Uri?, Boolean) -> Unit,
     onBackClick: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
@@ -43,13 +46,14 @@ fun EditServiceScreen(
     var price by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var remoteImageUrl by remember { mutableStateOf<String?>(null) }
+    var isImageDeleted by remember { mutableStateOf(false) }
     
     LaunchedEffect(service) {
         service?.let {
             title = it.title ?: ""
             description = it.description ?: ""
             category = it.category ?: "Plumbing"
-            price = it.price.toString()
+            price = (it.price ?: 0.0).toString()
             remoteImageUrl = it.getServiceImageUrl()
         }
     }
@@ -89,33 +93,49 @@ fun EditServiceScreen(
             ) {
                 // Image Upload Section
                 Card(
-                    onClick = { 
-                        galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) 
-                    },
                     modifier = Modifier.fillMaxWidth().height(200.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                 ) {
                     val imageSource = selectedImageUri ?: remoteImageUrl
-                    if (imageSource != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(imageSource)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Change Service Photo", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        if (imageSource != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(imageSource)
+                                    .crossfade(true)
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(24.dp)),
+                                contentScale = ContentScale.Crop
+                            )
+                            
+                            // Delete Overlay
+                            IconButton(
+                                onClick = { 
+                                    selectedImageUri = null
+                                    remoteImageUrl = null
+                                    isImageDeleted = true
+                                },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(12.dp)
+                                    .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                            ) {
+                                Icon(Icons.Default.Delete, contentDescription = "Delete Photo", tint = Color.White)
+                            }
+                        } else {
+                            Column(
+                                modifier = Modifier.fillMaxSize().clickable { 
+                                    galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) 
+                                },
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Add Service Photo", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            }
                         }
                     }
                 }
@@ -189,7 +209,7 @@ fun EditServiceScreen(
 
                 Button(
                     onClick = { 
-                        onSaveClick(title, description, category, price.toDoubleOrNull() ?: 0.0, selectedImageUri) 
+                        onSaveClick(title, description, category, price.toDoubleOrNull() ?: 0.0, selectedImageUri, isImageDeleted) 
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(16.dp),

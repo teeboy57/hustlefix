@@ -1,8 +1,10 @@
 package com.example.hustlefix.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hustlefix.Service
+import com.example.hustlefix.util.AnalyticsHelper
 import com.google.firebase.database.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,16 +40,23 @@ class FindServicesViewModel : ViewModel() {
     private fun loadServices() {
         _uiState.value = _uiState.value.copy(isLoading = true)
         
-        servicesListener?.let { servicesRef?.removeEventListener(it) }
+        servicesRef?.let { ref -> servicesListener?.let { ref.removeEventListener(it) } }
         
         servicesRef = database.getReference("services")
         servicesListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val list = mutableListOf<Service>()
+                Log.d("HustleFix", "Loaded ${snapshot.childrenCount} services from DB")
+                
                 for (serviceSnapshot in snapshot.children) {
-                    val service = serviceSnapshot.getValue(Service::class.java)
-                    if (service != null) {
-                        list.add(service)
+                    try {
+                        val service = serviceSnapshot.getValue(Service::class.java)
+                        if (service != null) {
+                            service.serviceId = serviceSnapshot.key ?: ""
+                            list.add(service)
+                        }
+                    } catch (e: Exception) {
+                        Log.e("HustleFix", "Error parsing service ${serviceSnapshot.key}: ${e.message}")
                     }
                 }
                 _uiState.value = _uiState.value.copy(
@@ -61,11 +70,14 @@ class FindServicesViewModel : ViewModel() {
                 _uiState.value = _uiState.value.copy(isLoading = false, isRefreshing = false)
             }
         }
-        servicesListener?.let { servicesRef?.addValueEventListener(it) }
+        servicesRef?.addValueEventListener(servicesListener!!)
     }
 
     fun onSearchQueryChange(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
+        if (query.length >= 3) {
+            AnalyticsHelper.logSearchQuery(query, _uiState.value.activeCategory)
+        }
         applyFilters()
     }
 
@@ -101,7 +113,7 @@ class FindServicesViewModel : ViewModel() {
     }
 
     private fun applyFilters() {
-        val query = _uiState.value.searchQuery
+        val query = _uiState.value.searchQuery.trim()
         val category = _uiState.value.activeCategory
         val sortMode = _uiState.value.sortMode
         val min = _uiState.value.minPrice
@@ -109,20 +121,26 @@ class FindServicesViewModel : ViewModel() {
         val verified = _uiState.value.onlyVerified
         
         var filtered = _uiState.value.services.filter { service ->
-            val matchesQuery = (service.title ?: "").contains(query, ignoreCase = true) ||
-                             (service.category ?: "").contains(query, ignoreCase = true)
-            val matchesCategory = if (category == "All") true else (service.category ?: "") == category
-            val matchesMin = min == null || service.price >= min
-            val matchesMax = max == null || service.price <= max
-            val matchesVerified = !verified || service.isProviderVerified
+            val titleText = service.title ?: ""
+            val categoryText = service.category ?: ""
+            val priceValue = service.price ?: 0.0
+            
+            val matchesQuery = if (query.isEmpty()) true else (
+                titleText.contains(query, ignoreCase = true) ||
+                categoryText.contains(query, ignoreCase = true)
+            )
+            val matchesCategory = if (category == "All") true else categoryText == category
+            val matchesMin = min == null || priceValue >= min
+            val matchesMax = max == null || priceValue <= max
+            val matchesVerified = !verified || (service.verified ?: false)
             
             matchesQuery && matchesCategory && matchesMin && matchesMax && matchesVerified
         }
 
         filtered = when (sortMode) {
-            "Price Low" -> filtered.sortedBy { it.price }
-            "Price High" -> filtered.sortedByDescending { it.price }
-            else -> filtered.sortedByDescending { it.createdAt }
+            "Price Low" -> filtered.sortedBy { it.price ?: 0.0 }
+            "Price High" -> filtered.sortedByDescending { it.price ?: 0.0 }
+            else -> filtered.sortedByDescending { it.createdAt ?: 0L }
         }
 
         _uiState.value = _uiState.value.copy(filteredServices = filtered)

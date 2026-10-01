@@ -3,6 +3,7 @@ package com.example.hustlefix.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hustlefix.Booking
+import com.example.hustlefix.Service
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import kotlinx.coroutines.delay
@@ -44,15 +45,18 @@ class ClientDashboardViewModel : ViewModel() {
 
     private fun loadData() {
         val uid = currentUserId ?: return
+        _uiState.value = _uiState.value.copy(isLoading = true)
         
         // Load name from database
         database.getReference("users").child(uid).child("name").get().addOnSuccessListener { snapshot ->
             val name = snapshot.getValue(String::class.java) ?: auth.currentUser?.displayName ?: "Client"
             _uiState.value = _uiState.value.copy(clientName = name)
+        }.addOnFailureListener {
+            _uiState.value = _uiState.value.copy(clientName = "Client")
         }
 
-        // Load wallet balance
-        database.getReference("wallets").child(uid).child("balance").addValueEventListener(object : ValueEventListener {
+        // Load wallet balance from users/{uid}/walletBalance
+        database.getReference("users").child(uid).child("walletBalance").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val balance = snapshot.getValue(Double::class.java) ?: 0.0
                 _uiState.value = _uiState.value.copy(walletBalance = "R${String.format(java.util.Locale.getDefault(), "%.2f", balance)}")
@@ -89,7 +93,6 @@ class ClientDashboardViewModel : ViewModel() {
                             completed++
                         } else if (s != "cancelled") {
                             active++
-                            // Check if confirmed and for today
                             if (s == "confirmed" && booking.preferredDate == today) {
                                 upcoming = booking
                             }
@@ -104,12 +107,13 @@ class ClientDashboardViewModel : ViewModel() {
                     completedBookings = completed,
                     recentBookings = if (list.isEmpty()) emptyList() else list.sortedByDescending { it.getTimestamp() ?: 0L }.take(5),
                     upcomingBooking = upcoming,
-                    isRefreshing = false
+                    isRefreshing = false,
+                    isLoading = false // Ensure loading ends here
                 )
             }
 
             override fun onCancelled(error: DatabaseError) {
-                _uiState.value = _uiState.value.copy(isRefreshing = false)
+                _uiState.value = _uiState.value.copy(isRefreshing = false, isLoading = false)
             }
         }
         bookingsListener?.let { bookingsQuery?.addValueEventListener(it) }
@@ -137,32 +141,42 @@ class ClientDashboardViewModel : ViewModel() {
     private fun loadNearbyServices() {
         val uid = currentUserId ?: return
         
-        // 1. Get User's Location
         database.getReference("users").child(uid).get().addOnSuccessListener { userSnapshot ->
             val userLat = userSnapshot.child("latitude").getValue(Double::class.java) ?: 0.0
             val userLng = userSnapshot.child("longitude").getValue(Double::class.java) ?: 0.0
             
-            // 2. Load Services and Filter by Distance (Simple Math)
             database.getReference("services").limitToFirst(50).addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val allServices = snapshot.children.mapNotNull { it.getValue(com.example.hustlefix.Service::class.java) }
                     
                     val nearby = allServices.filter { service ->
-                        // Calculate distance (Approximate KM using Haversine or simple Euclidean for close range)
                         val sLat = service.latitude ?: 0.0
                         val sLng = service.longitude ?: 0.0
                         
-                        if (sLat == 0.0 || userLat == 0.0) true // Fallback for demo
+                        if (sLat == 0.0 || userLat == 0.0) true
                         else {
                             val dist = calculateDistance(userLat, userLng, sLat, sLng)
-                            dist < 50.0 // 50KM Radius
+                            dist < 50.0
                         }
                     }.shuffled().take(4)
 
-                    _uiState.value = _uiState.value.copy(nearbyServices = nearby)
+                    _uiState.value = _uiState.value.copy(
+                        nearbyServices = nearby,
+                        isLoading = false // Loading done
+                    )
                 }
-                override fun onCancelled(error: DatabaseError) {}
+                override fun onCancelled(error: DatabaseError) {
+                    _uiState.value = _uiState.value.copy(isLoading = false)
+                }
             })
+        }.addOnFailureListener {
+            // User location fetch failed, still load services without filter
+            database.getReference("services").limitToFirst(10).get().addOnSuccessListener { snapshot ->
+                val allServices = snapshot.children.mapNotNull { it.getValue(Service::class.java) }
+                _uiState.value = _uiState.value.copy(nearbyServices = allServices, isLoading = false)
+            }.addOnFailureListener {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
         }
     }
 

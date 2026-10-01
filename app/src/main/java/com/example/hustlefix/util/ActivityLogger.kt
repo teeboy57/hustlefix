@@ -6,10 +6,10 @@ object ActivityLogger {
     private val database = FirebaseDatabase.getInstance()
     private val logRef = database.getReference("activity_log")
 
-    fun log(userId: String, userName: String, action: String, details: String = "") {
+    fun log(userId: String?, userName: String?, action: String, details: String = "") {
         val entry = mutableMapOf<String, Any>(
-            "userId" to userId,
-            "userName" to userName,
+            "userId" to (userId ?: "unknown"),
+            "userName" to (userName ?: "Anonymous"),
             "action" to action,
             "details" to details,
             "timestamp" to System.currentTimeMillis()
@@ -17,15 +17,15 @@ object ActivityLogger {
         logRef.push().setValue(entry)
     }
 
-    fun logLogin(userId: String, userName: String, role: String) {
+    fun logLogin(userId: String?, userName: String?, role: String) {
         log(userId, userName, "LOGIN", "User logged in as $role")
     }
 
-    fun logBooking(userId: String, userName: String, bookingId: String, amount: Double) {
+    fun logBooking(userId: String?, userName: String?, bookingId: String, amount: Double) {
         log(userId, userName, "NEW_BOOKING", "Created booking #$bookingId for R$amount")
     }
 
-    fun logEmergency(userId: String, userName: String, type: String) {
+    fun logEmergency(userId: String?, userName: String?, type: String) {
         log(userId, userName, "EMERGENCY_ALERT", "Triggered $type alert")
     }
 }

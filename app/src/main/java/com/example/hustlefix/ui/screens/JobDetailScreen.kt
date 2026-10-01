@@ -74,15 +74,15 @@ fun JobDetailScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
-                Text(job.getTitle(), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
+                Text(job.getTitle() ?: "Job Details", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SuggestionChip(
                         onClick = {},
-                        label = { Text(job.getCategory()) }
+                        label = { Text(job.getCategory() ?: "General") }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("📍 " + job.getLocation(), style = MaterialTheme.typography.bodyMedium)
+                    Text("📍 " + (job.getLocation() ?: "Remote"), style = MaterialTheme.typography.bodyMedium)
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -93,7 +93,7 @@ fun JobDetailScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("Client's Budget", style = MaterialTheme.typography.labelMedium)
-                        Text(job.getFormattedAmount(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text(job.getFormattedAmount() ?: "R0.00", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                     }
                 }
                 
@@ -101,7 +101,7 @@ fun JobDetailScreen(
                 
                 Text("Description", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(job.getDescription(), style = MaterialTheme.typography.bodyLarge, lineHeight = 24.sp)
+                Text(job.getDescription() ?: "No description provided.", style = MaterialTheme.typography.bodyLarge, lineHeight = 24.sp)
                 
                 Spacer(modifier = Modifier.height(32.dp))
                 
@@ -111,7 +111,7 @@ fun JobDetailScreen(
                     Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(40.dp))
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
-                        Text(job.getClientName(), fontWeight = FontWeight.Bold)
+                        Text(job.getClientName() ?: "Client", fontWeight = FontWeight.Bold)
                         Text("Member since 2024", style = MaterialTheme.typography.labelSmall)
                     }
                 }

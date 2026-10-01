@@ -128,9 +128,9 @@ fun WorkerProfileScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        ProfileStatItem("Rating", worker.formattedRating + "★", Icons.Default.Star, Color(0xFFFFC107))
-                        ProfileStatItem("Jobs", worker.completedJobs.toString(), Icons.Default.Work, MaterialTheme.colorScheme.primary)
-                        ProfileStatItem("Exp", "${worker.experience} yrs", Icons.Default.Timeline, MaterialTheme.colorScheme.secondary)
+                        ProfileStatItem("Rating", (worker.formattedRating ?: "0.0") + "★", Icons.Default.Star, Color(0xFFFFC107))
+                        ProfileStatItem("Jobs", (worker.completedJobs ?: 0).toString(), Icons.Default.Work, MaterialTheme.colorScheme.primary)
+                        ProfileStatItem("Exp", "${worker.experience ?: 0} yrs", Icons.Default.Timeline, MaterialTheme.colorScheme.secondary)
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))

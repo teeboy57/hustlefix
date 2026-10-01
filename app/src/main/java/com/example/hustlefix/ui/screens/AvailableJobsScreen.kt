@@ -68,18 +68,18 @@ fun JobListItem(job: Job, onClick: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(job.getTitle(), fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
-                Text(job.getFormattedAmount(), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Black)
+                Text(job.getTitle() ?: "Untitled Job", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+                Text(job.getFormattedAmount() ?: "R0.00", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Black)
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(job.getCategory(), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary)
+            Text(job.getCategory() ?: "General", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.secondary)
             Spacer(modifier = Modifier.height(8.dp))
-            Text(job.getDescription(), maxLines = 2, style = MaterialTheme.typography.bodyMedium)
+            Text(job.getDescription() ?: "", maxLines = 2, style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(8.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("📍 " + job.getLocation(), style = MaterialTheme.typography.labelSmall)
+                Text("📍 " + (job.getLocation() ?: "Remote"), style = MaterialTheme.typography.labelSmall)
                 Spacer(modifier = Modifier.width(16.dp))
-                Text("👤 " + job.getClientName(), style = MaterialTheme.typography.labelSmall)
+                Text("👤 " + (job.getClientName() ?: "Client"), style = MaterialTheme.typography.labelSmall)
             }
         }
     }

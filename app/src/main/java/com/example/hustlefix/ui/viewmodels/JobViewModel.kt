@@ -6,6 +6,7 @@ import com.example.hustlefix.Job
 import com.example.hustlefix.Quote
 import com.example.hustlefix.data.JobRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
@@ -16,7 +17,8 @@ data class JobUiState(
     val quotes: List<Quote> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null
+    val successMessage: String? = null,
+    val selectedJob: Job? = null
 )
 
 class JobViewModel(private val repository: JobRepository = JobRepository()) : ViewModel() {
@@ -61,6 +63,21 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
                 .collect { quotes ->
                     _uiState.update { it.copy(quotes = quotes, isLoading = false) }
                 }
+        }
+    }
+
+    fun loadJob(jobId: String) {
+        if (jobId.isEmpty()) return
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        viewModelScope.launch {
+            try {
+                val snapshot = FirebaseDatabase.getInstance()
+                    .getReference("jobs").child(jobId).get().await()
+                val job = snapshot.getValue(Job::class.java)?.apply { setJobId(jobId) }
+                _uiState.update { it.copy(selectedJob = job, isLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
         }
     }
 
@@ -130,7 +147,17 @@ class JobViewModel(private val repository: JobRepository = JobRepository()) : Vi
                     return@launch
                 }
 
-                val quote = Quote(jobId, job.title, uid, dbName, job.clientId, job.clientName, message, amount, "")
+                val quote = Quote(
+                    jobId, 
+                    job.title ?: "Job", 
+                    uid, 
+                    dbName ?: "Worker", 
+                    job.clientId ?: "", 
+                    job.clientName ?: "Client", 
+                    message, 
+                    amount, 
+                    ""
+                )
                 val result = repository.submitQuote(quote)
                 if (result.isSuccess) {
                     _uiState.update { it.copy(isLoading = false, successMessage = "Quote submitted successfully") }

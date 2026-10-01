@@ -1,5 +1,6 @@
 package com.example.hustlefix.ui.screens
 
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -40,6 +41,16 @@ fun RegisterScreen(
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    // Real-time validation states
+    val isEmailValid = email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    val isPhoneValid = phone.isEmpty() || (phone.length >= 10 && phone.all { it.isDigit() })
+    val isPasswordValid = password.isEmpty() || password.length >= 6
+    val isConfirmPasswordValid = confirmPassword.isEmpty() || confirmPassword == password
+    val isFormValid = fullName.isNotBlank() && email.isNotBlank() && isEmailValid && 
+                      phone.isNotBlank() && isPhoneValid && 
+                      password.isNotBlank() && isPasswordValid && 
+                      confirmPassword == password
 
     val scrollState = rememberScrollState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -115,6 +126,12 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                    isError = !isEmailValid && email.isNotEmpty(),
+                    supportingText = {
+                        if (!isEmailValid && email.isNotEmpty()) {
+                            Text("Invalid email format", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -131,6 +148,12 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                    isError = !isPhoneValid && phone.isNotEmpty(),
+                    supportingText = {
+                        if (!isPhoneValid && phone.isNotEmpty()) {
+                            Text("Enter a valid 10-digit number", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -147,6 +170,12 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                    isError = !isPasswordValid && password.isNotEmpty(),
+                    supportingText = {
+                        if (!isPasswordValid && password.isNotEmpty()) {
+                            Text("Minimum 6 characters required", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -164,6 +193,12 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                    isError = !isConfirmPasswordValid && confirmPassword.isNotEmpty(),
+                    supportingText = {
+                        if (!isConfirmPasswordValid && confirmPassword.isNotEmpty()) {
+                            Text("Passwords do not match", color = MaterialTheme.colorScheme.error)
+                        }
+                    },
                     visualTransformation = PasswordVisualTransformation(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -183,7 +218,7 @@ fun RegisterScreen(
                         .fillMaxWidth()
                         .height(60.dp),
                     shape = RoundedCornerShape(20.dp),
-                    enabled = !isLoading,
+                    enabled = !isLoading && isFormValid,
                     elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
                 ) {
                     if (isLoading) {

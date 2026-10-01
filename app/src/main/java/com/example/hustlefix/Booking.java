@@ -11,19 +11,21 @@ public class Booking {
     private String workerName;
     private Double amount;
     private String status;
-    private String paymentStatus; // PAID, UNPAID, PENDING
+    private String paymentStatus;
     private Long createdAt;
     private String serviceTitle;
     private String serviceImageUrl;
     private String preferredDate;
     private String instructions;
-    private String completionCode; // 4-digit OTP
+    private String completionCode;
+    private Double platformFee;
+    private Double workerEarnings;
+    private Long paidAt;
+    private String paymentMethod;
+    private Double rating;
 
     public Booking() {
-        this.status = "pending";
-        this.paymentStatus = "UNPAID";
-        this.createdAt = System.currentTimeMillis();
-        generateCompletionCode();
+        // Default constructor for Firebase
     }
 
     public Booking(String jobId, String serviceTitle, String clientId, String clientName, String workerId, String workerName, Double amount) {
@@ -45,91 +47,64 @@ public class Booking {
         this.completionCode = String.valueOf(code);
     }
 
-    // Getters and Setters
+    // Getters
     public String getBookingId() { return bookingId; }
-    public void setBookingId(String bookingId) { this.bookingId = bookingId; }
-
     public String getJobId() { return jobId; }
-    public void setJobId(String jobId) { this.jobId = jobId; }
-
     public String getClientId() { return clientId; }
-    public void setClientId(String clientId) { this.clientId = clientId; }
-
     public String getClientName() { return clientName; }
-    public void setClientName(String clientName) { this.clientName = clientName; }
-
     public String getWorkerId() { return workerId; }
-    public void setWorkerId(String workerId) { this.workerId = workerId; }
-
     public String getWorkerName() { return workerName; }
-    public void setWorkerName(String workerName) { this.workerName = workerName; }
-
     public Double getAmount() { return amount != null ? amount : 0.0; }
-    public void setAmount(Double amount) { this.amount = amount; }
-
     public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-
     public String getPaymentStatus() { return paymentStatus != null ? paymentStatus : "UNPAID"; }
-    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
-
     public Long getCreatedAt() { return createdAt != null ? createdAt : 0L; }
-    public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
-
     public String getServiceTitle() { return serviceTitle; }
-    public void setServiceTitle(String serviceTitle) { this.serviceTitle = serviceTitle; }
-
     public String getServiceImageUrl() { return serviceImageUrl; }
-    public void setServiceImageUrl(String serviceImageUrl) { this.serviceImageUrl = serviceImageUrl; }
-
     public String getPreferredDate() { return preferredDate; }
-    public void setPreferredDate(String preferredDate) { this.preferredDate = preferredDate; }
-
     public String getInstructions() { return instructions; }
-    public void setInstructions(String instructions) { this.instructions = instructions; }
-
     public String getCompletionCode() { return completionCode; }
-    public void setCompletionCode(String completionCode) { this.completionCode = completionCode; }
+    public Double getRating() { return rating != null ? rating : 0.0; }
+
+    // Setters
+    public void setBookingId(String id) { this.bookingId = id; }
+    public void setJobId(String id) { this.jobId = id; }
+    public void setClientId(String id) { this.clientId = id; }
+    public void setClientName(String name) { this.clientName = name; }
+    public void setWorkerId(String id) { this.workerId = id; }
+    public void setWorkerName(String name) { this.workerName = name; }
+    public void setAmount(Double amount) { this.amount = amount; }
+    public void setStatus(String status) { this.status = status; }
+    public void setPaymentStatus(String status) { this.paymentStatus = status; }
+    public void setCreatedAt(Long createdAt) { this.createdAt = createdAt; }
+    public void setServiceTitle(String title) { this.serviceTitle = title; }
+    public void setServiceImageUrl(String url) { this.serviceImageUrl = url; }
+    public void setPreferredDate(String date) { this.preferredDate = date; }
+    public void setInstructions(String instructions) { this.instructions = instructions; }
+    public void setCompletionCode(String code) { this.completionCode = code; }
+    public void setRating(Double rating) { this.rating = rating; }
 
     @Exclude
-    public String getFormattedAmount() { return String.format("R%.2f", getAmount()); }
-    
-    // Compatibility helpers (Excluded from Firebase serialization)
+    public Double getPrice() { return getAmount(); }
+    @Exclude
+    public Long getTimestamp() { return getCreatedAt(); }
+
+    @Exclude
+    public String getServiceTitleCompatibility() { 
+        if (serviceTitle != null && !serviceTitle.isEmpty()) return serviceTitle;
+        if (instructions != null && !instructions.isEmpty()) {
+            return instructions.length() > 30 ? instructions.substring(0, 27) + "..." : instructions;
+        }
+        if (jobId != null && !jobId.isEmpty()) return "Job #" + jobId.substring(Math.max(0, jobId.length() - 6));
+        return "Professional Service";
+    }
+
     @Exclude
     public String getServiceProviderId() { return workerId; }
     @Exclude
     public String getServiceProviderName() { 
         return (workerName != null && !workerName.isEmpty()) ? workerName : "Provider"; 
     }
-    @Exclude
-    public Double getPrice() { return getAmount(); }
-    @Exclude
-    public Double getRating() { return 0.0; }
-    @Exclude
-    public Long getTimestamp() { return getCreatedAt(); }
-    @Exclude
-    public String getServiceTitleCompatibility() { 
-        if (serviceTitle != null && !serviceTitle.isEmpty()) {
-            return serviceTitle;
-        }
-        if (instructions != null && !instructions.isEmpty()) {
-            return instructions.length() > 30 ? instructions.substring(0, 27) + "..." : instructions;
-        }
-        if (jobId != null && !jobId.isEmpty()) {
-            return "Job #" + jobId.substring(Math.max(0, jobId.length() - 6));
-        }
-        return "Professional Service";
-    }
-    @Exclude
-    public String getServiceId() { return jobId; }
-    @Exclude
-    public long getBookingDate() { return createdAt; }
-    @Exclude
-    public String getServiceName() { return getServiceTitleCompatibility(); }
-    @Exclude
-    public String getProviderProfileImageUrl() { return null; }
-    
-    // Lowercase aliases (Excluded from Firebase serialization)
+
     @Exclude
     public String getserviceProviderId() { return workerId; }
     @Exclude

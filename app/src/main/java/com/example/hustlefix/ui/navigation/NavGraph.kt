@@ -228,6 +228,7 @@ fun HustleFixNavGraph(
                 unreadMessagesCount = uiState.unreadMessagesCount,
                 nearbyServices = uiState.nearbyServices,
                 unreadNotifications = notifState.unreadCount,
+                isLoading = uiState.isLoading,
                 isRefreshing = uiState.isRefreshing,
                 onRefresh = { viewModel.refresh() },
                 onCategoryClick = { category -> 
@@ -438,14 +439,14 @@ fun HustleFixNavGraph(
                 },
                 onSaveClick = { viewModel.toggleSaveService() },
                 onProviderClick = { 
-                    val pid = uiState.service?.getserviceProviderId() ?: ""
+                    val pid = uiState.service?.getServiceProviderId() ?: ""
                     if (pid.isNotEmpty()) {
                         navController.navigate(Screen.WorkerProfile.createRoute(pid))
                     }
                 },
                 onChatClick = {
-                    val pid = uiState.service?.getserviceProviderId() ?: ""
-                    val pname = uiState.service?.getserviceProviderName() ?: "Pro"
+                    val pid = uiState.service?.getServiceProviderId() ?: ""
+                    val pname = uiState.service?.getServiceProviderName() ?: "Pro"
                     if (pid.isNotEmpty()) {
                         navController.navigate(Screen.Chat.createRoute(pid, pname))
                     }
@@ -717,8 +718,8 @@ fun HustleFixNavGraph(
             EditServiceScreen(
                 service = uiState.service,
                 isLoading = uiState.isLoading,
-                onSaveClick = { t, d, c, p, i -> 
-                    viewModel.updateService(serviceId, t, d, c, p, i)
+                onSaveClick = { t, d, c, p, i, deleted -> 
+                    viewModel.updateService(serviceId, t, d, c, p, i, deleted)
                 },
                 onBackClick = { navController.popBackStack() }
             )
@@ -1120,10 +1121,12 @@ fun HustleFixNavGraph(
             val viewModel: JobViewModel = viewModel()
             val uiState by viewModel.uiState.collectAsState()
             
-            val job = uiState.availableJobs.find { it.jobId == jobId }
+            LaunchedEffect(jobId) {
+                viewModel.loadJob(jobId)
+            }
             
             JobDetailScreen(
-                job = job,
+                job = uiState.selectedJob,
                 isLoading = uiState.isLoading,
                 onQuoteSubmit = { amount, message ->
                     viewModel.submitQuote(jobId, amount, message)

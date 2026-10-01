@@ -35,6 +35,7 @@ import com.example.hustlefix.util.LocationUtils
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +94,7 @@ fun FindWorkersScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(services) { service ->
-                            val provider = workers.find { it.id == service.getserviceProviderId() }
+                            val provider = workers.find { it.id == service.getServiceProviderId() }
                             val distance = if (provider != null && userLat != 0.0) {
                                 LocationUtils.calculateDistance(userLat, userLng, provider.latitude, provider.longitude)
                             } else null
@@ -155,7 +156,7 @@ fun ServiceGridItem(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "R${String.format(java.util.Locale.getDefault(), "%.0f", service.price)}",
+                        text = "R${String.format(Locale.getDefault(), "%.0f", service.price ?: 0.0)}",
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                         color = MaterialTheme.colorScheme.onTertiary,
                         style = MaterialTheme.typography.labelMedium,
@@ -214,7 +215,7 @@ fun ServiceGridItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = service.getserviceProviderName() ?: "Pro",
+                        text = service.getServiceProviderName() ?: "Pro",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,

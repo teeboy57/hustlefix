@@ -13,10 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.hustlefix.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,10 +32,10 @@ fun InsightsScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Worker Insights", fontWeight = FontWeight.ExtraBold) },
+                title = { Text(stringResource(R.string.worker_insights), fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -49,7 +53,7 @@ fun InsightsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(24.dp)
             ) {
-                Text("Performance Metrics", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.performance_metrics), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 InsightMetricRow("Avg Response Time", stats["responseTime"] ?: "15 mins", Icons.Default.Timer, Color(0xFF2196F3))
@@ -59,7 +63,7 @@ fun InsightsScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text("Platform Standing", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.platform_standing), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Card(
@@ -71,11 +75,11 @@ fun InsightsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Stars, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary)
                             Spacer(modifier = Modifier.width(12.dp))
-                            Text("Top Performer", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary)
+                            Text(stringResource(R.string.top_performer), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary)
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                         Text(
-                            "You are in the top 10% of Service Providers in your region this month. Keep it up to maintain your high-visibility badge!",
+                            stringResource(R.string.top_performer_text),
                             style = MaterialTheme.typography.bodyMedium,
                             lineHeight = 22.sp
                         )
@@ -84,7 +88,7 @@ fun InsightsScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text("Recent Feedback", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.recent_activity), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 FeedbackBubble("Great job fixing the leak! Very professional.")
@@ -116,7 +120,7 @@ fun InsightMetricRow(label: String, value: String, icon: ImageVector, color: Col
             modifier = Modifier.width(60.dp).height(6.dp),
             color = color,
             trackColor = color.copy(alpha = 0.2f),
-            strokeCap = androidx.compose.ui.graphics.StrokeCap.Round
+            strokeCap = StrokeCap.Round
         )
     }
 }
@@ -131,7 +135,7 @@ fun FeedbackBubble(text: String) {
         Row(modifier = Modifier.padding(16.dp)) {
             Icon(Icons.AutoMirrored.Filled.Message, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
             Spacer(modifier = Modifier.width(12.dp))
-            Text(text, style = MaterialTheme.typography.bodySmall, fontStyle = androidx.compose.ui.text.font.FontStyle.Italic)
+            Text(text, style = MaterialTheme.typography.bodySmall, fontStyle = FontStyle.Italic)
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -17,10 +18,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -30,6 +36,7 @@ import com.example.hustlefix.R
 import com.example.hustlefix.Service
 import com.example.hustlefix.ui.components.StandardCard
 import com.example.hustlefix.ui.theme.getStatusColor
+import com.example.hustlefix.util.SoundHelper
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -62,7 +69,7 @@ fun BookingDetailScreen(
 
     LaunchedEffect(isUpdateSuccess) {
         if (isUpdateSuccess) {
-            com.example.hustlefix.util.SoundHelper.playSuccess(context)
+            SoundHelper.playSuccess(context)
         }
     }
     var showCancelDialog by remember { mutableStateOf(false) }
@@ -76,15 +83,15 @@ fun BookingDetailScreen(
     if (showDisputeDialog) {
         AlertDialog(
             onDismissRequest = { showDisputeDialog = false },
-            title = { Text("Report a Problem", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.report_problem), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Explain the issue clearly. An admin will review the case and resolve the payment escrow.")
+                    Text(stringResource(R.string.dispute_instruction))
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = disputeReason,
                         onValueChange = { disputeReason = it },
-                        label = { Text("Issue Details") },
+                        label = { Text(stringResource(R.string.issue_details)) },
                         modifier = Modifier.fillMaxWidth().height(120.dp),
                         shape = RoundedCornerShape(12.dp)
                     )
@@ -98,11 +105,11 @@ fun BookingDetailScreen(
                     },
                     enabled = disputeReason.isNotBlank()
                 ) {
-                    Text("SUBMIT TO ADMIN")
+                    Text(stringResource(R.string.submit_to_admin))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDisputeDialog = false }) { Text("CANCEL") }
+                TextButton(onClick = { showDisputeDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -117,17 +124,17 @@ fun BookingDetailScreen(
     if (showCompletionCodeDialog) {
         AlertDialog(
             onDismissRequest = { showCompletionCodeDialog = false },
-            title = { Text("Complete Job", fontWeight = FontWeight.Bold) },
+            title = { Text(stringResource(R.string.complete_job), fontWeight = FontWeight.Bold) },
             text = {
                 Column {
-                    Text("Enter the 4-digit code provided by the client to confirm work is finished.")
+                    Text(stringResource(R.string.code_instruction))
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = inputCode,
                         onValueChange = { if (it.length <= 4) inputCode = it },
-                        label = { Text("4-Digit Code") },
+                        label = { Text(stringResource(R.string.job_completion_code)) },
                         modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true
                     )
                 }
@@ -140,11 +147,11 @@ fun BookingDetailScreen(
                     },
                     enabled = inputCode.length == 4
                 ) {
-                    Text("VERIFY & COMPLETE")
+                    Text(stringResource(R.string.mark_as_completed))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showCompletionCodeDialog = false }) { Text("CANCEL") }
+                TextButton(onClick = { showCompletionCodeDialog = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -152,18 +159,18 @@ fun BookingDetailScreen(
     if (showCancelDialog) {
         AlertDialog(
             onDismissRequest = { showCancelDialog = false },
-            title = { Text("Confirm Cancellation") },
-            text = { Text("Are you sure you want to cancel this booking? This action cannot be undone.") },
+            title = { Text(stringResource(R.string.confirm_cancellation)) },
+            text = { Text(stringResource(R.string.cancel_confirmation_text)) },
             confirmButton = {
                 TextButton(onClick = { 
                     pendingStatusUpdate?.let { onStatusUpdate(it, null) }
                     showCancelDialog = false 
                 }) { 
-                    Text("YES, CANCEL", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) 
+                    Text(stringResource(R.string.yes_cancel), color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold) 
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showCancelDialog = false }) { Text("GO BACK") }
+                TextButton(onClick = { showCancelDialog = false }) { Text(stringResource(R.string.go_back)) }
             }
         )
     }
@@ -175,10 +182,10 @@ fun BookingDetailScreen(
 
         AlertDialog(
             onDismissRequest = { showRatingDialog = false },
-            title = { Text("Rate the Pro", fontWeight = FontWeight.Black) },
+            title = { Text(stringResource(R.string.rate_the_pro), fontWeight = FontWeight.Black) },
             text = {
                 Column {
-                    Text("How was your experience with " + (booking?.getWorkerName() ?: "this Pro") + "?")
+                    Text(stringResource(R.string.how_was_experience, booking?.getWorkerName() ?: "this Pro"))
                     Spacer(modifier = Modifier.height(16.dp))
                     Slider(
                         value = ratingScore,
@@ -193,14 +200,14 @@ fun BookingDetailScreen(
                     OutlinedTextField(
                         value = comment,
                         onValueChange = { comment = it },
-                        label = { Text("Your Review") },
-                        placeholder = { Text("Tell others about the quality of work...") },
+                        label = { Text(stringResource(R.string.your_review)) },
+                        placeholder = { Text(stringResource(R.string.review_placeholder)) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                         Checkbox(checked = isAnonymous, onCheckedChange = { isAnonymous = it })
-                        Text("Post review anonymously", style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.post_anonymous), style = MaterialTheme.typography.bodySmall)
                     }
                 }
             },
@@ -209,11 +216,11 @@ fun BookingDetailScreen(
                     onRatingSubmit(ratingScore, comment, isAnonymous)
                     showRatingDialog = false 
                 }) {
-                    Text("SUBMIT REVIEW")
+                    Text(stringResource(R.string.submit_review))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showRatingDialog = false }) { Text("NOT NOW") }
+                TextButton(onClick = { showRatingDialog = false }) { Text(stringResource(R.string.not_now)) }
             }
         )
     }
@@ -222,10 +229,10 @@ fun BookingDetailScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Booking Summary", fontWeight = FontWeight.ExtraBold) },
+                title = { Text(stringResource(R.string.booking_summary), fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
@@ -276,14 +283,19 @@ fun BookingDetailScreen(
                     ) {
                         Column {
                             Text(
-                                text = booking.getServiceTitleCompatibility(), 
+                                text = booking.getServiceTitleCompatibility() ?: "Service Details", 
                                 style = MaterialTheme.typography.headlineSmall, 
                                 fontWeight = FontWeight.Black,
                                 maxLines = 2,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis
                             )
+                            val timestamp = booking.getTimestamp()
+                            val dateStr = try {
+                                if (timestamp > 0) SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(timestamp)) else "N/A"
+                            } catch (e: Exception) { "N/A" }
+                            
                             Text(
-                                "Date: " + SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(Date(booking.getTimestamp())),
+                                stringResource(R.string.date_label) + ": $dateStr",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -305,20 +317,20 @@ fun BookingDetailScreen(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Detail Items
-                    BookingInfoRow(label = "Total Price", value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice())}", icon = Icons.Default.Payments)
+                    BookingInfoRow(label = stringResource(R.string.total_price), value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice() ?: 0.0)}", icon = Icons.Default.Payments)
                     if (isServiceProvider) {
-                        BookingInfoRow(label = "Platform Fee", value = "R0.00 (0%)", icon = Icons.Default.Info)
-                        BookingInfoRow(label = "Your Payout", value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice())}", icon = Icons.Default.AccountBalanceWallet)
+                        BookingInfoRow(label = stringResource(R.string.platform_fee), value = "R0.00 (0%)", icon = Icons.Default.Info)
+                        BookingInfoRow(label = stringResource(R.string.your_payout), value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice() ?: 0.0)}", icon = Icons.Default.AccountBalanceWallet)
                     }
-                    BookingInfoRow(label = "Payment Status", value = booking.getPaymentStatus() ?: "UNPAID", icon = Icons.Default.Security)
+                    BookingInfoRow(label = stringResource(R.string.payment_status), value = booking.getPaymentStatus() ?: "UNPAID", icon = Icons.Default.Security)
                     
                     if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
-                        com.example.hustlefix.ui.components.StandardCard(
+                        StandardCard(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
                         ) {
                             Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Job Completion Code", style = MaterialTheme.typography.labelSmall)
+                                Text(stringResource(R.string.job_completion_code), style = MaterialTheme.typography.labelSmall)
                                 Text(
                                     text = booking.completionCode ?: "----",
                                     style = MaterialTheme.typography.displaySmall,
@@ -327,9 +339,9 @@ fun BookingDetailScreen(
                                     color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                                 Text(
-                                    "Give this 4-digit code to the pro ONLY when the job is done.",
+                                    stringResource(R.string.code_instruction),
                                     style = MaterialTheme.typography.bodySmall,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                    textAlign = TextAlign.Center,
                                     modifier = Modifier.padding(top = 8.dp)
                                 )
                             }
@@ -337,7 +349,7 @@ fun BookingDetailScreen(
                     }
 
                     BookingInfoRow(
-                        label = if (isServiceProvider) "Client" else "Provider", 
+                        label = if (isServiceProvider) stringResource(R.string.role_client) else stringResource(R.string.role_service_provider), 
                         value = if (isServiceProvider) booking.getClientName() ?: "User" else booking.getServiceProviderName() ?: "Pro", 
                         icon = Icons.Default.Person
                     )
@@ -351,7 +363,7 @@ fun BookingDetailScreen(
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text("Manage Booking", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.manage_booking), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(16.dp))
                             
                             if (isVerifyingPayment) {
@@ -367,7 +379,7 @@ fun BookingDetailScreen(
                                     ) {
                                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        Text("Verifying Payment...", style = MaterialTheme.typography.labelLarge)
+                                        Text(stringResource(R.string.verifying_payment), style = MaterialTheme.typography.labelLarge)
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
@@ -380,7 +392,7 @@ fun BookingDetailScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                                     ) {
-                                        Text("ACCEPT")
+                                        Text(stringResource(R.string.accept))
                                     }
                                     OutlinedButton(
                                         onClick = { 
@@ -390,20 +402,21 @@ fun BookingDetailScreen(
                                         modifier = Modifier.weight(1f),
                                         colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
                                     ) {
-                                        Text("REJECT")
+                                        Text(stringResource(R.string.reject))
                                     }
                                 }
                             } else if (booking.status == "confirmed" || booking.status == "paid" || booking.status == "completed") {
                                 if (isServiceProvider && booking.paymentStatus == "UNPAID") {
+                                    val payLinkPrefix = stringResource(R.string.send_pay_link)
                                     Button(
-                                        onClick = { onSharePayLink("Payment link for ${booking.getServiceTitle()}: ") },
+                                        onClick = { onSharePayLink("$payLinkPrefix: ") },
                                         modifier = Modifier.fillMaxWidth().height(56.dp),
                                         shape = RoundedCornerShape(16.dp),
                                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF25D366)) // WhatsApp Green
                                     ) {
                                         Icon(Icons.Default.Share, contentDescription = null)
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        Text("SEND PAY LINK", fontWeight = FontWeight.Bold)
+                                        Text(stringResource(R.string.send_pay_link), fontWeight = FontWeight.Bold)
                                     }
                                     Spacer(modifier = Modifier.height(12.dp))
                                 }
@@ -415,7 +428,7 @@ fun BookingDetailScreen(
                                 ) {
                                     Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null)
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text("OPEN CHAT", fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.open_chat), fontWeight = FontWeight.Bold)
                                 }
                                 
                                 if (isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
@@ -426,13 +439,13 @@ fun BookingDetailScreen(
                                             modifier = Modifier.fillMaxWidth().height(56.dp),
                                             shape = RoundedCornerShape(16.dp)
                                         ) {
-                                            Text("MARK AS COMPLETED", fontWeight = FontWeight.Bold)
+                                            Text(stringResource(R.string.mark_as_completed), fontWeight = FontWeight.Bold)
                                         }
                                     } else {
                                         Text(
-                                            "Awaiting Client Payment...",
+                                            stringResource(R.string.awaiting_payment),
                                             modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-                                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                            textAlign = TextAlign.Center,
                                             color = MaterialTheme.colorScheme.outline
                                         )
                                     }
@@ -450,7 +463,7 @@ fun BookingDetailScreen(
                                             ) {
                                                 Icon(Icons.Default.AccountBalanceWallet, contentDescription = null)
                                                 Spacer(modifier = Modifier.width(12.dp))
-                                                Text("PAY WITH WALLET (R${String.format(Locale.getDefault(), "%.2f", walletBalance)})", fontWeight = FontWeight.Bold)
+                                                Text(stringResource(R.string.pay_with_wallet) + " (R${String.format(Locale.getDefault(), "%.2f", walletBalance)})", fontWeight = FontWeight.Bold)
                                             }
                                             Spacer(modifier = Modifier.height(12.dp))
                                         }
@@ -463,7 +476,7 @@ fun BookingDetailScreen(
                                         ) {
                                             Icon(Icons.Default.Payment, contentDescription = null)
                                             Spacer(modifier = Modifier.width(12.dp))
-                                            Text("PAY NOW", fontWeight = FontWeight.Bold)
+                                            Text(stringResource(R.string.pay_now), fontWeight = FontWeight.Bold)
                                         }
                                         Spacer(modifier = Modifier.height(12.dp))
                                     }
@@ -476,7 +489,7 @@ fun BookingDetailScreen(
                                     ) {
                                         Icon(Icons.Default.MyLocation, contentDescription = null)
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        Text("TRACK WORKER LIVE", fontWeight = FontWeight.Bold)
+                                        Text(stringResource(R.string.track_worker), fontWeight = FontWeight.Bold)
                                     }
                                 }
 
@@ -489,7 +502,7 @@ fun BookingDetailScreen(
                                     ) {
                                         Icon(Icons.Default.Star, contentDescription = null)
                                         Spacer(modifier = Modifier.width(12.dp))
-                                        Text("LEAVE A REVIEW", fontWeight = FontWeight.Bold)
+                                        Text(stringResource(R.string.leave_a_review), fontWeight = FontWeight.Bold)
                                     }
                                 }
 
@@ -501,7 +514,7 @@ fun BookingDetailScreen(
                                 ) {
                                     Icon(Icons.Default.ReportProblem, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Report a Problem")
+                                    Text(stringResource(R.string.report_problem))
                                 }
                                 
                                 TextButton(
@@ -515,10 +528,10 @@ fun BookingDetailScreen(
                                 ) {
                                     Icon(Icons.Default.Report, contentDescription = null)
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Report ${if (isServiceProvider) "Client" else "Provider"}")
+                                    Text(stringResource(R.string.report_problem) + " ${if (isServiceProvider) stringResource(R.string.role_client) else stringResource(R.string.role_service_provider)}")
                                 }
                             } else {
-                                Text("No actions available for this status.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(stringResource(R.string.no_actions_available), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
@@ -531,7 +544,7 @@ fun BookingDetailScreen(
 }
 
 @Composable
-fun BookingInfoRow(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+fun BookingInfoRow(label: String, value: String, icon: ImageVector) {
     Row(
         modifier = Modifier.padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically

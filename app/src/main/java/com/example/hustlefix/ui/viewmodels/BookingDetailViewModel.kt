@@ -1,5 +1,6 @@
 package com.example.hustlefix.ui.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.hustlefix.Booking
@@ -54,25 +55,30 @@ class BookingDetailViewModel(
         bookingRef = database.getReference("bookings").child(bookingId)
         bookingListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val booking = snapshot.getValue(Booking::class.java)?.apply {
-                    setBookingId(snapshot.key ?: "")
-                }
-                if (booking != null) {
-                    val isNowPaid = booking.paymentStatus == "PAID"
-                    
-                    _uiState.value = _uiState.value.copy(
-                        booking = booking,
-                        isVerifyingPayment = _uiState.value.isVerifyingPayment && !isNowPaid
-                    )
-                    
-                    val sid = booking.getJobId()
-                    if (!sid.isNullOrEmpty() && (booking.jobId.isNullOrEmpty() || _uiState.value.service == null)) {
-                        fetchServiceDetails(sid)
-                    } else {
-                        _uiState.value = _uiState.value.copy(isLoading = false)
+                try {
+                    val booking = snapshot.getValue(Booking::class.java)?.apply {
+                        setBookingId(snapshot.key ?: "")
                     }
-                } else {
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Booking not found")
+                    if (booking != null) {
+                        val isNowPaid = booking.paymentStatus == "PAID"
+                        
+                        _uiState.value = _uiState.value.copy(
+                            booking = booking,
+                            isVerifyingPayment = _uiState.value.isVerifyingPayment && !isNowPaid
+                        )
+                        
+                        val sid = booking.jobId
+                        if (!sid.isNullOrEmpty() && (booking.jobId.isNullOrEmpty() || _uiState.value.service == null)) {
+                            fetchServiceDetails(sid)
+                        } else {
+                            _uiState.value = _uiState.value.copy(isLoading = false)
+                        }
+                    } else {
+                        _uiState.value = _uiState.value.copy(isLoading = false, error = "Booking not found")
+                    }
+                } catch (e: Exception) {
+                    Log.e("HustleFix", "Error parsing booking: ${e.message}")
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Data loading error")
                 }
             }
             override fun onCancelled(error: DatabaseError) {
@@ -85,7 +91,18 @@ class BookingDetailViewModel(
     fun fetchServiceDetails(serviceId: String) {
         database.getReference("services").child(serviceId).get().addOnSuccessListener { snapshot ->
             val service = snapshot.getValue(Service::class.java)
-            _uiState.value = _uiState.value.copy(service = service, isLoading = false)
+            if (service != null) {
+                _uiState.value = _uiState.value.copy(service = service, isLoading = false)
+            } else {
+                // Fallback: Create a mock service using booking data if service node is gone
+                val booking = _uiState.value.booking
+                val fallback = Service().apply {
+                    setServiceId(serviceId)
+                    setTitle(booking?.serviceTitle ?: "Professional Service")
+                    setPrice(booking?.amount ?: 0.0)
+                }
+                _uiState.value = _uiState.value.copy(service = fallback, isLoading = false)
+            }
         }.addOnFailureListener {
             _uiState.value = _uiState.value.copy(isLoading = false)
         }
@@ -171,6 +188,7 @@ class BookingDetailViewModel(
 
     fun updateStatus(status: String, inputCode: String? = null) {
         val booking = _uiState.value.booking ?: return
+        val currentUserId = auth.currentUser?.uid ?: return
         
         // Security Check: Only verify code if completing the job
         if (status == "completed" && inputCode != null) {
@@ -182,11 +200,60 @@ class BookingDetailViewModel(
 
         _uiState.value = _uiState.value.copy(isLoading = true)
         viewModelScope.launch {
-            val result = repository.updateBookingStatus(booking, status)
-            if (result.isSuccess) {
-                _uiState.value = _uiState.value.copy(isLoading = false, isUpdateSuccess = true)
-            } else {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = result.exceptionOrNull()?.message)
+            try {
+                // 1. AUTO-REFUND AUTOMATION
+                // If a Pro cancels a PAID booking, refund the client instantly
+                if (status == "cancelled" && booking.paymentStatus == "PAID" && currentUserId == booking.workerId) {
+                    val clientId = booking.clientId
+                    val amount = booking.amount ?: 0.0
+                    
+                    if (clientId != null && amount > 0) {
+                        // Refund to Client Wallet
+                        database.getReference("users").child(clientId).child("walletBalance")
+                            .runTransaction(object : Transaction.Handler {
+                                override fun doTransaction(currentData: MutableData): Transaction.Result {
+                                    val current = currentData.getValue(Double::class.java) ?: 0.0
+                                    currentData.value = current + amount
+                                    return Transaction.success(currentData)
+                                }
+                                override fun onComplete(e: DatabaseError?, b: Boolean, s: DataSnapshot?) {}
+                            })
+                        
+                        // Log Refund Transaction
+                        val refundRef = database.getReference("transactions").child(clientId).push()
+                        refundRef.setValue(mapOf(
+                            "id" to refundRef.key,
+                            "type" to "Auto-Refund",
+                            "amount" to amount,
+                            "details" to "Pro cancelled job: ${booking.serviceTitle}",
+                            "timestamp" to System.currentTimeMillis()
+                        ))
+                        
+                        // Update Payment Status
+                        database.getReference("bookings").child(booking.bookingId).child("paymentStatus").setValue("REFUNDED")
+                        
+                        // Deduct from Admin Wallet (if 10% was already moved, we take the whole amount back)
+                        database.getReference("admin_wallet").child("balance").runTransaction(object : Transaction.Handler {
+                            override fun doTransaction(currentData: MutableData): Transaction.Result {
+                                val current = currentData.getValue(Double::class.java) ?: 0.0
+                                val fee = amount * 0.10
+                                currentData.value = current - fee
+                                return Transaction.success(currentData)
+                            }
+                            override fun onComplete(e: DatabaseError?, b: Boolean, s: DataSnapshot?) {}
+                        })
+                    }
+                }
+
+                // 2. Perform regular status update
+                val result = repository.updateBookingStatus(booking, status)
+                if (result.isSuccess) {
+                    _uiState.value = _uiState.value.copy(isLoading = false, isUpdateSuccess = true)
+                } else {
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = result.exceptionOrNull()?.message)
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
     }

@@ -102,7 +102,7 @@ fun MyServiceCard(service: Service, onClick: () -> Unit, onDelete: () -> Unit) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(service.title ?: "No Title", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                 Text(service.category ?: "General", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                Text("R${service.price}", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
+                Text("R${String.format("%.2f", service.price ?: 0.0)}", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.onSurface)
             }
             
             IconButton(onClick = onClick) {

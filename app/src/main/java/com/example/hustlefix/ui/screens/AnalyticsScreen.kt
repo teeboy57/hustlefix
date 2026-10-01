@@ -18,9 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.hustlefix.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,10 +37,10 @@ fun AnalyticsScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Business Insights", fontWeight = FontWeight.ExtraBold) },
+                title = { Text(stringResource(R.string.business_insights), fontWeight = FontWeight.ExtraBold) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 }
             )
@@ -56,23 +58,23 @@ fun AnalyticsScreen(
                     .verticalScroll(scrollState)
                     .padding(24.dp)
             ) {
-                Text("Performance Overview", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.performance_overview), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Key Metrics
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    MetricCard("Total Revenue", stats["totalRevenue"] ?: "R0.00", Icons.Default.Payments, MaterialTheme.colorScheme.primary, Modifier.weight(1f)) {
+                    MetricCard(stringResource(R.string.stat_revenue), stats["totalRevenue"] ?: "R0.00", Icons.Default.Payments, MaterialTheme.colorScheme.primary, Modifier.weight(1f)) {
                         onDetailClick("wallet")
                     }
                     Spacer(modifier = Modifier.width(16.dp))
-                    MetricCard("Avg Rating", stats["avgRating"] ?: "0.0", Icons.Default.Star, Color(0xFFFFC107), Modifier.weight(1f)) {
+                    MetricCard(stringResource(R.string.stat_avg_rating), stats["avgRating"] ?: "0.0", Icons.Default.Star, Color(0xFFFFC107), Modifier.weight(1f)) {
                         onDetailClick("ratings")
                     }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("Booking Statistics", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.booking_stats), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyVerticalGrid(
@@ -82,21 +84,21 @@ fun AnalyticsScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     userScrollEnabled = false
                 ) {
-                    item { SmallStatCard("Total Bookings", stats["totalBookings"] ?: "0", Icons.Default.Assignment) { onDetailClick("bookings") } }
-                    item { SmallStatCard("Completed", stats["completed"] ?: "0", Icons.Default.CheckCircle) { onDetailClick("bookings_completed") } }
-                    item { SmallStatCard("Pending", stats["pending"] ?: "0", Icons.Default.HourglassEmpty) { onDetailClick("bookings_pending") } }
-                    item { SmallStatCard("Cancelled", stats["cancelled"] ?: "0", Icons.Default.Cancel) { onDetailClick("bookings_cancelled") } }
+                    item { SmallStatCard(stringResource(R.string.nav_bookings), stats["totalBookings"] ?: "0", Icons.Default.Assignment) { onDetailClick("bookings") } }
+                    item { SmallStatCard(stringResource(R.string.stat_done), stats["completed"] ?: "0", Icons.Default.CheckCircle) { onDetailClick("bookings_completed") } }
+                    item { SmallStatCard(stringResource(R.string.stat_active), stats["pending"] ?: "0", Icons.Default.HourglassEmpty) { onDetailClick("bookings_pending") } }
+                    item { SmallStatCard(stringResource(R.string.cancel), stats["cancelled"] ?: "0", Icons.Default.Cancel) { onDetailClick("bookings_cancelled") } }
                 }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Text("Time-based Growth", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.time_growth), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    GrowthRow("Monthly Revenue", stats["monthlyRevenue"] ?: "R0.00", Icons.Default.TrendingUp) { onDetailClick("income_statement") }
-                    GrowthRow("Weekly Bookings", stats["weeklyBookings"] ?: "0", Icons.Default.DateRange) { onDetailClick("bookings_weekly") }
-                    GrowthRow("New Clients", stats["totalClients"] ?: "0", Icons.Default.PersonAdd) { onDetailClick("clients") }
+                    GrowthRow(stringResource(R.string.stat_revenue), stats["monthlyRevenue"] ?: "R0.00", Icons.Default.TrendingUp) { onDetailClick("income_statement") }
+                    GrowthRow(stringResource(R.string.nav_bookings), stats["weeklyBookings"] ?: "0", Icons.Default.DateRange) { onDetailClick("bookings_weekly") }
+                    GrowthRow(stringResource(R.string.stat_users), stats["totalClients"] ?: "0", Icons.Default.PersonAdd) { onDetailClick("clients") }
                 }
 
                 Spacer(modifier = Modifier.height(40.dp))
