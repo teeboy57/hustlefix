@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hustlefix.Job
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,15 +146,17 @@ fun JobDetailScreen(
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9))
                 ) {
                     val amount = quoteAmount.toDoubleOrNull() ?: 0.0
+                    val fee = amount * 0.10
+                    val payout = amount - fee
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Platform Fee (0%)", style = MaterialTheme.typography.bodyMedium)
-                            Text("R0.00", fontWeight = FontWeight.Bold)
+                            Text("Platform Fee (10%)", style = MaterialTheme.typography.bodyMedium)
+                            Text("R${String.format(Locale.getDefault(), "%.2f", fee)}", fontWeight = FontWeight.Bold)
                         }
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("Your Total Payout", fontWeight = FontWeight.Black)
-                            Text("R${String.format("%.2f", amount)}", fontWeight = FontWeight.Black, color = Color(0xFF2E7D32))
+                            Text("R${String.format(Locale.getDefault(), "%.2f", payout)}", fontWeight = FontWeight.Black, color = Color(0xFF2E7D32))
                         }
                     }
                 }

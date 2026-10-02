@@ -319,8 +319,10 @@ fun BookingDetailScreen(
                     // Detail Items
                     BookingInfoRow(label = stringResource(R.string.total_price), value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice() ?: 0.0)}", icon = Icons.Default.Payments)
                     if (isServiceProvider) {
-                        BookingInfoRow(label = stringResource(R.string.platform_fee), value = "R0.00 (0%)", icon = Icons.Default.Info)
-                        BookingInfoRow(label = stringResource(R.string.your_payout), value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice() ?: 0.0)}", icon = Icons.Default.AccountBalanceWallet)
+                        val fee = booking.getPlatformFee()
+                        val payout = booking.getWorkerEarnings()
+                        BookingInfoRow(label = stringResource(R.string.platform_fee), value = "R${String.format(Locale.getDefault(), "%.2f", fee)} (10%)", icon = Icons.Default.Info)
+                        BookingInfoRow(label = stringResource(R.string.your_payout), value = "R${String.format(Locale.getDefault(), "%.2f", payout)}", icon = Icons.Default.AccountBalanceWallet)
                     }
                     BookingInfoRow(label = stringResource(R.string.payment_status), value = booking.getPaymentStatus() ?: "UNPAID", icon = Icons.Default.Security)
                     

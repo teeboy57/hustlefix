@@ -64,6 +64,8 @@ public class Booking {
     public String getInstructions() { return instructions; }
     public String getCompletionCode() { return completionCode; }
     public Double getRating() { return rating != null ? rating : 0.0; }
+    public Double getPlatformFee() { return platformFee != null ? platformFee : (getAmount() * 0.10); }
+    public Double getWorkerEarnings() { return workerEarnings != null ? workerEarnings : (getAmount() - getPlatformFee()); }
 
     // Setters
     public void setBookingId(String id) { this.bookingId = id; }
