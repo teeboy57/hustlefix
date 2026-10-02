@@ -18,7 +18,7 @@
       ".indexOn": ["status", "workerId", "clientId"],
       ".read": "auth != null",
       "$jobId": {
-        ".write": "auth != null && (newData.child('clientId').val() == auth.uid || data.child('clientId').val() == auth.uid || data.child('workerId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
+        ".write": "auth != null"
       }
     },
     "quotes": {
@@ -33,7 +33,7 @@
       ".indexOn": ["workerId", "clientId"],
       ".read": "auth != null",
       "$bookingId": {
-        ".write": "auth != null && (newData.child('clientId').val() == auth.uid || data.child('clientId').val() == auth.uid || data.child('workerId').val() == auth.uid || root.child('users').child(auth.uid).child('role').val() == 'admin')"
+        ".write": "auth != null"
       }
     },
     "user_chats": {
