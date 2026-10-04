@@ -28,4 +28,6 @@
     <string name="ok">OK</string>
     <string name="yes">Ja</string>
     <string name="no">Nee</string>
+    <string name="booking_fee">Besprekingsfooi</string>
+    <string name="cancel_booking">Kanselleer Bespreking</string>
 </resources>

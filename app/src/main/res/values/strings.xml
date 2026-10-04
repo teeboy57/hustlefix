@@ -97,6 +97,8 @@
     <string name="submit_review">SUBMIT REVIEW</string>
     <string name="not_now">NOT NOW</string>
     <string name="total_price">Total Price</string>
+    <string name="booking_fee">Booking Fee</string>
+    <string name="cancel_booking">Cancel Booking</string>
     <string name="platform_fee">Platform Fee</string>
     <string name="your_payout">Your Payout</string>
     <string name="payment_status">Payment Status</string>

@@ -317,7 +317,7 @@ fun BookingDetailScreen(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // Detail Items
-                    BookingInfoRow(label = stringResource(R.string.total_price), value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice() ?: 0.0)}", icon = Icons.Default.Payments)
+                    BookingInfoRow(label = stringResource(R.string.booking_fee), value = "R${String.format(Locale.getDefault(), "%.2f", booking.getPrice() ?: 0.0)}", icon = Icons.Default.Payments)
                     if (isServiceProvider) {
                         val fee = booking.getPlatformFee()
                         val payout = booking.getWorkerEarnings()
@@ -385,6 +385,23 @@ fun BookingDetailScreen(
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(16.dp))
+                            }
+
+                            if (!isServiceProvider && (booking.status == "pending" || (booking.status == "confirmed" && booking.paymentStatus == "UNPAID"))) {
+                                OutlinedButton(
+                                    onClick = { 
+                                        pendingStatusUpdate = "cancelled"
+                                        showCancelDialog = true 
+                                    },
+                                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                                    shape = RoundedCornerShape(16.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                                ) {
+                                    Icon(Icons.Default.Cancel, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(R.string.cancel_booking), fontWeight = FontWeight.Bold)
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
                             }
 
                             if (isServiceProvider && booking.status == "pending") {

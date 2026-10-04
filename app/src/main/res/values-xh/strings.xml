@@ -28,4 +28,6 @@
     <string name="ok">Kulungile</string>
     <string name="yes">Ewe</string>
     <string name="no">Hayi</string>
+    <string name="booking_fee">Umrhumo Wokubhukisha</string>
+    <string name="cancel_booking">Rhoxisa Ukubhukisha</string>
 </resources>

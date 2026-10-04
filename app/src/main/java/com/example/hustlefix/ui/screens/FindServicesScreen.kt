@@ -228,7 +228,7 @@ fun ServiceGridItem(
                     )
                 }
 
-                if (service.isProviderVerified) {
+                if (service.isVerified()) {
                     Surface(
                         modifier = Modifier.align(Alignment.BottomEnd).padding(10.dp),
                         color = Color.White.copy(alpha = 0.9f),

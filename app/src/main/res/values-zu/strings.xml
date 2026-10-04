@@ -28,4 +28,6 @@
     <string name="ok">Kulungile</string>
     <string name="yes">Yebo</string>
     <string name="no">Cha</string>
+    <string name="booking_fee">Imali Yokubhukha</string>
+    <string name="cancel_booking">Khansela Ukubhukha</string>
 </resources>
