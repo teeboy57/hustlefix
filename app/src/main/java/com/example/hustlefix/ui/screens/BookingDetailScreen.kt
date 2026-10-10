@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.hustlefix.Booking
+import com.example.hustlefix.Quote
 import com.example.hustlefix.R
 import com.example.hustlefix.Service
 import com.example.hustlefix.ui.components.StandardCard
@@ -45,9 +46,13 @@ import java.util.*
 fun BookingDetailScreen(
     booking: Booking?,
     service: Service?,
+    quote: Quote? = null,
     isServiceProvider: Boolean,
     isLoading: Boolean,
     onStatusUpdate: (String, String?) -> Unit,
+    onSubmitQuote: (Double, String) -> Unit = { _, _ -> },
+    onAcceptQuote: () -> Unit = {},
+    onPayQuoteWalletClick: () -> Unit = {},
     onChatClick: () -> Unit,
     onTrackClick: (String) -> Unit,
     onRatingSubmit: (Float, String, Boolean) -> Unit = { _, _, _ -> },
@@ -76,9 +81,59 @@ fun BookingDetailScreen(
     var showRatingDialog by remember { mutableStateOf(false) }
     var showCompletionCodeDialog by remember { mutableStateOf(false) }
     var showDisputeDialog by remember { mutableStateOf(false) }
+    var showQuoteDialog by remember { mutableStateOf(false) }
+    var quoteAmount by remember { mutableStateOf("") }
+    var quoteMessage by remember { mutableStateOf("") }
     var disputeReason by remember { mutableStateOf("") }
     var inputCode by remember { mutableStateOf("") }
     var pendingStatusUpdate by remember { mutableStateOf<String?>(null) }
+
+    if (showQuoteDialog) {
+        AlertDialog(
+            onDismissRequest = { showQuoteDialog = false },
+            title = { Text("Submit On-Site Quote", fontWeight = FontWeight.Bold) },
+            text = {
+                Column {
+                    Text("Enter total quoted amount (including parts & labor) and breakdown notes.")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = quoteAmount,
+                        onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) quoteAmount = it },
+                        label = { Text("Quoted Amount (R)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        shape = RoundedCornerShape(12.dp),
+                        prefix = { Text("R ") }
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    OutlinedTextField(
+                        value = quoteMessage,
+                        onValueChange = { quoteMessage = it },
+                        label = { Text("Breakdown (e.g. Parts R500, Labor R800)") },
+                        modifier = Modifier.fillMaxWidth().height(120.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val amt = quoteAmount.toDoubleOrNull() ?: 0.0
+                        if (amt > 0) {
+                            onSubmitQuote(amt, quoteMessage)
+                            showQuoteDialog = false
+                        }
+                    },
+                    enabled = quoteAmount.isNotBlank() && quoteMessage.isNotBlank()
+                ) {
+                    Text("SUBMIT QUOTE")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showQuoteDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
 
     if (showDisputeDialog) {
         AlertDialog(
@@ -326,7 +381,7 @@ fun BookingDetailScreen(
                     }
                     BookingInfoRow(label = stringResource(R.string.payment_status), value = booking.getPaymentStatus() ?: "UNPAID", icon = Icons.Default.Security)
                     
-                    if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
+                    if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid" || booking.status == "in_progress" || quote?.status == "settled")) {
                         StandardCard(
                             modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                             containerColor = MaterialTheme.colorScheme.secondaryContainer
@@ -355,6 +410,91 @@ fun BookingDetailScreen(
                         value = if (isServiceProvider) booking.getClientName() ?: "User" else booking.getServiceProviderName() ?: "Pro", 
                         icon = Icons.Default.Person
                     )
+
+                    if (quote != null) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        StandardCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Official On-Site Quote", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                    Text("R${String.format(Locale.getDefault(), "%.2f", quote.amount)}", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Breakdown / Notes:", style = MaterialTheme.typography.labelMedium)
+                                Text(quote.message ?: "No breakdown provided.", style = MaterialTheme.typography.bodyMedium)
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Status: ${(quote.status ?: "pending").uppercase()}", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold)
+                                    if (!isServiceProvider && quote.status == "pending") {
+                                        Button(
+                                            onClick = onAcceptQuote,
+                                            shape = RoundedCornerShape(12.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                                        ) {
+                                            Text("ACCEPT QUOTE", fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+
+                                if (!isServiceProvider && quote.status == "accepted") {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    if (walletBalance >= quote.amount) {
+                                        Button(
+                                            onClick = onPayQuoteWalletClick,
+                                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                                            shape = RoundedCornerShape(12.dp),
+                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6750A4))
+                                        ) {
+                                            Icon(Icons.Default.AccountBalanceWallet, contentDescription = null)
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text("SETTLE QUOTE WITH WALLET (R${String.format(Locale.getDefault(), "%.2f", quote.amount)})", fontWeight = FontWeight.Bold)
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                    Button(
+                                        onClick = onPayClick,
+                                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                                    ) {
+                                        Icon(Icons.Default.Payment, contentDescription = null)
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("PAY QUOTE NOW", fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                if (quote.status == "settled") {
+                                    Spacer(modifier = Modifier.height(12.dp))
+                                    Surface(
+                                        color = Color(0xFF4CAF50).copy(alpha = 0.15f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF4CAF50))
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text("QUOTE PAID & SETTLED", fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
@@ -387,7 +527,7 @@ fun BookingDetailScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
 
-                            if (!isServiceProvider && (booking.status == "pending" || (booking.status == "confirmed" && booking.paymentStatus == "UNPAID"))) {
+                            if (booking.status != "completed" && booking.status != "cancelled") {
                                 OutlinedButton(
                                     onClick = { 
                                         pendingStatusUpdate = "cancelled"
@@ -424,7 +564,7 @@ fun BookingDetailScreen(
                                         Text(stringResource(R.string.reject))
                                     }
                                 }
-                            } else if (booking.status == "confirmed" || booking.status == "paid" || booking.status == "completed") {
+                            } else if (booking.status == "confirmed" || booking.status == "paid" || booking.status == "completed" || booking.status == "in_progress" || booking.status == "quoted") {
                                 if (isServiceProvider && booking.paymentStatus == "UNPAID") {
                                     val payLinkPrefix = stringResource(R.string.send_pay_link)
                                     Button(
@@ -440,6 +580,33 @@ fun BookingDetailScreen(
                                     Spacer(modifier = Modifier.height(12.dp))
                                 }
 
+                                if (isServiceProvider) {
+                                    if (booking.paymentStatus == "PAID") {
+                                        if (quote == null || quote.status == "pending") {
+                                            Button(
+                                                onClick = { showQuoteDialog = true },
+                                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                                shape = RoundedCornerShape(16.dp),
+                                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                                            ) {
+                                                Icon(Icons.Default.RequestQuote, contentDescription = null)
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Text(if (quote == null) "SUBMIT ON-SITE QUOTE" else "UPDATE QUOTE", fontWeight = FontWeight.Bold)
+                                            }
+                                            Spacer(modifier = Modifier.height(12.dp))
+                                        }
+                                    } else {
+                                        Text(
+                                            "Awaiting booking fee payment from client before submitting quote.",
+                                            modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            textAlign = TextAlign.Center,
+                                            color = MaterialTheme.colorScheme.outline
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                    }
+                                }
+
                                 Button(
                                     onClick = onChatClick,
                                     modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -450,15 +617,28 @@ fun BookingDetailScreen(
                                     Text(stringResource(R.string.open_chat), fontWeight = FontWeight.Bold)
                                 }
                                 
-                                if (isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
+                                if (isServiceProvider && (booking.status == "confirmed" || booking.status == "paid" || booking.status == "in_progress")) {
                                     Spacer(modifier = Modifier.height(12.dp))
                                     if (booking.paymentStatus == "PAID") {
-                                        OutlinedButton(
-                                            onClick = { showCompletionCodeDialog = true },
-                                            modifier = Modifier.fillMaxWidth().height(56.dp),
-                                            shape = RoundedCornerShape(16.dp)
-                                        ) {
-                                            Text(stringResource(R.string.mark_as_completed), fontWeight = FontWeight.Bold)
+                                        if (booking.status == "in_progress") {
+                                            OutlinedButton(
+                                                onClick = { showCompletionCodeDialog = true },
+                                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                                shape = RoundedCornerShape(16.dp)
+                                            ) {
+                                                Text(stringResource(R.string.mark_as_completed), fontWeight = FontWeight.Bold)
+                                            }
+                                        } else {
+                                            Button(
+                                                onClick = { onStatusUpdate("in_progress", null) },
+                                                modifier = Modifier.fillMaxWidth().height(56.dp),
+                                                shape = RoundedCornerShape(16.dp),
+                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2196F3))
+                                            ) {
+                                                Icon(Icons.Default.PlayArrow, contentDescription = null)
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Text("START JOB", fontWeight = FontWeight.ExtraBold)
+                                            }
                                         }
                                     } else {
                                         Text(
@@ -470,7 +650,7 @@ fun BookingDetailScreen(
                                     }
                                 }
 
-                                if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid")) {
+                                if (!isServiceProvider && (booking.status == "confirmed" || booking.status == "paid" || booking.status == "in_progress")) {
                                     if (booking.status == "confirmed" && booking.paymentStatus == "UNPAID") {
                                         // Wallet Payment Option
                                         if (walletBalance >= (booking.amount ?: 0.0)) {
@@ -500,6 +680,7 @@ fun BookingDetailScreen(
                                         Spacer(modifier = Modifier.height(12.dp))
                                     }
                                     
+                                    /*
                                     Button(
                                         onClick = { onTrackClick(booking.getWorkerId() ?: "") },
                                         modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -510,6 +691,7 @@ fun BookingDetailScreen(
                                         Spacer(modifier = Modifier.width(12.dp))
                                         Text(stringResource(R.string.track_worker), fontWeight = FontWeight.Bold)
                                     }
+                                    */
                                 }
 
                                 if (!isServiceProvider && booking.status == "completed") {

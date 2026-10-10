@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.hustlefix.util.AiHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -161,10 +162,29 @@ fun PostJobScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Job Description", fontWeight = FontWeight.Bold)
+                TextButton(
+                    onClick = {
+                        AiHelper.generateJobDescription(title, category) { generated ->
+                            description = generated
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("✨ Generate with AI")
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Job Description") },
+                placeholder = { Text("Describe what needs to be done...") },
                 modifier = Modifier.fillMaxWidth().height(150.dp),
                 shape = RoundedCornerShape(16.dp),
                 maxLines = 10

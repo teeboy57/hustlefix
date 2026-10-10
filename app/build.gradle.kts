@@ -75,6 +75,8 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.cloudinary.android)
     implementation(libs.coil.compose)
+    implementation("com.google.android.gms:play-services-mlkit-face-detection:17.1.0")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))

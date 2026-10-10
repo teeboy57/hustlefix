@@ -37,12 +37,13 @@ import com.example.hustlefix.Service
 fun EditServiceScreen(
     service: Service?,
     isLoading: Boolean,
-    onSaveClick: (String, String, String, Double, Uri?, Boolean) -> Unit,
+    onSaveClick: (String, String, String, String, Double, Uri?, Boolean) -> Unit,
     onBackClick: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Plumbing") }
+    var rateType by remember { mutableStateOf("Fixed") }
     var price by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var remoteImageUrl by remember { mutableStateOf<String?>(null) }
@@ -53,6 +54,7 @@ fun EditServiceScreen(
             title = it.title ?: ""
             description = it.description ?: ""
             category = it.category ?: "Plumbing"
+            rateType = it.getRateType()
             price = (it.price ?: 0.0).toString()
             remoteImageUrl = it.getServiceImageUrl()
         }
@@ -60,7 +62,9 @@ fun EditServiceScreen(
 
     val scrollState = rememberScrollState()
     val categories = listOf("Plumbing", "Electrical", "Cleaning", "Painting", "Carpentry", "Gardening", "Moving", "Other")
+    val rateTypes = listOf("Fixed", "Hourly", "Call-Out Fee")
     var expanded by remember { mutableStateOf(false) }
+    var rateTypeExpanded by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -184,10 +188,42 @@ fun EditServiceScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                ExposedDropdownMenuBox(
+                    expanded = rateTypeExpanded,
+                    onExpandedChange = { rateTypeExpanded = it },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    OutlinedTextField(
+                        value = rateType,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("Rate Type") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = rateTypeExpanded) },
+                        modifier = Modifier.menuAnchor().fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+                    ExposedDropdownMenu(
+                        expanded = rateTypeExpanded,
+                        onDismissRequest = { rateTypeExpanded = false }
+                    ) {
+                        rateTypes.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option) },
+                                onClick = {
+                                    rateType = option
+                                    rateTypeExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 OutlinedTextField(
                     value = price,
                     onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) price = it },
-                    label = { Text("Price (R)") },
+                    label = { Text("Booking Fee / Rate (R)") },
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     shape = RoundedCornerShape(16.dp),
@@ -209,7 +245,7 @@ fun EditServiceScreen(
 
                 Button(
                     onClick = { 
-                        onSaveClick(title, description, category, price.toDoubleOrNull() ?: 0.0, selectedImageUri, isImageDeleted) 
+                        onSaveClick(title, description, category, rateType, price.toDoubleOrNull() ?: 0.0, selectedImageUri, isImageDeleted) 
                     },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                     shape = RoundedCornerShape(16.dp),

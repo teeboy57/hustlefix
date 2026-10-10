@@ -4,7 +4,9 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,25 +19,24 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.hustlefix.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerificationScreen(
     idImageUri: Uri?,
+    selfieImageUri: Uri?,
     certImageUri: Uri?,
     remoteIdUrl: String?,
+    remoteSelfieUrl: String?,
     remoteCertUrl: String?,
     isLoading: Boolean,
     isSuccess: Boolean,
@@ -43,6 +44,7 @@ fun VerificationScreen(
     currentStatus: String,
     rejectionReason: String?,
     onIdImageSelected: (Uri?) -> Unit,
+    onSelfieImageSelected: (Uri?) -> Unit,
     onCertImageSelected: (Uri?) -> Unit,
     onDeleteDocument: (String) -> Unit,
     onSubmit: () -> Unit,
@@ -57,6 +59,11 @@ fun VerificationScreen(
         onResult = { uri -> onIdImageSelected(uri) }
     )
 
+    val selfieLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri -> onSelfieImageSelected(uri) }
+    )
+
     val certLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri -> onCertImageSelected(uri) }
@@ -64,7 +71,7 @@ fun VerificationScreen(
 
     LaunchedEffect(isSuccess) {
         if (isSuccess) {
-            snackbarHostState.showSnackbar("Verification documents submitted!")
+            snackbarHostState.showSnackbar("Verification documents submitted successfully!")
             onClearStatus()
         }
     }
@@ -97,8 +104,10 @@ fun VerificationScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Status Header
+            // Status Header & Visual Timeline Tracker
             StatusBanner(status = currentStatus)
+            Spacer(modifier = Modifier.height(16.dp))
+            VerificationTimeline(currentStatus = currentStatus)
 
             if (currentStatus == "rejected" && !rejectionReason.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(16.dp))
@@ -118,16 +127,16 @@ fun VerificationScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                "Verify your account to build trust with clients and unlock premium features.",
+                "Verify your account to build trust with clients and unlock premium marketplace features.",
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // ID Section
             DocumentUploadCard(
@@ -135,31 +144,48 @@ fun VerificationScreen(
                 description = "Clear photo of your ID or Driver's License",
                 imageUri = idImageUri,
                 remoteUrl = remoteIdUrl,
-                enabled = currentStatus == "unverified" || currentStatus == "rejected",
+                enabled = currentStatus != "verified",
                 onDelete = { onDeleteDocument("id") },
                 onClick = {
                     idLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Selfie Verification Section
+            DocumentUploadCard(
+                title = "Selfie / Face Verification",
+                description = "Clear photo of your face for identity matching",
+                imageUri = selfieImageUri,
+                remoteUrl = remoteSelfieUrl,
+                enabled = currentStatus != "verified",
+                onDelete = { onDeleteDocument("selfie") },
+                onClick = {
+                    selfieLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Certificate Section
             DocumentUploadCard(
-                title = "Trade Certificate",
-                description = "Certificates or proof of your professional skills",
+                title = "Trade Certificate (Optional)",
+                description = "Certificates or proof of professional skills",
                 imageUri = certImageUri,
                 remoteUrl = remoteCertUrl,
-                enabled = currentStatus == "unverified" || currentStatus == "rejected",
+                enabled = currentStatus != "verified",
                 onDelete = { onDeleteDocument("cert") },
                 onClick = {
                     certLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                 }
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(36.dp))
 
-            val canSubmit = (currentStatus == "unverified" || currentStatus == "rejected") && idImageUri != null
+            val hasId = idImageUri != null || !remoteIdUrl.isNullOrEmpty()
+            val hasSelfie = selfieImageUri != null || !remoteSelfieUrl.isNullOrEmpty()
+            val canSubmit = currentStatus != "verified" && hasId && hasSelfie
 
             Button(
                 onClick = onSubmit,
@@ -179,11 +205,58 @@ fun VerificationScreen(
             Spacer(modifier = Modifier.height(16.dp))
             
             Text(
-                "Documents are reviewed within 24-48 hours.",
+                "Documents are reviewed instantly with AI face match.",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outline
             )
         }
+    }
+}
+
+@Composable
+fun VerificationTimeline(currentStatus: String) {
+    val step = when (currentStatus) {
+        "verified" -> 3
+        "pending" -> 2
+        else -> 1
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TimelineStep(stepNumber = 1, title = "Upload Docs", active = step >= 1)
+        HorizontalDivider(modifier = Modifier.weight(1f).padding(horizontal = 8.dp), thickness = 2.dp, color = if (step >= 2) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+        TimelineStep(stepNumber = 2, title = "Under Review", active = step >= 2)
+        HorizontalDivider(modifier = Modifier.weight(1f).padding(horizontal = 8.dp), thickness = 2.dp, color = if (step >= 3) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+        TimelineStep(stepNumber = 3, title = "Verified", active = step >= 3)
+    }
+}
+
+@Composable
+fun TimelineStep(stepNumber: Int, title: String, active: Boolean) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant, CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = stepNumber.toString(),
+                color = if (active) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+            color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+        )
     }
 }
 
@@ -199,7 +272,7 @@ fun StatusBanner(status: String) {
     Card(
         colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f)),
         shape = RoundedCornerShape(16.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))
+        border = BorderStroke(1.dp, color.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
@@ -223,12 +296,13 @@ fun DocumentUploadCard(
     onClick: () -> Unit
 ) {
     Card(
-        onClick = if (enabled && imageUri == null && remoteUrl == null) onClick else ({}),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = enabled) { onClick() },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
     ) {
-        Box(modifier = Modifier.height(160.dp).fillMaxWidth()) {
+        Box(modifier = Modifier.height(140.dp).fillMaxWidth()) {
             val displayImage = imageUri ?: remoteUrl
             if (displayImage != null) {
                 AsyncImage(
@@ -242,13 +316,11 @@ fun DocumentUploadCard(
                 )
                 Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)))
                 
-                if (enabled) {
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
-                    }
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(8.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.White)
                 }
 
                 Icon(
@@ -263,9 +335,9 @@ fun DocumentUploadCard(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
+                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null, tint = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline, modifier = Modifier.size(36.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Upload Document", fontWeight = FontWeight.Bold, color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
+                    Text("Tap to Upload", fontWeight = FontWeight.Bold, color = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
                 }
             }
         }

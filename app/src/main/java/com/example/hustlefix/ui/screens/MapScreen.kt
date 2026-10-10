@@ -64,15 +64,18 @@ fun MapScreen(
         }
     }
 
-    val userLocation = LatLng(userLat, userLng)
+    val effectiveLat = if (userLat == 0.0 || userLat.isNaN()) -26.2041 else userLat
+    val effectiveLng = if (userLng == 0.0 || userLng.isNaN()) 28.0473 else userLng
+
+    val userLocation = LatLng(effectiveLat, effectiveLng)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(userLocation, 12f)
     }
 
     // Sync camera if user location becomes available
-    LaunchedEffect(userLat, userLng) {
-        if (userLat != 0.0) {
-            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(userLat, userLng), 12f)
+    LaunchedEffect(effectiveLat, effectiveLng) {
+        if (effectiveLat != -26.2041 || effectiveLng != 28.0473) {
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(effectiveLat, effectiveLng), 14f)
         }
     }
 

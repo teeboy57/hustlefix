@@ -504,8 +504,10 @@ fun HustleFixNavGraph(
 
             VerificationScreen(
                 idImageUri = uiState.idImageUri,
+                selfieImageUri = uiState.selfieImageUri,
                 certImageUri = uiState.certImageUri,
                 remoteIdUrl = uiState.remoteIdUrl,
+                remoteSelfieUrl = uiState.remoteSelfieUrl,
                 remoteCertUrl = uiState.remoteCertUrl,
                 isLoading = uiState.isLoading,
                 isSuccess = uiState.isSuccess,
@@ -513,6 +515,7 @@ fun HustleFixNavGraph(
                 currentStatus = uiState.currentStatus,
                 rejectionReason = uiState.rejectionReason,
                 onIdImageSelected = { viewModel.onIdImageSelected(it) },
+                onSelfieImageSelected = { viewModel.onSelfieImageSelected(it) },
                 onCertImageSelected = { viewModel.onCertImageSelected(it) },
                 onDeleteDocument = { viewModel.deleteDocument(it) },
                 onSubmit = { viewModel.submitVerification() },
@@ -677,7 +680,7 @@ fun HustleFixNavGraph(
 
             PostServiceScreen(
                 isLoading = uiState.isLoading,
-                onPostClick = { t, d, c, p, i -> viewModel.postService(t, d, c, p, i) },
+                onPostClick = { t, d, c, rt, p, i -> viewModel.postService(t, d, c, rt, p, i) },
                 onBackClick = { navController.popBackStack() }
             )
         }
@@ -718,8 +721,8 @@ fun HustleFixNavGraph(
             EditServiceScreen(
                 service = uiState.service,
                 isLoading = uiState.isLoading,
-                onSaveClick = { t, d, c, p, i, deleted -> 
-                    viewModel.updateService(serviceId, t, d, c, p, i, deleted)
+                onSaveClick = { t, d, c, rt, p, i, deleted -> 
+                    viewModel.updateService(serviceId, t, d, c, rt, p, i, deleted)
                 },
                 onBackClick = { navController.popBackStack() }
             )
@@ -1028,10 +1031,14 @@ fun HustleFixNavGraph(
                 }
             }
             
+            val sessionRole = SessionHelper.getRole(context)
+            val effectiveIsServiceProvider = uiState.isServiceProvider || isServiceProvider || (sessionRole == "service_provider")
+
             BookingDetailScreen(
                 booking = uiState.booking,
                 service = uiState.service,
-                isServiceProvider = isServiceProvider,
+                quote = uiState.quote,
+                isServiceProvider = effectiveIsServiceProvider,
                 isLoading = uiState.isLoading,
                 isVerifyingPayment = uiState.isVerifyingPayment,
                 walletBalance = uiState.walletBalance,
@@ -1039,10 +1046,13 @@ fun HustleFixNavGraph(
                 isUpdateSuccess = uiState.isUpdateSuccess,
                 onClearError = { viewModel.clearStatus() },
                 onStatusUpdate = { s, c -> viewModel.updateStatus(s, c) },
+                onSubmitQuote = { amt, msg -> viewModel.submitQuoteForBooking(amt, msg) },
+                onAcceptQuote = { viewModel.acceptQuoteForBooking() },
+                onPayQuoteWalletClick = { viewModel.payQuoteWithWallet() },
                 onRatingSubmit = { s, c, a -> viewModel.submitRating(s, c, a) },
                 onChatClick = {
-                    val partnerId = if (isServiceProvider) uiState.booking?.getClientId() else uiState.booking?.getWorkerId()
-                    val partnerName = if (isServiceProvider) uiState.booking?.getClientName() else uiState.booking?.getWorkerName()
+                    val partnerId = if (effectiveIsServiceProvider) uiState.booking?.getClientId() else uiState.booking?.getWorkerId()
+                    val partnerName = if (effectiveIsServiceProvider) uiState.booking?.getClientName() else uiState.booking?.getWorkerName()
                     if (partnerId != null) {
                         navController.navigate(Screen.Chat.createRoute(partnerId, partnerName ?: "User"))
                     }

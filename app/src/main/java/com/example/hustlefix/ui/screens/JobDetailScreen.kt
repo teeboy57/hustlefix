@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.hustlefix.Job
+import com.example.hustlefix.util.AiHelper
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -126,8 +127,27 @@ fun JobDetailScreen(
         ModalBottomSheet(onDismissRequest = { showQuoteSheet = false }) {
             Column(modifier = Modifier.padding(24.dp).padding(bottom = 32.dp)) {
                 Text("Submit your Quote", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Black)
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
                 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = {
+                            val budget = job?.getQuotedAmount() ?: 200.0
+                            val (notes, recAmount) = AiHelper.generateQuoteNotes(job?.getTitle() ?: "Service", budget)
+                            quoteAmount = recAmount.toString()
+                            quoteMessage = notes
+                        }
+                    ) {
+                        Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("✨ AI Quote Generator")
+                    }
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+
                 OutlinedTextField(
                     value = quoteAmount,
                     onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) quoteAmount = it },

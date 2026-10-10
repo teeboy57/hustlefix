@@ -183,9 +183,9 @@ fun ServiceDetailScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Total Price", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
+                            Text("Booking Fee / Rate", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.outline)
                             Text(
-                                "R${String.format(Locale.getDefault(), "%.2f", service.getPrice())}",
+                                "R${String.format(Locale.getDefault(), "%.2f", service.getPrice())} (${service.getRateType()})",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Black,
                                 color = MaterialTheme.colorScheme.primary

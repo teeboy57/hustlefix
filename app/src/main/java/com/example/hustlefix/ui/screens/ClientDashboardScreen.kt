@@ -56,6 +56,7 @@ fun ClientDashboardScreen(
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     var searchQuery by remember { mutableStateOf("") }
+    var showAiDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(isRefreshing) {
         if (!isRefreshing) {
@@ -83,6 +84,14 @@ fun ClientDashboardScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAiDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(Icons.Default.AutoAwesome, contentDescription = "AI Assistant", tint = Color.White)
+            }
         }
     ) { padding ->
         Box(
@@ -382,5 +391,15 @@ fun ClientDashboardScreen(
                 }
             }
         }
+    }
+
+    if (showAiDialog) {
+        AiSupportDialog(
+            onContactAdmin = {
+                showAiDialog = false
+                onQuickActionClick("support")
+            },
+            onDismiss = { showAiDialog = false }
+        )
     }
 }

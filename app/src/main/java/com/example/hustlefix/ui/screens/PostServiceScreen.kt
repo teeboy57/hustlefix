@@ -33,18 +33,21 @@ import com.example.hustlefix.R
 @Composable
 fun PostServiceScreen(
     isLoading: Boolean,
-    onPostClick: (String, String, String, Double, Uri?) -> Unit,
+    onPostClick: (String, String, String, String, Double, Uri?) -> Unit,
     onBackClick: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Plumbing") }
+    var rateType by remember { mutableStateOf("Fixed") }
     var price by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     
     val scrollState = rememberScrollState()
     val categories = listOf("Plumbing", "Electrical", "Cleaning", "Painting", "Carpentry", "Gardening", "Moving", "Other")
+    val rateTypes = listOf("Fixed", "Hourly", "Call-Out Fee")
     var expanded by remember { mutableStateOf(false) }
+    var rateTypeExpanded by remember { mutableStateOf(false) }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -147,10 +150,42 @@ fun PostServiceScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            ExposedDropdownMenuBox(
+                expanded = rateTypeExpanded,
+                onExpandedChange = { rateTypeExpanded = it },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = rateType,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Rate Type") },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = rateTypeExpanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = rateTypeExpanded,
+                    onDismissRequest = { rateTypeExpanded = false }
+                ) {
+                    rateTypes.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                rateType = option
+                                rateTypeExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = price,
                 onValueChange = { if (it.all { char -> char.isDigit() || char == '.' }) price = it },
-                label = { Text("Price (R)") },
+                label = { Text("Booking Fee / Rate (R)") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 shape = RoundedCornerShape(16.dp),
@@ -172,7 +207,7 @@ fun PostServiceScreen(
 
             Button(
                 onClick = { 
-                    onPostClick(title, description, category, price.toDoubleOrNull() ?: 0.0, selectedImageUri) 
+                    onPostClick(title, description, category, rateType, price.toDoubleOrNull() ?: 0.0, selectedImageUri) 
                 },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(16.dp),

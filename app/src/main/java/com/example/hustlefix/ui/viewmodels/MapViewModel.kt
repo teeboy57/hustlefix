@@ -19,8 +19,8 @@ data class MapUiState(
     val workers: List<Worker> = emptyList(),
     val services: List<Service> = emptyList(),
     val isLoading: Boolean = false,
-    val userLatitude: Double = 0.0,
-    val userLongitude: Double = 0.0,
+    val userLatitude: Double = -26.2041, // Default Johannesburg fallback
+    val userLongitude: Double = 28.0473,
     val trackedWorker: Worker? = null
 )
 

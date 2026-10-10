@@ -37,18 +37,18 @@ class PostServiceViewModel : ViewModel() {
         }
     }
 
-    fun updateService(serviceId: String, title: String, desc: String, category: String, price: Double, imageUri: Uri?, isImageDeleted: Boolean = false) {
+    fun updateService(serviceId: String, title: String, desc: String, category: String, rateType: String, price: Double, imageUri: Uri?, isImageDeleted: Boolean = false) {
         val user = auth.currentUser ?: return
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
         if (imageUri != null) {
-            uploadImageAndUpdate(serviceId, user.uid, title, desc, category, price, imageUri)
+            uploadImageAndUpdate(serviceId, user.uid, title, desc, category, rateType, price, imageUri)
         } else {
-            updateDatabase(serviceId, user.uid, title, desc, category, price, null, isImageDeleted)
+            updateDatabase(serviceId, user.uid, title, desc, category, rateType, price, null, isImageDeleted)
         }
     }
 
-    private fun uploadImageAndUpdate(serviceId: String, uid: String, title: String, desc: String, category: String, price: Double, uri: Uri) {
+    private fun uploadImageAndUpdate(serviceId: String, uid: String, title: String, desc: String, category: String, rateType: String, price: Double, uri: Uri) {
         MediaManager.get().upload(uri)
             .unsigned("hustle_fix")
             .callback(object : UploadCallback {
@@ -56,7 +56,7 @@ class PostServiceViewModel : ViewModel() {
                 override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
                 override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
                     val url = resultData?.get("secure_url") as? String
-                    updateDatabase(serviceId, uid, title, desc, category, price, url)
+                    updateDatabase(serviceId, uid, title, desc, category, rateType, price, url)
                 }
                 override fun onError(requestId: String?, error: ErrorInfo?) {
                     _uiState.value = _uiState.value.copy(isLoading = false, error = error?.description)
@@ -65,12 +65,13 @@ class PostServiceViewModel : ViewModel() {
             }).dispatch()
     }
 
-    private fun updateDatabase(serviceId: String, uid: String, title: String, desc: String, category: String, price: Double, imageUrl: String?, isImageDeleted: Boolean = false) {
+    private fun updateDatabase(serviceId: String, uid: String, title: String, desc: String, category: String, rateType: String, price: Double, imageUrl: String?, isImageDeleted: Boolean = false) {
         val ref = database.getReference("services").child(serviceId)
         val updates = mutableMapOf<String, Any?>(
             "title" to title,
             "description" to desc,
             "category" to category,
+            "rateType" to rateType,
             "price" to price,
             "serviceProviderId" to uid
         )
@@ -89,18 +90,18 @@ class PostServiceViewModel : ViewModel() {
         }
     }
 
-    fun postService(title: String, desc: String, category: String, price: Double, imageUri: Uri?) {
+    fun postService(title: String, desc: String, category: String, rateType: String, price: Double, imageUri: Uri?) {
         val user = auth.currentUser ?: return
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
 
         if (imageUri != null) {
-            uploadImageAndSave(user.uid, user.displayName ?: "Pro", user.email ?: "", title, desc, category, price, imageUri)
+            uploadImageAndSave(user.uid, user.displayName ?: "Pro", user.email ?: "", title, desc, category, rateType, price, imageUri)
         } else {
-            saveToDatabase(user.uid, user.displayName ?: "Pro", user.email ?: "", title, desc, category, price, null)
+            saveToDatabase(user.uid, user.displayName ?: "Pro", user.email ?: "", title, desc, category, rateType, price, null)
         }
     }
 
-    private fun uploadImageAndSave(uid: String, userName: String, email: String, title: String, desc: String, category: String, price: Double, uri: Uri) {
+    private fun uploadImageAndSave(uid: String, userName: String, email: String, title: String, desc: String, category: String, rateType: String, price: Double, uri: Uri) {
         MediaManager.get().upload(uri)
             .unsigned("hustle_fix")
             .callback(object : UploadCallback {
@@ -108,7 +109,7 @@ class PostServiceViewModel : ViewModel() {
                 override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
                 override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
                     val url = resultData?.get("secure_url") as? String
-                    saveToDatabase(uid, userName, email, title, desc, category, price, url)
+                    saveToDatabase(uid, userName, email, title, desc, category, rateType, price, url)
                 }
                 override fun onError(requestId: String?, error: ErrorInfo?) {
                     _uiState.value = _uiState.value.copy(isLoading = false, error = error?.description)
@@ -117,7 +118,7 @@ class PostServiceViewModel : ViewModel() {
             }).dispatch()
     }
 
-    private fun saveToDatabase(uid: String, userName: String, email: String, title: String, desc: String, category: String, price: Double, imageUrl: String?) {
+    private fun saveToDatabase(uid: String, userName: String, email: String, title: String, desc: String, category: String, rateType: String, price: Double, imageUrl: String?) {
         val ref = database.getReference("services")
         val serviceId = ref.push().key ?: return
         
@@ -134,6 +135,7 @@ class PostServiceViewModel : ViewModel() {
                 setTitle(title)
                 setDescription(desc)
                 setCategory(category)
+                setRateType(rateType)
                 setPrice(price)
                 if (imageUrl != null) {
                     setServiceImageUrls(listOf(imageUrl))

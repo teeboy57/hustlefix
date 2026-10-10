@@ -25,6 +25,7 @@ public class Service {
     public Double averageRating;
     public Double latitude;
     public Double longitude;
+    public String rateType;
 
     public Service() {
         // Default constructor for Firebase
@@ -35,6 +36,7 @@ public class Service {
     public String getTitle() { return title; }
     public String getDescription() { return description; }
     public Double getPrice() { return price != null ? price : 0.0; }
+    public String getRateType() { return rateType != null ? rateType : "Fixed"; }
     public String getCategory() { return category; }
     public String getLocation() { return location; }
     
@@ -68,6 +70,7 @@ public class Service {
     public void setDescription(String description) { this.description = description; }
     public void setPrice(Double price) { this.price = price; }
     public void setCategory(String category) { this.category = category; }
+    public void setRateType(String rateType) { this.rateType = rateType; }
     public void setLocation(String location) { this.location = location; }
     
     @PropertyName("serviceProviderId")
